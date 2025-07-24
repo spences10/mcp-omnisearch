@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  mcp-omnisearch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp-omnisearch
+    restart: unless-stopped
+    # Environment variables can be set via .env file or passed directly
+    # Uncomment and customize as needed:
+    # environment:
+    #   - BRAVE_API_KEY=${BRAVE_API_KEY}
+    #   - TAVILY_API_KEY=${TAVILY_API_KEY}
+    #   - KAGI_API_KEY=${KAGI_API_KEY}
+    #   - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+    #   - JINA_AI_API_KEY=${JINA_AI_API_KEY}
+    #   - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}
+    
+    # Expose port for MCPO
+    ports:
+      - "8000:8000"
