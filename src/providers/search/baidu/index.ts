@@ -72,6 +72,8 @@ export class BaiduSearchProvider implements SearchProvider {
 				}
 
 				// Build query parameters
+				// Note: SerpApi requires API key in query params (their standard authentication method)
+				// Security: API key is passed via HTTPS and should be stored in environment variables
 				const query_params = new URLSearchParams({
 					engine: 'baidu',
 					q: final_query,
@@ -122,6 +124,7 @@ export class BaiduSearchProvider implements SearchProvider {
 							);
 						case 429:
 							handle_rate_limit(this.name);
+							return;
 						case 400:
 							throw new ProviderError(
 								ErrorType.INVALID_INPUT,
