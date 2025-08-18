@@ -25,6 +25,11 @@ processing, and enhancement features through a single interface.
   advertising influence, focused on authoritative sources. Supports
   search operators in query string (site:, -site:, filetype:,
   intitle:, inurl:, before:, after:, and exact phrases).
+- **Reddit Search**: Community-driven search through Reddit's vast
+  discussion base. Features OAuth2 authentication with rate limiting.
+  Supports subreddit filtering, sorting options (relevance, hot, top,
+  new, comments), and time range filtering. Best for finding
+  discussions, opinions, and user experiences.
 
 ### 🎯 Search Operators
 
@@ -63,6 +68,7 @@ and parameters:
 - **Brave Search**: Full native operator support in query string
 - **Kagi Search**: Complete operator support in query string
 - **Tavily Search**: Domain filtering through API parameters
+- **Reddit Search**: Subreddit filtering, sorting, and time range options
 
 ### 🤖 AI Response Tools
 
@@ -179,6 +185,9 @@ API keys will be activated:
 - `KAGI_API_KEY`: For Kagi services (FastGPT, Summarizer, Enrichment)
 - `JINA_AI_API_KEY`: For Jina AI services (Reader, Grounding)
 - `BRAVE_API_KEY`: For Brave Search
+- `REDDIT_CLIENT_ID`: For Reddit Search OAuth2 authentication
+- `REDDIT_CLIENT_SECRET`: For Reddit Search OAuth2 authentication
+- `REDDIT_USER_AGENT`: For Reddit API requests (optional, defaults to 'MCP-OmniSearch/1.0')
 - `FIRECRAWL_API_KEY`: For Firecrawl services (Scrape, Crawl, Map,
   Extract, Actions)
 - `FIRECRAWL_BASE_URL`: For self-hosted Firecrawl instances (optional,
@@ -670,7 +679,30 @@ requirements:
 - **Kagi**: Some features limited to Business (Team) plan users
 - **Jina AI**: API key required for all services
 - **Brave**: API key from their developer portal
+- **Reddit**: OAuth2 application credentials required (see Reddit App Setup below)
 - **Firecrawl**: API key required from their developer portal
+
+#### Reddit App Setup
+
+To use Reddit search, you need to create a Reddit application:
+
+1. Go to [Reddit Apps](https://www.reddit.com/prefs/apps/)
+2. Click "Create App" or "Create Another App"
+3. Choose "script" as the application type
+4. Set a name and description for your app
+5. For "redirect uri", you can use `http://localhost:8080` (not used for client credentials flow)
+6. Once created, note down:
+   - **Client ID**: The string under your app name
+   - **Client Secret**: The "secret" field
+
+Set these as environment variables:
+```bash
+export REDDIT_CLIENT_ID="your_client_id"
+export REDDIT_CLIENT_SECRET="your_client_secret"
+export REDDIT_USER_AGENT="YourApp/1.0"  # Optional, but recommended
+```
+
+**Note**: Reddit search uses OAuth2 client credentials flow, which provides read-only access to public content without requiring user authentication.
 
 ### Rate Limits
 
@@ -695,4 +727,5 @@ Built on:
 - [Kagi Search](https://kagi.com)
 - [Jina AI](https://jina.ai)
 - [Brave Search](https://search.brave.com)
+- [Reddit API](https://www.reddit.com/dev/api/)
 - [Firecrawl](https://firecrawl.dev)

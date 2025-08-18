@@ -4,6 +4,9 @@
 export const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 export const BRAVE_API_KEY = process.env.BRAVE_API_KEY;
 export const KAGI_API_KEY = process.env.KAGI_API_KEY;
+export const REDDIT_CLIENT_ID = process.env.REDDIT_CLIENT_ID;
+export const REDDIT_CLIENT_SECRET = process.env.REDDIT_CLIENT_SECRET;
+export const REDDIT_USER_AGENT = process.env.REDDIT_USER_AGENT || 'MCP-OmniSearch/1.0';
 
 // AI provider API keys
 export const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
@@ -30,6 +33,12 @@ export const config = {
 			api_key: KAGI_API_KEY,
 			base_url: 'https://kagi.com/api/v0',
 			timeout: 20000, // 20 seconds
+		},
+		reddit: {
+			client_id: REDDIT_CLIENT_ID,
+			client_secret: REDDIT_CLIENT_SECRET,
+			user_agent: REDDIT_USER_AGENT,
+			timeout: 15000, // 15 seconds
 		},
 	},
 	ai_response: {
@@ -124,6 +133,14 @@ export const validate_config = () => {
 
 	if (!KAGI_API_KEY) missing_keys.push('KAGI_API_KEY');
 	else available_keys.push('KAGI_API_KEY');
+
+	// Reddit requires both client_id and client_secret
+	if (!REDDIT_CLIENT_ID || !REDDIT_CLIENT_SECRET) {
+		if (!REDDIT_CLIENT_ID) missing_keys.push('REDDIT_CLIENT_ID');
+		if (!REDDIT_CLIENT_SECRET) missing_keys.push('REDDIT_CLIENT_SECRET');
+	} else {
+		available_keys.push('REDDIT (OAuth2)');
+	}
 
 	if (!PERPLEXITY_API_KEY) missing_keys.push('PERPLEXITY_API_KEY');
 	else available_keys.push('PERPLEXITY_API_KEY');

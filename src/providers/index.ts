@@ -12,6 +12,7 @@ import { KagiSummarizerProvider } from './processing/kagi_summarizer/index.js';
 import { TavilyExtractProvider } from './processing/tavily_extract/index.js';
 import { BraveSearchProvider } from './search/brave/index.js';
 import { KagiSearchProvider } from './search/kagi/index.js';
+import { RedditSearchProvider } from './search/reddit/index.js';
 import { TavilySearchProvider } from './search/tavily/index.js';
 
 import { is_api_key_valid } from '../common/utils.js';
@@ -35,6 +36,14 @@ export const initialize_providers = () => {
 
 	if (is_api_key_valid(config.search.kagi.api_key, 'kagi')) {
 		register_search_provider(new KagiSearchProvider());
+	}
+
+	// Reddit requires both client_id and client_secret
+	if (
+		is_api_key_valid(config.search.reddit.client_id, 'reddit_client_id') &&
+		is_api_key_valid(config.search.reddit.client_secret, 'reddit_client_secret')
+	) {
+		register_search_provider(new RedditSearchProvider());
 	}
 
 	// Initialize AI response providers (using SearchProvider interface for result compatibility)
