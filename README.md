@@ -2,8 +2,8 @@
 
 A Model Context Protocol (MCP) server that provides unified access to
 multiple search providers and AI tools. This server combines the
-capabilities of Tavily, Perplexity, Kagi, Jina AI, Brave, and
-Firecrawl to offer comprehensive search, AI responses, content
+capabilities of Tavily, Perplexity, Kagi, Jina AI, Brave, Google,
+and Firecrawl to offer comprehensive search, AI responses, content
 processing, and enhancement features through a single interface.
 
 <a href="https://glama.ai/mcp/servers/gz5wgmptd8">
@@ -25,6 +25,11 @@ processing, and enhancement features through a single interface.
   advertising influence, focused on authoritative sources. Supports
   search operators in query string (site:, -site:, filetype:,
   intitle:, inurl:, before:, after:, and exact phrases).
+- **Google Search**: Google Custom Search API for comprehensive web
+  search results. Provides access to Google's powerful search
+  algorithm with high-quality, relevant results. Requires Google
+  Cloud API key and Custom Search Engine ID. Supports advanced
+  search operators and custom search configurations.
 
 ### 🎯 Search Operators
 
@@ -63,6 +68,7 @@ and parameters:
 - **Brave Search**: Full native operator support in query string
 - **Kagi Search**: Complete operator support in query string
 - **Tavily Search**: Domain filtering through API parameters
+- **Google Search**: Standard search operators via Custom Search API
 
 ### 🤖 AI Response Tools
 
@@ -139,6 +145,8 @@ Add this to your Cline MCP settings:
 				"KAGI_API_KEY": "your-kagi-key",
 				"JINA_AI_API_KEY": "your-jina-key",
 				"BRAVE_API_KEY": "your-brave-key",
+				"GOOGLE_API_KEY": "your-google-key",
+				"GOOGLE_CX": "your-custom-search-engine-id",
 				"FIRECRAWL_API_KEY": "your-firecrawl-key",
 				"FIRECRAWL_BASE_URL": "http://localhost:3002"
 			},
@@ -161,7 +169,7 @@ For WSL environments, add this to your Claude Desktop configuration:
 			"args": [
 				"bash",
 				"-c",
-				"TAVILY_API_KEY=key1 PERPLEXITY_API_KEY=key2 KAGI_API_KEY=key3 JINA_AI_API_KEY=key4 BRAVE_API_KEY=key5 FIRECRAWL_API_KEY=key6 FIRECRAWL_BASE_URL=http://localhost:3002 node /path/to/mcp-omnisearch/dist/index.js"
+				"TAVILY_API_KEY=key1 PERPLEXITY_API_KEY=key2 KAGI_API_KEY=key3 JINA_AI_API_KEY=key4 BRAVE_API_KEY=key5 GOOGLE_API_KEY=key6 GOOGLE_CX=cx123 FIRECRAWL_API_KEY=key7 FIRECRAWL_BASE_URL=http://localhost:3002 node /path/to/mcp-omnisearch/dist/index.js"
 			]
 		}
 	}
@@ -179,6 +187,8 @@ API keys will be activated:
 - `KAGI_API_KEY`: For Kagi services (FastGPT, Summarizer, Enrichment)
 - `JINA_AI_API_KEY`: For Jina AI services (Reader, Grounding)
 - `BRAVE_API_KEY`: For Brave Search
+- `GOOGLE_API_KEY`: For Google Custom Search API
+- `GOOGLE_CX`: For Google Custom Search Engine ID
 - `FIRECRAWL_API_KEY`: For Firecrawl services (Scrape, Crawl, Map,
   Extract, Actions)
 - `FIRECRAWL_BASE_URL`: For self-hosted Firecrawl instances (optional,
@@ -275,6 +285,24 @@ Example:
 {
 	"query": "latest research in machine learning",
 	"language": "en"
+}
+```
+
+#### search_google
+
+Google Custom Search API for comprehensive web search with Google's algorithm.
+
+Parameters:
+
+- `query` (string, required): Search query
+- `limit` (number, optional): Number of results (default: 10, max: 10)
+
+Example:
+
+```json
+{
+	"query": "artificial intelligence trends 2024",
+	"limit": 10
 }
 ```
 
@@ -558,6 +586,8 @@ cd mcp-omnisearch
 echo "TAVILY_API_KEY=your-tavily-key" > .env
 echo "KAGI_API_KEY=your-kagi-key" >> .env
 echo "PERPLEXITY_API_KEY=your-perplexity-key" >> .env
+echo "GOOGLE_API_KEY=your-google-key" >> .env
+echo "GOOGLE_CX=your-cx-id" >> .env
 # Add other API keys as needed
 
 # Start the container
@@ -573,6 +603,8 @@ docker run -d \
   -e TAVILY_API_KEY=your-tavily-key \
   -e KAGI_API_KEY=your-kagi-key \
   -e PERPLEXITY_API_KEY=your-perplexity-key \
+  -e GOOGLE_API_KEY=your-google-key \
+  -e GOOGLE_CX=your-cx-id \
   --name mcp-omnisearch \
   mcp-omnisearch
 ```
@@ -586,6 +618,8 @@ Configure the container using environment variables for each provider:
 - `KAGI_API_KEY`: For Kagi services (FastGPT, Summarizer, Enrichment)
 - `JINA_AI_API_KEY`: For Jina AI services (Reader, Grounding)
 - `BRAVE_API_KEY`: For Brave Search
+- `GOOGLE_API_KEY`: For Google Custom Search API
+- `GOOGLE_CX`: For Google Custom Search Engine ID
 - `FIRECRAWL_API_KEY`: For Firecrawl services
 - `FIRECRAWL_BASE_URL`: For self-hosted Firecrawl instances (optional)
 - `PORT`: Container port (defaults to 8000)
@@ -670,6 +704,7 @@ requirements:
 - **Kagi**: Some features limited to Business (Team) plan users
 - **Jina AI**: API key required for all services
 - **Brave**: API key from their developer portal
+- **Google**: API key and Custom Search Engine ID from Google Cloud Console
 - **Firecrawl**: API key required from their developer portal
 
 ### Rate Limits
