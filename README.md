@@ -2,9 +2,9 @@
 
 A Model Context Protocol (MCP) server that provides unified access to
 multiple search providers and AI tools. This server combines the
-capabilities of Tavily, Perplexity, Kagi, Jina AI, Brave, and
-Firecrawl to offer comprehensive search, AI responses, content
-processing, and enhancement features through a single interface.
+capabilities of Tavily, Perplexity, Kagi, Jina AI, Brave, Exa, 
+Bright Data, and Firecrawl to offer comprehensive search, AI responses, 
+content processing, and enhancement features through a single interface.
 
 <a href="https://glama.ai/mcp/servers/gz5wgmptd8">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/gz5wgmptd8/badge" alt="Glama badge" />
@@ -25,6 +25,17 @@ processing, and enhancement features through a single interface.
   advertising influence, focused on authoritative sources. Supports
   search operators in query string (site:, -site:, filetype:,
   intitle:, inurl:, before:, after:, and exact phrases).
+- **Exa Search**: AI-powered semantic web search using neural
+  embeddings. Unlike keyword-based search, Exa understands meaning and
+  context to find the most relevant content. Best for research,
+  factual queries, and discovering content that matches semantic intent
+  rather than exact keywords. Supports domain filtering through API
+  parameters (includeDomains/excludeDomains).
+- **Bright Data SERP API**: Comprehensive search engine data collection
+  with proxy management and unblocking. Supports Google, Bing, DuckDuckGo,
+  Yandex, Baidu, Yahoo, and Naver. Best for large-scale data collection,
+  market research, brand monitoring, and applications requiring robust
+  anti-blocking capabilities. Features native support for search operators.
 
 ### 🎯 Search Operators
 
@@ -63,6 +74,8 @@ and parameters:
 - **Brave Search**: Full native operator support in query string
 - **Kagi Search**: Complete operator support in query string
 - **Tavily Search**: Domain filtering through API parameters
+- **Exa Search**: Domain filtering through API parameters (includeDomains/excludeDomains)
+- **Bright Data**: Full query string operator support (site:, -site:, filetype:, etc.)
 
 ### 🤖 AI Response Tools
 
@@ -139,6 +152,9 @@ Add this to your Cline MCP settings:
 				"KAGI_API_KEY": "your-kagi-key",
 				"JINA_AI_API_KEY": "your-jina-key",
 				"BRAVE_API_KEY": "your-brave-key",
+				"EXA_API_KEY": "your-exa-key",
+				"BRIGHTDATA_API_KEY": "your-brightdata-key",
+				"BRIGHTDATA_ZONE_NAME": "your-zone-name",
 				"FIRECRAWL_API_KEY": "your-firecrawl-key",
 				"FIRECRAWL_BASE_URL": "http://localhost:3002"
 			},
@@ -161,7 +177,7 @@ For WSL environments, add this to your Claude Desktop configuration:
 			"args": [
 				"bash",
 				"-c",
-				"TAVILY_API_KEY=key1 PERPLEXITY_API_KEY=key2 KAGI_API_KEY=key3 JINA_AI_API_KEY=key4 BRAVE_API_KEY=key5 FIRECRAWL_API_KEY=key6 FIRECRAWL_BASE_URL=http://localhost:3002 node /path/to/mcp-omnisearch/dist/index.js"
+				"TAVILY_API_KEY=key1 PERPLEXITY_API_KEY=key2 KAGI_API_KEY=key3 JINA_AI_API_KEY=key4 BRAVE_API_KEY=key5 EXA_API_KEY=key6 BRIGHTDATA_API_KEY=key7 BRIGHTDATA_ZONE_NAME=zone1 FIRECRAWL_API_KEY=key8 FIRECRAWL_BASE_URL=http://localhost:3002 node /path/to/mcp-omnisearch/dist/index.js"
 			]
 		}
 	}
@@ -179,6 +195,9 @@ API keys will be activated:
 - `KAGI_API_KEY`: For Kagi services (FastGPT, Summarizer, Enrichment)
 - `JINA_AI_API_KEY`: For Jina AI services (Reader, Grounding)
 - `BRAVE_API_KEY`: For Brave Search
+- `EXA_API_KEY`: For Exa Search
+- `BRIGHTDATA_API_KEY`: For Bright Data SERP API
+- `BRIGHTDATA_ZONE_NAME`: For Bright Data zone configuration (optional, defaults to 'serp_api')
 - `FIRECRAWL_API_KEY`: For Firecrawl services (Scrape, Crawl, Map,
   Extract, Actions)
 - `FIRECRAWL_BASE_URL`: For self-hosted Firecrawl instances (optional,
@@ -275,6 +294,47 @@ Example:
 {
 	"query": "latest research in machine learning",
 	"language": "en"
+}
+```
+
+#### search_exa
+
+AI-powered semantic web search using neural embeddings for contextual relevance.
+
+Parameters:
+
+- `query` (string, required): Search query
+- `include_domains` (array, optional): Domains to include in search
+- `exclude_domains` (array, optional): Domains to exclude from search
+- `limit` (number, optional): Number of results (default: 10)
+
+Example:
+
+```json
+{
+	"query": "machine learning research papers",
+	"include_domains": ["arxiv.org", "scholar.google.com"],
+	"limit": 5
+}
+```
+
+#### search_brightdata
+
+SERP API for comprehensive search engine data collection with anti-blocking.
+
+Parameters:
+
+- `query` (string, required): Search query
+- `include_domains` (array, optional): Domains to include in search  
+- `exclude_domains` (array, optional): Domains to exclude from search
+- `limit` (number, optional): Number of results (default: 10)
+
+Example:
+
+```json
+{
+	"query": "site:github.com machine learning",
+	"limit": 20
 }
 ```
 
@@ -586,6 +646,9 @@ Configure the container using environment variables for each provider:
 - `KAGI_API_KEY`: For Kagi services (FastGPT, Summarizer, Enrichment)
 - `JINA_AI_API_KEY`: For Jina AI services (Reader, Grounding)
 - `BRAVE_API_KEY`: For Brave Search
+- `EXA_API_KEY`: For Exa Search
+- `BRIGHTDATA_API_KEY`: For Bright Data SERP API
+- `BRIGHTDATA_ZONE_NAME`: For Bright Data zone configuration (optional)
 - `FIRECRAWL_API_KEY`: For Firecrawl services
 - `FIRECRAWL_BASE_URL`: For self-hosted Firecrawl instances (optional)
 - `PORT`: Container port (defaults to 8000)
@@ -670,6 +733,8 @@ requirements:
 - **Kagi**: Some features limited to Business (Team) plan users
 - **Jina AI**: API key required for all services
 - **Brave**: API key from their developer portal
+- **Exa**: API key required from their developer portal
+- **Bright Data**: API key and zone configuration required from their platform
 - **Firecrawl**: API key required from their developer portal
 
 ### Rate Limits
