@@ -31,6 +31,12 @@ export const config = {
 			base_url: 'https://kagi.com/api/v0',
 			timeout: 20000, // 20 seconds
 		},
+		duckduckgo: {
+			base_url: 'https://html.duckduckgo.com/html/',
+			timeout: 15000, // 15 seconds
+			region: 'us-en', // Default region
+			safesearch: 'moderate', // strict, moderate, off
+		},
 	},
 	ai_response: {
 		perplexity: {

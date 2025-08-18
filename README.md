@@ -2,7 +2,7 @@
 
 A Model Context Protocol (MCP) server that provides unified access to
 multiple search providers and AI tools. This server combines the
-capabilities of Tavily, Perplexity, Kagi, Jina AI, Brave, and
+capabilities of Tavily, Perplexity, Kagi, Jina AI, Brave, DuckDuckGo, and
 Firecrawl to offer comprehensive search, AI responses, content
 processing, and enhancement features through a single interface.
 
@@ -25,6 +25,11 @@ processing, and enhancement features through a single interface.
   advertising influence, focused on authoritative sources. Supports
   search operators in query string (site:, -site:, filetype:,
   intitle:, inurl:, before:, after:, and exact phrases).
+- **DuckDuckGo Search**: Privacy-focused search engine that does not
+  track users or store personal information. Provides unbiased search
+  results without personalization bubbles. Supports basic search
+  operators and domain filtering. Free to use without API key
+  requirements.
 
 ### 🎯 Search Operators
 
@@ -35,17 +40,17 @@ and parameters:
 
 - Domain filtering: Available across all providers
   - Tavily: Through API parameters (include_domains/exclude_domains)
-  - Brave & Kagi: Through site: and -site: operators
-- File type filtering: Available in Brave and Kagi (filetype:)
-- Title and URL filtering: Available in Brave and Kagi (intitle:,
+  - Brave, Kagi & DuckDuckGo: Through site: and -site: operators
+- File type filtering: Available in Brave, Kagi, and DuckDuckGo (filetype:)
+- Title and URL filtering: Available in Brave, Kagi, and DuckDuckGo (intitle:,
   inurl:)
-- Date filtering: Available in Brave and Kagi (before:, after:)
-- Exact phrase matching: Available in Brave and Kagi ("phrase")
+- Date filtering: Available in Brave, Kagi, and DuckDuckGo (before:, after:)
+- Exact phrase matching: Available in Brave, Kagi, and DuckDuckGo ("phrase")
 
 #### Example Usage
 
 ```typescript
-// Using Brave or Kagi with query string operators
+// Using Brave, Kagi, or DuckDuckGo with query string operators
 {
   "query": "filetype:pdf site:microsoft.com typescript guide"
 }
@@ -62,6 +67,7 @@ and parameters:
 
 - **Brave Search**: Full native operator support in query string
 - **Kagi Search**: Complete operator support in query string
+- **DuckDuckGo Search**: Basic operator support in query string
 - **Tavily Search**: Domain filtering through API parameters
 
 ### 🤖 AI Response Tools
@@ -275,6 +281,24 @@ Example:
 {
 	"query": "latest research in machine learning",
 	"language": "en"
+}
+```
+
+#### search_duckduckgo
+
+Privacy-focused search engine that does not track users. Provides
+unbiased search results without personalization bubbles. No API key
+required.
+
+Parameters:
+
+- `query` (string, required): Search query
+
+Example:
+
+```json
+{
+	"query": "open source web frameworks"
 }
 ```
 
