@@ -7,6 +7,7 @@ export const KAGI_API_KEY = process.env.KAGI_API_KEY;
 export const EXA_API_KEY = process.env.EXA_API_KEY;
 export const BRIGHTDATA_API_KEY = process.env.BRIGHTDATA_API_KEY;
 export const BRIGHTDATA_ZONE_NAME = process.env.BRIGHTDATA_ZONE_NAME;
+export const BAIDU_API_KEY = process.env.BAIDU_API_KEY;
 
 // AI provider API keys
 export const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
@@ -44,6 +45,11 @@ export const config = {
 			zone_name: BRIGHTDATA_ZONE_NAME || 'serp_api',
 			base_url: 'https://api.brightdata.com',
 			timeout: 60000, // 60 seconds - SERP requests can take longer
+		},
+		baidu: {
+			api_key: BAIDU_API_KEY,
+			base_url: 'https://serpapi.com',
+			timeout: 30000, // 30 seconds
 		},
 	},
 	ai_response: {
@@ -144,6 +150,9 @@ export const validate_config = () => {
 
 	if (!BRIGHTDATA_API_KEY) missing_keys.push('BRIGHTDATA_API_KEY');
 	else available_keys.push('BRIGHTDATA_API_KEY');
+
+	if (!BAIDU_API_KEY) missing_keys.push('BAIDU_API_KEY');
+	else available_keys.push('BAIDU_API_KEY');
 
 	if (!PERPLEXITY_API_KEY) missing_keys.push('PERPLEXITY_API_KEY');
 	else available_keys.push('PERPLEXITY_API_KEY');

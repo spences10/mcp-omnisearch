@@ -10,6 +10,7 @@ import { FirecrawlScrapeProvider } from './processing/firecrawl_scrape/index.js'
 import { JinaReaderProvider } from './processing/jina_reader/index.js';
 import { KagiSummarizerProvider } from './processing/kagi_summarizer/index.js';
 import { TavilyExtractProvider } from './processing/tavily_extract/index.js';
+import { BaiduSearchProvider } from './search/baidu/index.js';
 import { BraveSearchProvider } from './search/brave/index.js';
 import { BrightDataSearchProvider } from './search/brightdata/index.js';
 import { ExaSearchProvider } from './search/exa/index.js';
@@ -45,6 +46,10 @@ export const initialize_providers = () => {
 
 	if (is_api_key_valid(config.search.brightdata.api_key, 'brightdata')) {
 		register_search_provider(new BrightDataSearchProvider());
+	}
+
+	if (is_api_key_valid(config.search.baidu.api_key, 'baidu')) {
+		register_search_provider(new BaiduSearchProvider());
 	}
 
 	// Initialize AI response providers (using SearchProvider interface for result compatibility)
