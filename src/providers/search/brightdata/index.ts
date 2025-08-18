@@ -127,6 +127,7 @@ export class BrightDataSearchProvider implements SearchProvider {
 							);
 						case 429:
 							handle_rate_limit(this.name);
+							return;
 						case 400:
 							throw new ProviderError(
 								ErrorType.INVALID_INPUT,
