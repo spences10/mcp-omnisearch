@@ -17,6 +17,10 @@
     "build": "tsc && chmod +x dist/index.js",
     "start": "node dist/index.js",
     "dev": "npx @modelcontextprotocol/inspector dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "pnpm run build && changeset publish"
@@ -51,9 +55,13 @@
   "author": "Scott Spence",
   "license": "MIT",
   "devDependencies": {
-    "@changesets/cli": "^2.29.5",
+    "@changesets/cli": "^2.29.6",
+    "@types/jsdom": "^21.1.7",
     "@types/node": "^24.2.1",
-    "typescript": "^5.9.2"
+    "@vitest/ui": "^3.2.4",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.3"

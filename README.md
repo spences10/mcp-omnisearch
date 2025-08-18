@@ -643,6 +643,49 @@ pnpm run build
 pnpm run dev
 ```
 
+### Testing
+
+This project includes a comprehensive test suite with unit tests, integration tests, and error handling scenarios.
+
+#### Quick Start
+
+```bash
+# Run all tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
+
+# Run tests with coverage
+pnpm test:coverage
+
+# Run tests with interactive UI
+pnpm test:ui
+```
+
+#### Test Categories
+
+- **Unit Tests**: Test individual functions and components in isolation
+- **Integration Tests**: Test complete workflows with real API providers (requires API keys)
+- **Error Handling**: Comprehensive testing of error scenarios and edge cases
+
+For detailed testing instructions, see [TESTING.md](TESTING.md).
+
+#### API Keys for Integration Testing
+
+Integration tests require valid API keys. Set them as environment variables:
+
+```bash
+export TAVILY_API_KEY="your-tavily-key"
+export BRAVE_API_KEY="your-brave-key"
+export KAGI_API_KEY="your-kagi-key"
+export PERPLEXITY_API_KEY="your-perplexity-key"
+export JINA_AI_API_KEY="your-jina-key"
+export FIRECRAWL_API_KEY="your-firecrawl-key"
+```
+
+Tests will automatically skip providers without available API keys.
+
 ### Publishing
 
 1. Update version in package.json

@@ -1,0 +1,74 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 8
+        run_install: false
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Run type check
+      run: pnpm run build
+
+    - name: Run unit tests
+      run: pnpm test
+
+    - name: Run integration tests (if API keys available)
+      run: pnpm test src/__tests__/integration/
+      env:
+        TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+        BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
+        KAGI_API_KEY: ${{ secrets.KAGI_API_KEY }}
+        PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+        JINA_AI_API_KEY: ${{ secrets.JINA_AI_API_KEY }}
+        FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+      continue-on-error: true
+
+    - name: Run test coverage
+      run: pnpm test:coverage
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage/coverage-final.json
+        flags: unittests
+        name: codecov-umbrella
+      continue-on-error: true
