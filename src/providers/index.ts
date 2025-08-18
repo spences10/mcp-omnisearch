@@ -11,6 +11,7 @@ import { JinaReaderProvider } from './processing/jina_reader/index.js';
 import { KagiSummarizerProvider } from './processing/kagi_summarizer/index.js';
 import { TavilyExtractProvider } from './processing/tavily_extract/index.js';
 import { BraveSearchProvider } from './search/brave/index.js';
+import { BrightDataSearchProvider } from './search/brightdata/index.js';
 import { ExaSearchProvider } from './search/exa/index.js';
 import { KagiSearchProvider } from './search/kagi/index.js';
 import { TavilySearchProvider } from './search/tavily/index.js';
@@ -40,6 +41,10 @@ export const initialize_providers = () => {
 
 	if (is_api_key_valid(config.search.exa.api_key, 'exa')) {
 		register_search_provider(new ExaSearchProvider());
+	}
+
+	if (is_api_key_valid(config.search.brightdata.api_key, 'brightdata')) {
+		register_search_provider(new BrightDataSearchProvider());
 	}
 
 	// Initialize AI response providers (using SearchProvider interface for result compatibility)

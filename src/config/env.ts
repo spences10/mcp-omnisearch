@@ -5,6 +5,8 @@ export const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 export const BRAVE_API_KEY = process.env.BRAVE_API_KEY;
 export const KAGI_API_KEY = process.env.KAGI_API_KEY;
 export const EXA_API_KEY = process.env.EXA_API_KEY;
+export const BRIGHTDATA_API_KEY = process.env.BRIGHTDATA_API_KEY;
+export const BRIGHTDATA_ZONE_NAME = process.env.BRIGHTDATA_ZONE_NAME;
 
 // AI provider API keys
 export const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
@@ -36,6 +38,12 @@ export const config = {
 			api_key: EXA_API_KEY,
 			base_url: 'https://api.exa.ai',
 			timeout: 30000, // 30 seconds
+		},
+		brightdata: {
+			api_key: BRIGHTDATA_API_KEY,
+			zone_name: BRIGHTDATA_ZONE_NAME || 'serp_api',
+			base_url: 'https://api.brightdata.com',
+			timeout: 60000, // 60 seconds - SERP requests can take longer
 		},
 	},
 	ai_response: {
@@ -133,6 +141,9 @@ export const validate_config = () => {
 
 	if (!EXA_API_KEY) missing_keys.push('EXA_API_KEY');
 	else available_keys.push('EXA_API_KEY');
+
+	if (!BRIGHTDATA_API_KEY) missing_keys.push('BRIGHTDATA_API_KEY');
+	else available_keys.push('BRIGHTDATA_API_KEY');
 
 	if (!PERPLEXITY_API_KEY) missing_keys.push('PERPLEXITY_API_KEY');
 	else available_keys.push('PERPLEXITY_API_KEY');
