@@ -4,6 +4,8 @@
 export const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 export const BRAVE_API_KEY = process.env.BRAVE_API_KEY;
 export const KAGI_API_KEY = process.env.KAGI_API_KEY;
+export const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+export const GOOGLE_CX = process.env.GOOGLE_CX;
 
 // AI provider API keys
 export const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
@@ -30,6 +32,12 @@ export const config = {
 			api_key: KAGI_API_KEY,
 			base_url: 'https://kagi.com/api/v0',
 			timeout: 20000, // 20 seconds
+		},
+		google: {
+			api_key: GOOGLE_API_KEY,
+			cx: GOOGLE_CX,
+			base_url: 'https://www.googleapis.com',
+			timeout: 15000, // 15 seconds
 		},
 	},
 	ai_response: {
@@ -124,6 +132,12 @@ export const validate_config = () => {
 
 	if (!KAGI_API_KEY) missing_keys.push('KAGI_API_KEY');
 	else available_keys.push('KAGI_API_KEY');
+
+	if (!GOOGLE_API_KEY) missing_keys.push('GOOGLE_API_KEY');
+	else available_keys.push('GOOGLE_API_KEY');
+
+	if (!GOOGLE_CX) missing_keys.push('GOOGLE_CX');
+	else available_keys.push('GOOGLE_CX');
 
 	if (!PERPLEXITY_API_KEY) missing_keys.push('PERPLEXITY_API_KEY');
 	else available_keys.push('PERPLEXITY_API_KEY');
