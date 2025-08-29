@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/spences10-mcp-omnisearch-badge.png)](https://mseep.ai/app/spences10-mcp-omnisearch)
+
 # mcp-omnisearch
 
 A Model Context Protocol (MCP) server that provides unified access to
