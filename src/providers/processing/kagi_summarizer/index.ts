@@ -1,14 +1,5 @@
-import {
-	ErrorType,
-	ProcessingProvider,
-	ProcessingResult,
-	ProviderError,
-} from '../../../common/types.js';
-import {
-	handle_rate_limit,
-	retry_with_backoff,
-	validate_api_key,
-} from '../../../common/utils.js';
+import { AbstractProcessingProvider } from '../../../common/abstract-processing-provider.js';
+import { ProcessingResult } from '../../../common/types.js';
 import { config } from '../../../config/env.js';
 
 interface KagiSummarizerResponse {
@@ -24,95 +15,96 @@ interface KagiSummarizerResponse {
 	};
 }
 
-export class KagiSummarizerProvider implements ProcessingProvider {
-	name = 'kagi_summarizer';
-	description =
+export class KagiSummarizerProvider extends AbstractProcessingProvider {
+	readonly name = 'kagi_summarizer';
+	readonly description =
 		'Instantly summarizes content of any type and length from URLs. Supports pages, videos, and podcasts with transcripts. Best for quick comprehension of long-form content and multimedia resources.';
 
-	async process_content(url: string): Promise<ProcessingResult> {
-		const api_key = validate_api_key(
-			config.processing.kagi_summarizer.api_key,
-			this.name,
+	constructor() {
+		super(
+			{
+				api_key: config.processing.kagi_summarizer.api_key || '',
+				base_url: config.processing.kagi_summarizer.base_url,
+				timeout: config.processing.kagi_summarizer.timeout,
+				auth_type: 'bearer',
+				custom_headers: {
+					Authorization: `Bot ${
+						config.processing.kagi_summarizer.api_key || ''
+					}`,
+				},
+			},
+			'kagi_summarizer',
+			{
+				allow_single_url: true,
+				allow_multiple_urls: true,
+				max_urls: 5, // Reasonable limit for summarization
+			},
+		);
+	}
+
+	async process_content(
+		url: string | string[],
+		extract_depth: 'basic' | 'advanced' = 'basic',
+	): Promise<ProcessingResult> {
+		const { urls, validated_depth } = this.validate_input(
+			url,
+			extract_depth,
 		);
 
-		const summarize_request = async () => {
-			try {
-				const response = await fetch(
-					config.processing.kagi_summarizer.base_url,
-					{
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-							Authorization: `Bot ${api_key}`,
+		const process_urls = async () => {
+			const results = await Promise.all(
+				urls.map(async (single_url) => {
+					const response =
+						await this.http_client.post<KagiSummarizerResponse>(
+							'/',
+							{
+								url: single_url,
+								summary_type:
+									validated_depth === 'advanced'
+										? 'takeaway'
+										: 'summary',
+							},
+							this.name,
+						);
+
+					return {
+						url: single_url,
+						content: response.data.data.output,
+						title: `Summary of ${single_url}`,
+						metadata: {
+							tokens_used: response.data.data.tokens,
+							summary_type:
+								validated_depth === 'advanced'
+									? 'takeaway'
+									: 'summary',
+							api_balance: response.data.meta.api_balance,
+							processing_time_ms: response.data.meta.ms,
 						},
-						body: JSON.stringify({ url }),
-						signal: AbortSignal.timeout(
-							config.processing.kagi_summarizer.timeout,
-						),
-					},
-				);
+					};
+				}),
+			);
 
-				let data: KagiSummarizerResponse & { message?: string };
-				try {
-					const text = await response.text();
-					data = JSON.parse(text);
-				} catch (error) {
-					throw new ProviderError(
-						ErrorType.API_ERROR,
-						`Invalid JSON response: ${
-							error instanceof Error ? error.message : 'Unknown error'
-						}`,
-						this.name,
-					);
-				}
+			const aggregated = this.aggregate_content(results);
+			const metadata = this.calculate_metadata(
+				urls,
+				validated_depth,
+				{
+					total_word_count: aggregated.total_word_count,
+					total_tokens: results.reduce(
+						(sum, r) => sum + (r.metadata.tokens_used || 0),
+						0,
+					),
+				},
+			);
 
-				if (!response.ok || !data.data?.output) {
-					const error_message = data.message || response.statusText;
-					switch (response.status) {
-						case 401:
-							throw new ProviderError(
-								ErrorType.API_ERROR,
-								'Invalid API key',
-								this.name,
-							);
-						case 429:
-							handle_rate_limit(this.name);
-						case 500:
-							throw new ProviderError(
-								ErrorType.PROVIDER_ERROR,
-								'Kagi Summarizer API internal error',
-								this.name,
-							);
-						default:
-							throw new ProviderError(
-								ErrorType.API_ERROR,
-								`Unexpected error: ${error_message}`,
-								this.name,
-							);
-					}
-				}
-
-				return {
-					content: data.data.output,
-					metadata: {
-						word_count: data.data.tokens,
-					},
-					source_provider: this.name,
-				};
-			} catch (error) {
-				if (error instanceof ProviderError) {
-					throw error;
-				}
-				throw new ProviderError(
-					ErrorType.API_ERROR,
-					`Failed to fetch: ${
-						error instanceof Error ? error.message : 'Unknown error'
-					}`,
-					this.name,
-				);
-			}
+			return {
+				content: aggregated.combined_content,
+				metadata,
+				raw_contents: aggregated.raw_contents,
+				source_provider: this.name,
+			};
 		};
 
-		return retry_with_backoff(summarize_request);
+		return this.execute_with_retry(process_urls);
 	}
 }

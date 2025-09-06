@@ -1,14 +1,9 @@
 import {
-	ErrorType,
-	ProcessingProvider,
-	ProcessingResult,
-	ProviderError,
-} from '../../../common/types.js';
-import {
-	handle_rate_limit,
-	retry_with_backoff,
-	validate_api_key,
-} from '../../../common/utils.js';
+	AbstractProcessingProvider,
+	ProcessingOptions,
+	ProcessingProviderConfig,
+} from '../../../common/abstract-processing-provider.js';
+import { ProcessingResult } from '../../../common/types.js';
 import { config } from '../../../config/env.js';
 
 interface ExaContentsRequest {
@@ -35,30 +30,55 @@ interface ExaContentsResponse {
 	requestId: string;
 }
 
-export class ExaContentsProvider implements ProcessingProvider {
-	name = 'exa_contents';
-	description = 'Extract full content from Exa search result IDs';
+export class ExaContentsProvider extends AbstractProcessingProvider {
+	readonly name = 'exa_contents';
+	readonly description =
+		'Extract full content from Exa search result IDs';
+
+	constructor() {
+		const provider_config: ProcessingProviderConfig = {
+			api_key: config.processing.exa_contents.api_key || '',
+			base_url: config.processing.exa_contents.base_url,
+			timeout: config.processing.exa_contents.timeout,
+			auth_type: 'api-key',
+			custom_headers: {
+				'Content-Type': 'application/json',
+			},
+		};
+
+		const processing_options: ProcessingOptions = {
+			max_urls: 50, // Exa can handle more IDs
+			allow_single_url: true,
+			allow_multiple_urls: true,
+			// Exa contents doesn't work with URLs, it works with IDs
+			// But we'll use the validation for consistency
+		};
+
+		super(provider_config, 'exa_contents', processing_options);
+	}
 
 	async process_content(
 		ids: string | string[],
 		extract_depth: 'basic' | 'advanced' = 'basic',
 	): Promise<ProcessingResult> {
-		const api_key = validate_api_key(
-			config.processing.exa_contents.api_key,
-			this.name,
-		);
-
+		// Validate input - IDs instead of URLs
 		const id_array = Array.isArray(ids) ? ids : [ids];
 
 		if (id_array.length === 0) {
-			throw new ProviderError(
-				ErrorType.INVALID_INPUT,
+			this.error_handler.handle_validation_error(
 				'At least one ID must be provided',
-				this.name,
 			);
 		}
 
-		const process_request = async () => {
+		if (id_array.length > (this.processing_options.max_urls || 50)) {
+			this.error_handler.handle_validation_error(
+				`Cannot process more than ${
+					this.processing_options.max_urls || 50
+				} IDs at once`,
+			);
+		}
+
+		const process_request = async (): Promise<ProcessingResult> => {
 			try {
 				const request_body: ExaContentsRequest = {
 					ids: id_array,
@@ -69,130 +89,85 @@ export class ExaContentsProvider implements ProcessingProvider {
 						extract_depth === 'advanced' ? 'preferred' : 'fallback',
 				};
 
-				const response = await fetch(
-					`${config.processing.exa_contents.base_url}/contents`,
-					{
-						method: 'POST',
-						headers: {
-							'x-api-key': api_key,
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify(request_body),
-					},
-				);
+				const response =
+					await this.http_client.post<ExaContentsResponse>(
+						'/contents',
+						request_body,
+						this.name,
+					);
 
-				if (!response.ok) {
-					switch (response.status) {
-						case 401:
-							throw new ProviderError(
-								ErrorType.API_ERROR,
-								'Invalid API key',
-								this.name,
-							);
-						case 403:
-							throw new ProviderError(
-								ErrorType.API_ERROR,
-								'API key does not have access to this endpoint',
-								this.name,
-							);
-						case 429:
-							handle_rate_limit(this.name);
-							throw new ProviderError(
-								ErrorType.RATE_LIMIT,
-								'Rate limit exceeded',
-								this.name,
-							);
-						case 500:
-							throw new ProviderError(
-								ErrorType.PROVIDER_ERROR,
-								'Exa API internal error',
-								this.name,
-							);
-						default:
-							const error_text = await response.text();
-							throw new ProviderError(
-								ErrorType.API_ERROR,
-								`Unexpected error: ${error_text}`,
-								this.name,
-							);
-					}
-				}
+				const data = response.data;
 
-				const data = (await response.json()) as ExaContentsResponse;
-
-				// Combine all content
-				let combined_content = '';
-				const raw_contents: Array<{ url: string; content: string }> =
-					[];
-				let total_word_count = 0;
-
-				for (const result of data.results) {
+				// Map results to expected format for aggregation
+				const extracted_results = data.results.map((result) => {
 					const content =
 						result.text || result.summary || 'No content available';
-					const word_count = content.split(/\s+/).length;
-					total_word_count += word_count;
 
-					// Add to combined content
-					combined_content += `## ${result.title}\n\n`;
+					// Build rich content with metadata
+					let formatted_content = `## ${result.title}\n\n`;
 					if (result.author) {
-						combined_content += `**Author:** ${result.author}\n`;
+						formatted_content += `**Author:** ${result.author}\n`;
 					}
 					if (result.publishedDate) {
-						combined_content += `**Published:** ${result.publishedDate}\n`;
+						formatted_content += `**Published:** ${result.publishedDate}\n`;
 					}
-					combined_content += `**URL:** ${result.url}\n\n`;
+					formatted_content += `**URL:** ${result.url}\n\n`;
 
 					if (result.highlights && result.highlights.length > 0) {
-						combined_content += `**Key Highlights:**\n`;
+						formatted_content += `**Key Highlights:**\n`;
 						for (const highlight of result.highlights) {
-							combined_content += `- ${highlight}\n`;
+							formatted_content += `- ${highlight}\n`;
 						}
-						combined_content += '\n';
+						formatted_content += '\n';
 					}
 
 					if (result.summary && result.text) {
-						combined_content += `**Summary:** ${result.summary}\n\n`;
-						combined_content += `**Full Content:**\n${result.text}\n\n`;
+						formatted_content += `**Summary:** ${result.summary}\n\n`;
+						formatted_content += `**Full Content:**\n${result.text}\n\n`;
 					} else {
-						combined_content += `${content}\n\n`;
+						formatted_content += `${content}\n\n`;
 					}
 
-					combined_content += '---\n\n';
-
-					// Add to raw contents
-					raw_contents.push({
+					return {
 						url: result.url,
-						content: content,
-					});
-				}
+						content: formatted_content,
+						title: result.title,
+					};
+				});
+
+				// Use base class aggregation
+				const { combined_content, raw_contents, total_word_count } =
+					this.aggregate_content(extracted_results, true);
+
+				// Additional metadata
+				const additional_metadata: Record<string, any> = {
+					title: `Content from ${data.results.length} Exa results`,
+					word_count: total_word_count,
+					successful_extractions: data.results.length,
+					requestId: data.requestId,
+				};
+
+				// Use base class metadata calculation (using IDs instead of URLs)
+				const metadata = this.calculate_metadata(
+					id_array, // Pass IDs instead of URLs for this provider
+					extract_depth,
+					additional_metadata,
+				);
 
 				return {
 					content: combined_content,
 					raw_contents,
-					metadata: {
-						title: `Content from ${data.results.length} Exa results`,
-						word_count: total_word_count,
-						urls_processed: data.results.length,
-						successful_extractions: data.results.length,
-						extract_depth,
-						requestId: data.requestId,
-					},
+					metadata,
 					source_provider: this.name,
 				};
 			} catch (error) {
-				if (error instanceof ProviderError) {
-					throw error;
-				}
-				throw new ProviderError(
-					ErrorType.API_ERROR,
-					`Failed to extract contents: ${
-						error instanceof Error ? error.message : 'Unknown error'
-					}`,
-					this.name,
+				return this.error_handler.handle_unknown_error(
+					error,
+					'extract contents',
 				);
 			}
 		};
 
-		return retry_with_backoff(process_request);
+		return this.execute_with_retry(process_request);
 	}
 }

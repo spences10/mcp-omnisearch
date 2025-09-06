@@ -1,18 +1,8 @@
+import { AbstractSearchProvider } from '../../../common/abstract-search-provider.js';
 import {
 	BaseSearchParams,
-	ErrorType,
-	ProviderError,
-	SearchProvider,
 	SearchResult,
 } from '../../../common/types.js';
-import {
-	apply_search_operators,
-	handle_rate_limit,
-	parse_search_operators,
-	retry_with_backoff,
-	sanitize_query,
-	validate_api_key,
-} from '../../../common/utils.js';
 import { config } from '../../../config/env.js';
 
 interface BraveSearchResponse {
@@ -25,164 +15,117 @@ interface BraveSearchResponse {
 	};
 }
 
-export class BraveSearchProvider implements SearchProvider {
-	name = 'brave';
-	description =
+export class BraveSearchProvider extends AbstractSearchProvider {
+	readonly name = 'brave';
+	readonly description =
 		'Privacy-focused search engine with good coverage of technical topics. Features native support for search operators (site:, filetype:, intitle:, inurl:, before:, after:, and exact phrases). Best for technical documentation, developer resources, and privacy-sensitive queries.';
 
-	async search(params: BaseSearchParams): Promise<SearchResult[]> {
-		const api_key = validate_api_key(
-			config.search.brave.api_key,
-			this.name,
+	constructor() {
+		super(
+			{
+				api_key: config.search.brave.api_key || '',
+				base_url: config.search.brave.base_url,
+				timeout: config.search.brave.timeout,
+				auth_type: 'api-key',
+				custom_headers: {
+					'X-Subscription-Token': config.search.brave.api_key || '',
+				},
+			},
+			'brave',
 		);
+	}
 
-		// Parse search operators from the query
-		const parsed_query = parse_search_operators(params.query);
-		const search_params = apply_search_operators(parsed_query);
+	async search(params: BaseSearchParams): Promise<SearchResult[]> {
+		// Validate input parameters
+		this.validate_search_params(params);
 
 		const search_request = async () => {
-			try {
-				let query = sanitize_query(search_params.query);
+			// Parse query operators
+			const { base_query, search_params } =
+				this.parse_query_operators(params.query);
 
-				// Build operator filters
-				const filters: string[] = [];
+			let query = base_query;
 
-				// Handle domain filters
-				const include_domains = [
-					...(params.include_domains ?? []),
-					...(search_params.include_domains ?? []),
-				];
-				if (include_domains.length) {
-					const domain_filter = include_domains
-						.map((domain) => `site:${domain}`)
-						.join(' OR ');
-					filters.push(`(${domain_filter})`);
-				}
+			// Build operator filters
+			const filters: string[] = [];
 
-				const exclude_domains = [
-					...(params.exclude_domains ?? []),
-					...(search_params.exclude_domains ?? []),
-				];
-				if (exclude_domains.length) {
-					filters.push(
-						...exclude_domains.map((domain) => `-site:${domain}`),
-					);
-				}
+			// Handle domain filters using built-in method
+			const domain_filters = this.build_domain_filters(
+				params,
+				search_params,
+				'query',
+			) as {
+				include_filter: string;
+				exclude_filter: string;
+			};
 
-				// Add file type filter
-				if (search_params.file_type) {
-					filters.push(`filetype:${search_params.file_type}`);
-				}
+			if (domain_filters.include_filter) {
+				filters.push(domain_filters.include_filter);
+			}
+			if (domain_filters.exclude_filter) {
+				filters.push(domain_filters.exclude_filter);
+			}
 
-				// Add title filter
-				if (search_params.title_filter) {
-					filters.push(`intitle:${search_params.title_filter}`);
-				}
+			// Add file type filter
+			if (search_params.file_type) {
+				filters.push(`filetype:${search_params.file_type}`);
+			}
 
-				// Add URL filter
-				if (search_params.url_filter) {
-					filters.push(`inurl:${search_params.url_filter}`);
-				}
+			// Add title filter
+			if (search_params.title_filter) {
+				filters.push(`intitle:${search_params.title_filter}`);
+			}
 
-				// Add date filters
-				if (search_params.date_before) {
-					filters.push(`before:${search_params.date_before}`);
-				}
-				if (search_params.date_after) {
-					filters.push(`after:${search_params.date_after}`);
-				}
+			// Add URL filter
+			if (search_params.url_filter) {
+				filters.push(`inurl:${search_params.url_filter}`);
+			}
 
-				// Add exact phrases
-				if (search_params.exact_phrases?.length) {
-					filters.push(
-						...search_params.exact_phrases.map(
-							(phrase) => `"${phrase}"`,
-						),
-					);
-				}
+			// Add date filters
+			if (search_params.date_before) {
+				filters.push(`before:${search_params.date_before}`);
+			}
+			if (search_params.date_after) {
+				filters.push(`after:${search_params.date_after}`);
+			}
 
-				// Combine query with filters
-				if (filters.length > 0) {
-					query = `${query} ${filters.join(' ')}`;
-				}
-
-				const query_params = new URLSearchParams({
-					q: query,
-					count: (params.limit ?? 10).toString(),
-				});
-
-				const response = await fetch(
-					`${config.search.brave.base_url}/web/search?${query_params}`,
-					{
-						method: 'GET',
-						headers: {
-							Accept: 'application/json',
-							'X-Subscription-Token': api_key,
-						},
-						signal: AbortSignal.timeout(config.search.brave.timeout),
-					},
-				);
-
-				let data: BraveSearchResponse & { message?: string };
-				try {
-					const text = await response.text();
-					data = JSON.parse(text);
-				} catch (error) {
-					throw new ProviderError(
-						ErrorType.API_ERROR,
-						`Invalid JSON response: ${
-							error instanceof Error ? error.message : 'Unknown error'
-						}`,
-						this.name,
-					);
-				}
-
-				if (!response.ok || !data.web?.results) {
-					const error_message = data.message || response.statusText;
-					switch (response.status) {
-						case 401:
-							throw new ProviderError(
-								ErrorType.API_ERROR,
-								'Invalid API key',
-								this.name,
-							);
-						case 429:
-							handle_rate_limit(this.name);
-						case 500:
-							throw new ProviderError(
-								ErrorType.PROVIDER_ERROR,
-								'Brave Search API internal error',
-								this.name,
-							);
-						default:
-							throw new ProviderError(
-								ErrorType.API_ERROR,
-								`Unexpected error: ${error_message}`,
-								this.name,
-							);
-					}
-				}
-
-				return data.web.results.map((result) => ({
-					title: result.title,
-					url: result.url,
-					snippet: result.description,
-					source_provider: this.name,
-				}));
-			} catch (error) {
-				if (error instanceof ProviderError) {
-					throw error;
-				}
-				throw new ProviderError(
-					ErrorType.API_ERROR,
-					`Failed to fetch: ${
-						error instanceof Error ? error.message : 'Unknown error'
-					}`,
-					this.name,
+			// Add exact phrases
+			if (search_params.exact_phrases?.length) {
+				filters.push(
+					...search_params.exact_phrases.map(
+						(phrase) => `"${phrase}"`,
+					),
 				);
 			}
+
+			// Combine query with filters
+			if (filters.length) {
+				query = `${query} ${filters.join(' ')}`;
+			}
+
+			const url = new URL(`${this.config.base_url}/web/search`);
+			url.searchParams.set('q', query);
+			url.searchParams.set('count', String(params.limit ?? 5));
+
+			const response =
+				await this.http_client.get<BraveSearchResponse>(
+					url.toString(),
+					this.name,
+				);
+
+			if (!response.data.web?.results) {
+				return [];
+			}
+
+			return response.data.web.results.map((result, index) => ({
+				title: result.title,
+				url: result.url,
+				snippet: result.description,
+				score: 1.0 - index * 0.1, // Simple scoring based on position
+				source_provider: this.name,
+			}));
 		};
 
-		return retry_with_backoff(search_request);
+		return this.execute_with_retry(search_request);
 	}
 }

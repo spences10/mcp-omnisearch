@@ -5,11 +5,13 @@ import { JinaGroundingProvider } from './enhancement/jina_grounding/index.js';
 import { KagiEnrichmentProvider } from './enhancement/kagi_enrichment/index.js';
 import { ExaContentsProvider } from './processing/exa_contents/index.js';
 import { ExaSimilarProvider } from './processing/exa_similar/index.js';
-import { FirecrawlActionsProvider } from './processing/firecrawl_actions/index.js';
-import { FirecrawlCrawlProvider } from './processing/firecrawl_crawl/index.js';
-import { FirecrawlExtractProvider } from './processing/firecrawl_extract/index.js';
-import { FirecrawlMapProvider } from './processing/firecrawl_map/index.js';
-import { FirecrawlScrapeProvider } from './processing/firecrawl_scrape/index.js';
+import {
+	FirecrawlActionsProvider,
+	FirecrawlCrawlProvider,
+	FirecrawlExtractProvider,
+	FirecrawlMapProvider,
+	FirecrawlScrapeProvider,
+} from './processing/firecrawl/index.js';
 import { JinaReaderProvider } from './processing/jina_reader/index.js';
 import { KagiSummarizerProvider } from './processing/kagi_summarizer/index.js';
 import { TavilyExtractProvider } from './processing/tavily_extract/index.js';

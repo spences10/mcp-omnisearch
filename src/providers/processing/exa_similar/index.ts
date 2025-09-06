@@ -1,14 +1,9 @@
 import {
-	ErrorType,
-	ProcessingProvider,
-	ProcessingResult,
-	ProviderError,
-} from '../../../common/types.js';
-import {
-	handle_rate_limit,
-	retry_with_backoff,
-	validate_api_key,
-} from '../../../common/utils.js';
+	AbstractProcessingProvider,
+	ProcessingOptions,
+	ProcessingProviderConfig,
+} from '../../../common/abstract-processing-provider.js';
+import { ProcessingResult } from '../../../common/types.js';
 import { config } from '../../../config/env.js';
 
 interface ExaSimilarRequest {
@@ -41,196 +36,159 @@ interface ExaSimilarResponse {
 	requestId: string;
 }
 
-export class ExaSimilarProvider implements ProcessingProvider {
-	name = 'exa_similar';
-	description =
+export class ExaSimilarProvider extends AbstractProcessingProvider {
+	readonly name = 'exa_similar';
+	readonly description =
 		'Find web pages semantically similar to a given URL using Exa';
+
+	constructor() {
+		const provider_config: ProcessingProviderConfig = {
+			api_key: config.processing.exa_similar.api_key || '',
+			base_url: config.processing.exa_similar.base_url,
+			timeout: config.processing.exa_similar.timeout,
+			auth_type: 'api-key',
+			custom_headers: {
+				'Content-Type': 'application/json',
+			},
+		};
+
+		const processing_options: ProcessingOptions = {
+			max_urls: 1, // This provider only accepts a single URL
+			allow_single_url: true,
+			allow_multiple_urls: false,
+			url_validation_options: {
+				require_https: false,
+				allow_localhost: false,
+			},
+		};
+
+		super(provider_config, 'exa_similar', processing_options);
+	}
 
 	async process_content(
 		url: string | string[],
 		extract_depth: 'basic' | 'advanced' = 'basic',
 	): Promise<ProcessingResult> {
-		const api_key = validate_api_key(
-			config.processing.exa_similar.api_key,
-			this.name,
+		// Use base class validation
+		const { urls, validated_depth } = this.validate_input(
+			url,
+			extract_depth,
 		);
 
 		// This provider only accepts a single URL
-		const target_url = Array.isArray(url) ? url[0] : url;
+		const target_url = urls[0];
 
-		if (!target_url) {
-			throw new ProviderError(
-				ErrorType.INVALID_INPUT,
-				'A URL must be provided',
-				this.name,
-			);
-		}
-
-		// Validate URL format
-		try {
-			new URL(target_url);
-		} catch {
-			throw new ProviderError(
-				ErrorType.INVALID_INPUT,
-				'Invalid URL format',
-				this.name,
-			);
-		}
-
-		const process_request = async () => {
+		const process_request = async (): Promise<ProcessingResult> => {
 			try {
 				const request_body: ExaSimilarRequest = {
 					url: target_url,
-					numResults: extract_depth === 'advanced' ? 15 : 10,
+					numResults: validated_depth === 'advanced' ? 15 : 10,
 					contents: {
 						text: {
 							maxCharacters:
-								extract_depth === 'advanced' ? 3000 : 1500,
+								validated_depth === 'advanced' ? 3000 : 1500,
 						},
-						highlights: extract_depth === 'advanced',
-						summary: extract_depth === 'advanced',
+						highlights: validated_depth === 'advanced',
+						summary: validated_depth === 'advanced',
 						livecrawl:
-							extract_depth === 'advanced' ? 'preferred' : 'fallback',
+							validated_depth === 'advanced'
+								? 'preferred'
+								: 'fallback',
 					},
 				};
 
-				const response = await fetch(
-					`${config.processing.exa_similar.base_url}/findSimilar`,
-					{
-						method: 'POST',
-						headers: {
-							'x-api-key': api_key,
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify(request_body),
-					},
-				);
+				const response =
+					await this.http_client.post<ExaSimilarResponse>(
+						'/findSimilar',
+						request_body,
+						this.name,
+					);
 
-				if (!response.ok) {
-					switch (response.status) {
-						case 401:
-							throw new ProviderError(
-								ErrorType.API_ERROR,
-								'Invalid API key',
-								this.name,
-							);
-						case 403:
-							throw new ProviderError(
-								ErrorType.API_ERROR,
-								'API key does not have access to this endpoint',
-								this.name,
-							);
-						case 429:
-							handle_rate_limit(this.name);
-							throw new ProviderError(
-								ErrorType.RATE_LIMIT,
-								'Rate limit exceeded',
-								this.name,
-							);
-						case 500:
-							throw new ProviderError(
-								ErrorType.PROVIDER_ERROR,
-								'Exa API internal error',
-								this.name,
-							);
-						default:
-							const error_text = await response.text();
-							throw new ProviderError(
-								ErrorType.API_ERROR,
-								`Unexpected error: ${error_text}`,
-								this.name,
-							);
-					}
-				}
+				const data = response.data;
 
-				const data = (await response.json()) as ExaSimilarResponse;
-
-				// Combine all content
-				let combined_content = `# Similar Pages to ${target_url}\n\n`;
-				combined_content += `Found ${data.results.length} similar pages:\n\n`;
-
-				const raw_contents: Array<{ url: string; content: string }> =
-					[];
-				let total_word_count = 0;
-
-				for (const result of data.results) {
+				// Map results to expected format for aggregation
+				const extracted_results = data.results.map((result) => {
 					const content =
 						result.text || result.summary || 'No content available';
-					const word_count = content.split(/\s+/).length;
-					total_word_count += word_count;
 
-					// Add to combined content
-					combined_content += `## ${result.title}\n\n`;
+					// Build rich content with metadata
+					let formatted_content = `## ${result.title}\n\n`;
 					if (result.author) {
-						combined_content += `**Author:** ${result.author}\n`;
+						formatted_content += `**Author:** ${result.author}\n`;
 					}
 					if (result.publishedDate) {
-						combined_content += `**Published:** ${result.publishedDate}\n`;
+						formatted_content += `**Published:** ${result.publishedDate}\n`;
 					}
 					if (result.score) {
-						combined_content += `**Similarity Score:** ${result.score.toFixed(
+						formatted_content += `**Similarity Score:** ${result.score.toFixed(
 							3,
 						)}\n`;
 					}
-					combined_content += `**URL:** ${result.url}\n\n`;
+					formatted_content += `**URL:** ${result.url}\n\n`;
 
 					if (result.highlights && result.highlights.length > 0) {
-						combined_content += `**Key Highlights:**\n`;
+						formatted_content += `**Key Highlights:**\n`;
 						for (const highlight of result.highlights) {
-							combined_content += `- ${highlight}\n`;
+							formatted_content += `- ${highlight}\n`;
 						}
-						combined_content += '\n';
+						formatted_content += '\n';
 					}
 
 					if (result.summary && result.text) {
-						combined_content += `**Summary:** ${result.summary}\n\n`;
-						combined_content += `**Content Preview:**\n${result.text.substring(
+						formatted_content += `**Summary:** ${result.summary}\n\n`;
+						formatted_content += `**Content Preview:**\n${result.text.substring(
 							0,
 							500,
 						)}${result.text.length > 500 ? '...' : ''}\n\n`;
 					} else {
-						combined_content += `${content.substring(0, 500)}${
+						formatted_content += `${content.substring(0, 500)}${
 							content.length > 500 ? '...' : ''
 						}\n\n`;
 					}
 
-					combined_content += '---\n\n';
-
-					// Add to raw contents
-					raw_contents.push({
+					return {
 						url: result.url,
-						content: content,
-					});
-				}
+						content: formatted_content,
+						title: result.title,
+					};
+				});
+
+				// Use base class aggregation - add header
+				const { combined_content, raw_contents, total_word_count } =
+					this.aggregate_content(extracted_results, true);
+
+				const enhanced_content = `# Similar Pages to ${target_url}\n\nFound ${data.results.length} similar pages:\n\n${combined_content}`;
+
+				// Additional metadata
+				const additional_metadata: Record<string, any> = {
+					title: `Similar pages to ${target_url}`,
+					word_count: total_word_count,
+					successful_extractions: data.results.length,
+					original_url: target_url,
+					requestId: data.requestId,
+				};
+
+				// Use base class metadata calculation
+				const metadata = this.calculate_metadata(
+					urls,
+					validated_depth,
+					additional_metadata,
+				);
 
 				return {
-					content: combined_content,
+					content: enhanced_content,
 					raw_contents,
-					metadata: {
-						title: `Similar pages to ${target_url}`,
-						word_count: total_word_count,
-						urls_processed: data.results.length,
-						successful_extractions: data.results.length,
-						extract_depth,
-						original_url: target_url,
-						requestId: data.requestId,
-					},
+					metadata,
 					source_provider: this.name,
 				};
 			} catch (error) {
-				if (error instanceof ProviderError) {
-					throw error;
-				}
-				throw new ProviderError(
-					ErrorType.API_ERROR,
-					`Failed to find similar pages: ${
-						error instanceof Error ? error.message : 'Unknown error'
-					}`,
-					this.name,
+				return this.error_handler.handle_unknown_error(
+					error,
+					'find similar pages',
 				);
 			}
 		};
 
-		return retry_with_backoff(process_request);
+		return this.execute_with_retry(process_request);
 	}
 }
