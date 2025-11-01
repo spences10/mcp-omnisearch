@@ -36,110 +36,129 @@ export class BraveSearchProvider implements SearchProvider {
 			this.name,
 		);
 
-		// Parse search operators from the query
-		const parsed_query = parse_search_operators(params.query);
-		const search_params = apply_search_operators(parsed_query);
-
 		const search_request = async () => {
 			try {
-				let query = sanitize_query(search_params.query);
-
-				// Build operator filters
-				const filters: string[] = [];
-
-				// Handle domain filters
-				const include_domains = [
-					...(params.include_domains ?? []),
-					...(search_params.include_domains ?? []),
-				];
-				if (include_domains.length) {
-					const domain_filter = include_domains
-						.map((domain) => `site:${domain}`)
-						.join(' OR ');
-					filters.push(`(${domain_filter})`);
-				}
-
-				const exclude_domains = [
-					...(params.exclude_domains ?? []),
-					...(search_params.exclude_domains ?? []),
-				];
-				if (exclude_domains.length) {
-					filters.push(
-						...exclude_domains.map((domain) => `-site:${domain}`),
+				// Check if query already contains operators - if so, use it directly
+				const has_operators =
+					/(?:site:|filetype:|ext:|intitle:|inurl:|inbody:|inpage:|lang:|loc:|before:|after:)/.test(
+						params.query,
 					);
-				}
 
-				// Add file type filter
-				if (search_params.file_type) {
-					filters.push(`filetype:${search_params.file_type}`);
-				}
+				let query: string;
 
-				// Add title filter
-				if (search_params.title_filter) {
-					filters.push(`intitle:${search_params.title_filter}`);
-				}
+				if (
+					has_operators &&
+					!params.include_domains?.length &&
+					!params.exclude_domains?.length
+				) {
+					// Use original query as-is to preserve operator semantics
+					query = sanitize_query(params.query);
+				} else {
+					// Parse and reconstruct only when needed (e.g., API parameters provided)
+					const parsed_query = parse_search_operators(params.query);
+					const search_params = apply_search_operators(parsed_query);
 
-				// Add URL filter
-				if (search_params.url_filter) {
-					filters.push(`inurl:${search_params.url_filter}`);
-				}
+					query = sanitize_query(search_params.query);
 
-				// Add body filter
-				if (search_params.body_filter) {
-					filters.push(`inbody:${search_params.body_filter}`);
-				}
+					// Build operator filters
+					const filters: string[] = [];
 
-				// Add page filter
-				if (search_params.page_filter) {
-					filters.push(`inpage:${search_params.page_filter}`);
-				}
+					// Handle domain filters from both parsed query and API parameters
+					const include_domains = [
+						...(params.include_domains ?? []),
+						...(search_params.include_domains ?? []),
+					];
+					if (include_domains.length) {
+						// Use simple space-separated format instead of OR with parentheses
+						filters.push(
+							...include_domains.map((domain) => `site:${domain}`),
+						);
+					}
 
-				// Add language filter
-				if (search_params.language) {
-					filters.push(`lang:${search_params.language}`);
-				}
+					const exclude_domains = [
+						...(params.exclude_domains ?? []),
+						...(search_params.exclude_domains ?? []),
+					];
+					if (exclude_domains.length) {
+						filters.push(
+							...exclude_domains.map((domain) => `-site:${domain}`),
+						);
+					}
 
-				// Add location filter
-				if (search_params.location) {
-					filters.push(`loc:${search_params.location}`);
-				}
+					// Add file type filter
+					if (search_params.file_type) {
+						filters.push(`filetype:${search_params.file_type}`);
+					}
 
-				// Add date filters
-				if (search_params.date_before) {
-					filters.push(`before:${search_params.date_before}`);
-				}
-				if (search_params.date_after) {
-					filters.push(`after:${search_params.date_after}`);
-				}
+					// Add title filter
+					if (search_params.title_filter) {
+						filters.push(`intitle:${search_params.title_filter}`);
+					}
 
-				// Add exact phrases
-				if (search_params.exact_phrases?.length) {
-					filters.push(
-						...search_params.exact_phrases.map(
-							(phrase) => `"${phrase}"`,
-						),
-					);
-				}
+					// Add URL filter
+					if (search_params.url_filter) {
+						filters.push(`inurl:${search_params.url_filter}`);
+					}
 
-				// Add force include terms
-				if (search_params.force_include_terms?.length) {
-					filters.push(
-						...search_params.force_include_terms.map(
-							(term) => `+${term}`,
-						),
-					);
-				}
+					// Add body filter
+					if (search_params.body_filter) {
+						filters.push(`inbody:${search_params.body_filter}`);
+					}
 
-				// Add exclude terms
-				if (search_params.exclude_terms?.length) {
-					filters.push(
-						...search_params.exclude_terms.map((term) => `-${term}`),
-					);
-				}
+					// Add page filter
+					if (search_params.page_filter) {
+						filters.push(`inpage:${search_params.page_filter}`);
+					}
 
-				// Combine query with filters
-				if (filters.length > 0) {
-					query = `${query} ${filters.join(' ')}`;
+					// Add language filter
+					if (search_params.language) {
+						filters.push(`lang:${search_params.language}`);
+					}
+
+					// Add location filter
+					if (search_params.location) {
+						filters.push(`loc:${search_params.location}`);
+					}
+
+					// Add date filters
+					if (search_params.date_before) {
+						filters.push(`before:${search_params.date_before}`);
+					}
+					if (search_params.date_after) {
+						filters.push(`after:${search_params.date_after}`);
+					}
+
+					// Add exact phrases
+					if (search_params.exact_phrases?.length) {
+						filters.push(
+							...search_params.exact_phrases.map(
+								(phrase) => `"${phrase}"`,
+							),
+						);
+					}
+
+					// Add force include terms
+					if (search_params.force_include_terms?.length) {
+						filters.push(
+							...search_params.force_include_terms.map(
+								(term) => `+${term}`,
+							),
+						);
+					}
+
+					// Add exclude terms
+					if (search_params.exclude_terms?.length) {
+						filters.push(
+							...search_params.exclude_terms.map(
+								(term) => `-${term}`,
+							),
+						);
+					}
+
+					// Combine query with filters
+					if (filters.length > 0) {
+						query = `${query} ${filters.join(' ')}`;
+					}
 				}
 
 				const query_params = new URLSearchParams({
