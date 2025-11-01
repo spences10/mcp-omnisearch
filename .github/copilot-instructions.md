@@ -27,6 +27,6 @@ not match the info here.**
 
 Run `pnpm changeset` then follow the prompts. Use this after having
 finished the task. Most of the time this is a patch release for
-`mcp-omnisearch`. Use a short and descriptive message. Always prefix the
-message with either `fix`, `feat`, `breaking`, or `chore` (most likely
-`fix` since you're mostly working on bugfixes).
+`mcp-omnisearch`. Use a short and descriptive message. Always prefix
+the message with either `fix`, `feat`, `breaking`, or `chore` (most
+likely `fix` since you're mostly working on bugfixes).

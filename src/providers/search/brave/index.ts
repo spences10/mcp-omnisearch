@@ -7,8 +7,6 @@ import {
 	SearchResult,
 } from '../../../common/types.js';
 import {
-	apply_search_operators,
-	parse_search_operators,
 	retry_with_backoff,
 	sanitize_query,
 	validate_api_key,
@@ -36,108 +34,32 @@ export class BraveSearchProvider implements SearchProvider {
 			this.name,
 		);
 
-		// Parse search operators from the query
-		const parsed_query = parse_search_operators(params.query);
-		const search_params = apply_search_operators(parsed_query);
-
 		const search_request = async () => {
 			try {
-				let query = sanitize_query(search_params.query);
+				// Use the original query as-is to preserve inline operators
+				// This ensures operators like site:, filetype:, etc. work as hard filters
+				let query = sanitize_query(params.query);
 
-				// Build operator filters
+				// Build operator filters only from params (not from query string)
 				const filters: string[] = [];
 
-				// Handle domain filters
-				const include_domains = [
-					...(params.include_domains ?? []),
-					...(search_params.include_domains ?? []),
-				];
-				if (include_domains.length) {
-					const domain_filter = include_domains
+				// Handle domain filters from params only (not from query operators)
+				if (params.include_domains?.length) {
+					const domain_filter = params.include_domains
 						.map((domain) => `site:${domain}`)
 						.join(' OR ');
 					filters.push(`(${domain_filter})`);
 				}
 
-				const exclude_domains = [
-					...(params.exclude_domains ?? []),
-					...(search_params.exclude_domains ?? []),
-				];
-				if (exclude_domains.length) {
+				if (params.exclude_domains?.length) {
 					filters.push(
-						...exclude_domains.map((domain) => `-site:${domain}`),
-					);
-				}
-
-				// Add file type filter
-				if (search_params.file_type) {
-					filters.push(`filetype:${search_params.file_type}`);
-				}
-
-				// Add title filter
-				if (search_params.title_filter) {
-					filters.push(`intitle:${search_params.title_filter}`);
-				}
-
-				// Add URL filter
-				if (search_params.url_filter) {
-					filters.push(`inurl:${search_params.url_filter}`);
-				}
-
-				// Add body filter
-				if (search_params.body_filter) {
-					filters.push(`inbody:${search_params.body_filter}`);
-				}
-
-				// Add page filter
-				if (search_params.page_filter) {
-					filters.push(`inpage:${search_params.page_filter}`);
-				}
-
-				// Add language filter
-				if (search_params.language) {
-					filters.push(`lang:${search_params.language}`);
-				}
-
-				// Add location filter
-				if (search_params.location) {
-					filters.push(`loc:${search_params.location}`);
-				}
-
-				// Add date filters
-				if (search_params.date_before) {
-					filters.push(`before:${search_params.date_before}`);
-				}
-				if (search_params.date_after) {
-					filters.push(`after:${search_params.date_after}`);
-				}
-
-				// Add exact phrases
-				if (search_params.exact_phrases?.length) {
-					filters.push(
-						...search_params.exact_phrases.map(
-							(phrase) => `"${phrase}"`,
+						...params.exclude_domains.map(
+							(domain) => `-site:${domain}`,
 						),
 					);
 				}
 
-				// Add force include terms
-				if (search_params.force_include_terms?.length) {
-					filters.push(
-						...search_params.force_include_terms.map(
-							(term) => `+${term}`,
-						),
-					);
-				}
-
-				// Add exclude terms
-				if (search_params.exclude_terms?.length) {
-					filters.push(
-						...search_params.exclude_terms.map((term) => `-${term}`),
-					);
-				}
-
-				// Combine query with filters
+				// Combine query with filters from params
 				if (filters.length > 0) {
 					query = `${query} ${filters.join(' ')}`;
 				}
