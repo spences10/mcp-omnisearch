@@ -1,5 +1,5 @@
 # Use Node.js 20 LTS Alpine for smallest image size
-FROM node:22-alpine
+FROM node:24-alpine
 
 # Set working directory
 WORKDIR /app
