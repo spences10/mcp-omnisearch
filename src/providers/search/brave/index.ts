@@ -25,6 +25,10 @@ interface BraveSearchResponse {
 	};
 }
 
+// Regex pattern to detect search operators in the query
+const SEARCH_OPERATORS_PATTERN =
+	/(?:site:|filetype:|ext:|intitle:|inurl:|inbody:|inpage:|lang:|loc:|before:|after:)/;
+
 export class BraveSearchProvider implements SearchProvider {
 	name = 'brave';
 	description =
@@ -39,10 +43,9 @@ export class BraveSearchProvider implements SearchProvider {
 		const search_request = async () => {
 			try {
 				// Check if query already contains operators - if so, use it directly
-				const has_operators =
-					/(?:site:|filetype:|ext:|intitle:|inurl:|inbody:|inpage:|lang:|loc:|before:|after:)/.test(
-						params.query,
-					);
+				const has_operators = SEARCH_OPERATORS_PATTERN.test(
+					params.query,
+				);
 
 				let query: string;
 
@@ -69,7 +72,8 @@ export class BraveSearchProvider implements SearchProvider {
 						...(search_params.include_domains ?? []),
 					];
 					if (include_domains.length) {
-						// Use simple space-separated format instead of OR with parentheses
+						// Use space-separated site: operators (Brave interprets multiple site: as OR)
+						// This is cleaner and more compatible than wrapping in parentheses
 						filters.push(
 							...include_domains.map((domain) => `site:${domain}`),
 						);
