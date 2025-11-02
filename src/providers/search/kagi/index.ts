@@ -7,8 +7,6 @@ import {
 	SearchResult,
 } from '../../../common/types.js';
 import {
-	apply_search_operators,
-	parse_search_operators,
 	retry_with_backoff,
 	sanitize_query,
 	validate_api_key,
@@ -39,117 +37,32 @@ export class KagiSearchProvider implements SearchProvider {
 			this.name,
 		);
 
-		// Parse search operators from the query
-		const parsed_query = parse_search_operators(params.query);
-		const search_params = apply_search_operators(parsed_query);
-
 		const search_request = async () => {
 			try {
-				let query = sanitize_query(search_params.query);
+				// Use the original query as-is to preserve inline operators
+				// This ensures operators like site:, filetype:, etc. work as hard filters
+				let query = sanitize_query(params.query);
 				const query_params = new URLSearchParams({
 					q: query,
 					limit: (params.limit ?? 10).toString(),
 				});
 
-				// Handle domain filters using query string operators
-				const include_domains = [
-					...(params.include_domains ?? []),
-					...(search_params.include_domains ?? []),
-				];
-				if (include_domains.length) {
-					const domain_filter = include_domains
+				// Handle domain filters from params only (not from query operators)
+				if (params.include_domains?.length) {
+					const domain_filter = params.include_domains
 						.map((domain) => `site:${domain}`)
 						.join(' OR ');
 					query = `${query} (${domain_filter})`;
 				}
 
-				const exclude_domains = [
-					...(params.exclude_domains ?? []),
-					...(search_params.exclude_domains ?? []),
-				];
-				if (exclude_domains.length) {
-					query = `${query} ${exclude_domains
+				if (params.exclude_domains?.length) {
+					query = `${query} ${params.exclude_domains
 						.map((domain) => `-site:${domain}`)
 						.join(' ')}`;
 				}
 
-				// Update query parameter with domain filters
+				// Update query parameter with domain filters from params
 				query_params.set('q', query);
-
-				// Add file type filter
-				if (search_params.file_type) {
-					query_params.append('file_type', search_params.file_type);
-				}
-
-				// Add time range filters
-				if (search_params.date_before || search_params.date_after) {
-					const time_range: string[] = [];
-					if (search_params.date_after) {
-						time_range.push(`after:${search_params.date_after}`);
-					}
-					if (search_params.date_before) {
-						time_range.push(`before:${search_params.date_before}`);
-					}
-					query_params.append('time_range', time_range.join(','));
-				}
-
-				// Add title and URL filters to the query
-				if (search_params.title_filter) {
-					query += ` intitle:${search_params.title_filter}`;
-					query_params.set('q', query);
-				}
-				if (search_params.url_filter) {
-					query += ` inurl:${search_params.url_filter}`;
-					query_params.set('q', query);
-				}
-
-				// Add body filter
-				if (search_params.body_filter) {
-					query += ` inbody:${search_params.body_filter}`;
-					query_params.set('q', query);
-				}
-
-				// Add page filter
-				if (search_params.page_filter) {
-					query += ` inpage:${search_params.page_filter}`;
-					query_params.set('q', query);
-				}
-
-				// Add language filter
-				if (search_params.language) {
-					query += ` lang:${search_params.language}`;
-					query_params.set('q', query);
-				}
-
-				// Add location filter
-				if (search_params.location) {
-					query += ` loc:${search_params.location}`;
-					query_params.set('q', query);
-				}
-
-				// Add exact phrases
-				if (search_params.exact_phrases?.length) {
-					query += ` ${search_params.exact_phrases
-						.map((phrase) => `"${phrase}"`)
-						.join(' ')}`;
-					query_params.set('q', query);
-				}
-
-				// Add force include terms
-				if (search_params.force_include_terms?.length) {
-					query += ` ${search_params.force_include_terms
-						.map((term) => `+${term}`)
-						.join(' ')}`;
-					query_params.set('q', query);
-				}
-
-				// Add exclude terms
-				if (search_params.exclude_terms?.length) {
-					query += ` ${search_params.exclude_terms
-						.map((term) => `-${term}`)
-						.join(' ')}`;
-					query_params.set('q', query);
-				}
 
 				const data = await http_json<
 					KagiSearchResponse & { message?: string }
