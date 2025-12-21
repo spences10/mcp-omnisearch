@@ -6,7 +6,10 @@ import {
 	ProcessingProvider,
 	SearchProvider,
 } from '../common/types.js';
-import { create_error_response } from '../common/utils.js';
+import {
+	create_error_response,
+	handle_large_result,
+} from '../common/utils.js';
 import type { UnifiedExaProcessingProvider } from '../providers/unified/exa_process.js';
 import type { UnifiedFirecrawlProcessingProvider } from '../providers/unified/firecrawl_process.js';
 
@@ -118,11 +121,15 @@ class ToolRegistry {
 							include_domains,
 							exclude_domains,
 						} as any);
+						const safe_results = handle_large_result(
+							results,
+							'web_search',
+						);
 						return {
 							content: [
 								{
 									type: 'text' as const,
-									text: JSON.stringify(results, null, 2),
+									text: JSON.stringify(safe_results, null, 2),
 								},
 							],
 						};
@@ -187,11 +194,15 @@ class ToolRegistry {
 								sort,
 							} as any,
 						);
+						const safe_results = handle_large_result(
+							results,
+							'github_search',
+						);
 						return {
 							content: [
 								{
 									type: 'text' as const,
-									text: JSON.stringify(results, null, 2),
+									text: JSON.stringify(safe_results, null, 2),
 								},
 							],
 						};
@@ -241,11 +252,15 @@ class ToolRegistry {
 							provider,
 							limit,
 						} as any);
+						const safe_results = handle_large_result(
+							results,
+							'ai_search',
+						);
 						return {
 							content: [
 								{
 									type: 'text' as const,
-									text: JSON.stringify(results, null, 2),
+									text: JSON.stringify(safe_results, null, 2),
 								},
 							],
 						};
@@ -304,11 +319,15 @@ class ToolRegistry {
 								extract_depth,
 								mode as any,
 							);
+						const safe_result = handle_large_result(
+							result,
+							'firecrawl_process',
+						);
 						return {
 							content: [
 								{
 									type: 'text' as const,
-									text: JSON.stringify(result, null, 2),
+									text: JSON.stringify(safe_result, null, 2),
 								},
 							],
 						};
@@ -361,11 +380,15 @@ class ToolRegistry {
 								extract_depth,
 								mode as any,
 							);
+						const safe_result = handle_large_result(
+							result,
+							'exa_process',
+						);
 						return {
 							content: [
 								{
 									type: 'text' as const,
-									text: JSON.stringify(result, null, 2),
+									text: JSON.stringify(safe_result, null, 2),
 								},
 							],
 						};
@@ -412,11 +435,15 @@ class ToolRegistry {
 							url,
 							extract_depth,
 						);
+						const safe_result = handle_large_result(
+							result,
+							provider.name,
+						);
 						return {
 							content: [
 								{
 									type: 'text' as const,
-									text: JSON.stringify(result, null, 2),
+									text: JSON.stringify(safe_result, null, 2),
 								},
 							],
 						};
@@ -451,11 +478,15 @@ class ToolRegistry {
 				async ({ content }) => {
 					try {
 						const result = await provider.enhance_content(content);
+						const safe_result = handle_large_result(
+							result,
+							provider.name,
+						);
 						return {
 							content: [
 								{
 									type: 'text' as const,
-									text: JSON.stringify(result, null, 2),
+									text: JSON.stringify(safe_result, null, 2),
 								},
 							],
 						};
