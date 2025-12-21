@@ -1,5 +1,12 @@
 # mcp-omnisearch
 
+## 0.0.19
+
+### Patch Changes
+
+- 81573f7: Large results saved to tmp with section index for LLM file
+  navigation
+
 ## 0.0.18
 
 ### Patch Changes
