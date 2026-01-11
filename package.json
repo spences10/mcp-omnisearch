@@ -1,6 +1,6 @@
 {
 	"name": "mcp-omnisearch",
-	"version": "0.0.19",
+	"version": "0.0.20",
 	"description": "MCP server for integrating Omnisearch with LLMs",
 	"mcpName": "io.github.spences10/mcp-omnisearch",
 	"type": "module",

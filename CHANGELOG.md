@@ -1,5 +1,12 @@
 # mcp-omnisearch
 
+## 0.0.20
+
+### Patch Changes
+
+- 57d7b65: fix: use picklist instead of union literals for proper JSON
+  Schema enum output
+
 ## 0.0.19
 
 ### Patch Changes
