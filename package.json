@@ -57,7 +57,7 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@changesets/cli": "^2.29.8",
-		"@types/node": "^25.0.2",
+		"@types/node": "^25.0.6",
 		"prettier": "^3.7.4",
 		"typescript": "^5.9.3"
 	},
