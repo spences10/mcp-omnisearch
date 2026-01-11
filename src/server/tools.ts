@@ -81,12 +81,7 @@ class ToolRegistry {
 					schema: v.object({
 						query: v.pipe(v.string(), v.description('Query')),
 						provider: v.pipe(
-							v.union([
-								v.literal('tavily'),
-								v.literal('brave'),
-								v.literal('kagi'),
-								v.literal('exa'),
-							]),
+							v.picklist(['tavily', 'brave', 'kagi', 'exa']),
 							v.description('Search provider'),
 						),
 						limit: v.optional(
@@ -161,11 +156,7 @@ class ToolRegistry {
 						query: v.pipe(v.string(), v.description('Query')),
 						search_type: v.optional(
 							v.pipe(
-								v.union([
-									v.literal('code'),
-									v.literal('repositories'),
-									v.literal('users'),
-								]),
+								v.picklist(['code', 'repositories', 'users']),
 								v.description('Search type (default: code)'),
 							),
 						),
@@ -174,11 +165,7 @@ class ToolRegistry {
 						),
 						sort: v.optional(
 							v.pipe(
-								v.union([
-									v.literal('stars'),
-									v.literal('forks'),
-									v.literal('updated'),
-								]),
+								v.picklist(['stars', 'forks', 'updated']),
 								v.description('Sort order (repositories only)'),
 							),
 						),
@@ -233,10 +220,10 @@ class ToolRegistry {
 					schema: v.object({
 						query: v.pipe(v.string(), v.description('Query')),
 						provider: v.pipe(
-							v.union([
-								v.literal('perplexity'),
-								v.literal('kagi_fastgpt'),
-								v.literal('exa_answer'),
+							v.picklist([
+								'perplexity',
+								'kagi_fastgpt',
+								'exa_answer',
 							]),
 							v.description('AI provider'),
 						),
@@ -294,18 +281,18 @@ class ToolRegistry {
 							v.description('URL(s)'),
 						),
 						mode: v.pipe(
-							v.union([
-								v.literal('scrape'),
-								v.literal('crawl'),
-								v.literal('map'),
-								v.literal('extract'),
-								v.literal('actions'),
+							v.picklist([
+								'scrape',
+								'crawl',
+								'map',
+								'extract',
+								'actions',
 							]),
 							v.description('Processing mode'),
 						),
 						extract_depth: v.optional(
 							v.pipe(
-								v.union([v.literal('basic'), v.literal('advanced')]),
+								v.picklist(['basic', 'advanced']),
 								v.description('Extraction depth'),
 							),
 						),
@@ -361,12 +348,12 @@ class ToolRegistry {
 							v.description('URL(s)'),
 						),
 						mode: v.pipe(
-							v.union([v.literal('contents'), v.literal('similar')]),
+							v.picklist(['contents', 'similar']),
 							v.description('Processing mode'),
 						),
 						extract_depth: v.optional(
 							v.pipe(
-								v.union([v.literal('basic'), v.literal('advanced')]),
+								v.picklist(['basic', 'advanced']),
 								v.description('Extraction depth'),
 							),
 						),
@@ -423,7 +410,7 @@ class ToolRegistry {
 						),
 						extract_depth: v.optional(
 							v.pipe(
-								v.union([v.literal('basic'), v.literal('advanced')]),
+								v.picklist(['basic', 'advanced']),
 								v.description('Extraction depth'),
 							),
 						),
