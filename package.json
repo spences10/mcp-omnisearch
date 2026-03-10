@@ -56,16 +56,16 @@
 	"author": "Scott Spence",
 	"license": "MIT",
 	"devDependencies": {
-		"@changesets/cli": "^2.29.8",
-		"@types/node": "^25.0.6",
-		"prettier": "^3.7.4",
+		"@changesets/cli": "^2.30.0",
+		"@types/node": "^25.4.0",
+		"prettier": "^3.8.1",
 		"typescript": "^5.9.3"
 	},
 	"dependencies": {
 		"@tmcp/adapter-valibot": "^0.1.5",
-		"@tmcp/transport-stdio": "^0.4.1",
+		"@tmcp/transport-stdio": "^0.4.2",
 		"octokit": "^5.0.5",
-		"tmcp": "^1.19.0",
+		"tmcp": "^1.19.3",
 		"valibot": "^1.2.0"
 	}
 }

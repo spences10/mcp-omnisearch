@@ -10,28 +10,28 @@ importers:
     dependencies:
       '@tmcp/adapter-valibot':
         specifier: ^0.1.5
-        version: 0.1.5(tmcp@1.19.2(typescript@5.9.3))(valibot@1.2.0(typescript@5.9.3))
+        version: 0.1.5(tmcp@1.19.3(typescript@5.9.3))(valibot@1.2.0(typescript@5.9.3))
       '@tmcp/transport-stdio':
-        specifier: ^0.4.1
-        version: 0.4.1(tmcp@1.19.2(typescript@5.9.3))
+        specifier: ^0.4.2
+        version: 0.4.2(tmcp@1.19.3(typescript@5.9.3))
       octokit:
         specifier: ^5.0.5
         version: 5.0.5
       tmcp:
-        specifier: ^1.19.0
-        version: 1.19.2(typescript@5.9.3)
+        specifier: ^1.19.3
+        version: 1.19.3(typescript@5.9.3)
       valibot:
         specifier: ^1.2.0
         version: 1.2.0(typescript@5.9.3)
     devDependencies:
       '@changesets/cli':
-        specifier: ^2.29.8
-        version: 2.30.0(@types/node@25.3.5)
+        specifier: ^2.30.0
+        version: 2.30.0(@types/node@25.4.0)
       '@types/node':
-        specifier: ^25.0.6
-        version: 25.3.5
+        specifier: ^25.4.0
+        version: 25.4.0
       prettier:
-        specifier: ^3.7.4
+        specifier: ^3.8.1
         version: 3.8.1
       typescript:
         specifier: ^5.9.3
@@ -244,8 +244,8 @@ packages:
       tmcp: ^1.17.0
       valibot: ^1.1.0
 
-  '@tmcp/transport-stdio@0.4.1':
-    resolution: {integrity: sha512-464x8HNrvjLLtKZsrFWUL13GnBFFtrNoWxnE0rHbcmQSYRqtS8WseWtQCYstj2Vcg9kRlIUVFGDIljGNP4/N4A==}
+  '@tmcp/transport-stdio@0.4.2':
+    resolution: {integrity: sha512-OLVLJzUXAKsCvenkjPf5ygli9ZcbEv3Lcei/ry+DB4T1NzvDc1oU3m41zYtHhAmbES1h6om3T9f/zonBSDFMRQ==}
     peerDependencies:
       tmcp: ^1.16.3
 
@@ -255,8 +255,8 @@ packages:
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
 
-  '@types/node@25.3.5':
-    resolution: {integrity: sha512-oX8xrhvpiyRCQkG1MFchB09f+cXftgIXb3a7UUa4Y3wpmZPw5tyZGTLWhlESOLq1Rq6oDlc8npVU2/9xiCuXMA==}
+  '@types/node@25.4.0':
+    resolution: {integrity: sha512-9wLpoeWuBlcbBpOY3XmzSTG3oscB6xjBEEtn+pYXTfhyXhIxC5FsBer2KTopBlvKEiW9l13po9fq+SJY/5lkhw==}
 
   '@valibot/to-json-schema@1.3.0':
     resolution: {integrity: sha512-82Vv6x7sOYhv5YmTRgSppSqj1nn2pMCk5BqCMGWYp0V/fq+qirrbGncqZAtZ09/lrO40ne/7z8ejwE728aVreg==}
@@ -556,8 +556,8 @@ packages:
     resolution: {integrity: sha512-wK0Ri4fOGjv/XPy8SBHZChl8CM7uMc5VML7SqiQ0zG7+J5Vr+RMQDoHa2CNT6KHUnTGIXH34UDMkPzAUyapBZg==}
     engines: {node: '>=8'}
 
-  tmcp@1.19.2:
-    resolution: {integrity: sha512-/AEG/jlzflGKqCKm7GNdhz50VtFlN+3vcnKd+iQJXcHdIPrpCRMolEj57SfgcXcfE2ouX7J6Q05gPKsS2NZhKg==}
+  tmcp@1.19.3:
+    resolution: {integrity: sha512-plz/TLKNFrdfQN32LjCTN6ULy6pynfGPgHcU7KGCI5dBrxQ9Mub99SmcYuzxEkLjJooQuOD3gosSwZEl1htOtw==}
 
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
@@ -634,7 +634,7 @@ snapshots:
     dependencies:
       '@changesets/types': 6.1.0
 
-  '@changesets/cli@2.30.0(@types/node@25.3.5)':
+  '@changesets/cli@2.30.0(@types/node@25.4.0)':
     dependencies:
       '@changesets/apply-release-plan': 7.1.0
       '@changesets/assemble-release-plan': 6.0.9
@@ -650,7 +650,7 @@ snapshots:
       '@changesets/should-skip-package': 0.1.2
       '@changesets/types': 6.1.0
       '@changesets/write': 0.4.0
-      '@inquirer/external-editor': 1.0.3(@types/node@25.3.5)
+      '@inquirer/external-editor': 1.0.3(@types/node@25.4.0)
       '@manypkg/get-packages': 1.1.3
       ansi-colors: 4.1.3
       enquirer: 2.4.1
@@ -748,12 +748,12 @@ snapshots:
       human-id: 4.1.3
       prettier: 2.8.8
 
-  '@inquirer/external-editor@1.0.3(@types/node@25.3.5)':
+  '@inquirer/external-editor@1.0.3(@types/node@25.4.0)':
     dependencies:
       chardet: 2.1.1
       iconv-lite: 0.7.2
     optionalDependencies:
-      '@types/node': 25.3.5
+      '@types/node': 25.4.0
 
   '@manypkg/find-root@1.1.0':
     dependencies:
@@ -934,22 +934,22 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@tmcp/adapter-valibot@0.1.5(tmcp@1.19.2(typescript@5.9.3))(valibot@1.2.0(typescript@5.9.3))':
+  '@tmcp/adapter-valibot@0.1.5(tmcp@1.19.3(typescript@5.9.3))(valibot@1.2.0(typescript@5.9.3))':
     dependencies:
       '@standard-schema/spec': 1.0.0
       '@valibot/to-json-schema': 1.3.0(valibot@1.2.0(typescript@5.9.3))
-      tmcp: 1.19.2(typescript@5.9.3)
+      tmcp: 1.19.3(typescript@5.9.3)
       valibot: 1.2.0(typescript@5.9.3)
 
-  '@tmcp/transport-stdio@0.4.1(tmcp@1.19.2(typescript@5.9.3))':
+  '@tmcp/transport-stdio@0.4.2(tmcp@1.19.3(typescript@5.9.3))':
     dependencies:
-      tmcp: 1.19.2(typescript@5.9.3)
+      tmcp: 1.19.3(typescript@5.9.3)
 
   '@types/aws-lambda@8.10.152': {}
 
   '@types/node@12.20.55': {}
 
-  '@types/node@25.3.5':
+  '@types/node@25.4.0':
     dependencies:
       undici-types: 7.18.2
 
@@ -1210,7 +1210,7 @@ snapshots:
 
   term-size@2.2.1: {}
 
-  tmcp@1.19.2(typescript@5.9.3):
+  tmcp@1.19.3(typescript@5.9.3):
     dependencies:
       '@standard-schema/spec': 1.1.0
       json-rpc-2.0: 1.7.1
