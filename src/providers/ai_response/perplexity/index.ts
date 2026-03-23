@@ -4,7 +4,11 @@ import {
 	SearchProvider,
 	SearchResult,
 } from '../../../common/types.js';
-import { validate_api_key } from '../../../common/utils.js';
+import {
+	apply_search_operators,
+	parse_search_operators,
+	validate_api_key,
+} from '../../../common/utils.js';
 import { config } from '../../../config/env.js';
 
 export interface PerplexityResponse {
@@ -43,9 +47,16 @@ export class PerplexityProvider implements SearchProvider {
 		'AI-powered response generation combining real-time web search with advanced language models. Best for complex queries requiring reasoning and synthesis across multiple sources. Features contextual memory for follow-up questions.';
 
 	async search(params: BaseSearchParams): Promise<SearchResult[]> {
+		// Parse search operators from the query
+		const parsed_query = parse_search_operators(params.query);
+		const search_params = apply_search_operators(parsed_query);
+
 		const response = await this.get_answer(params.query, {
 			include_sources: true,
 			max_tokens: params.limit || 1024,
+		}, {
+			after: search_params.date_after,
+			before: search_params.date_before,
 		});
 
 		// Return the full answer as a single result
@@ -89,6 +100,7 @@ export class PerplexityProvider implements SearchProvider {
 	async get_answer(
 		query: string,
 		options: PerplexityOptions = {},
+		date_filters?: { after?: string; before?: string },
 	): Promise<PerplexityResponse> {
 		const api_key = validate_api_key(
 			config.ai_response.perplexity.api_key,
@@ -128,6 +140,8 @@ export class PerplexityProvider implements SearchProvider {
 						],
 						temperature: 0.2,
 						max_tokens: 1024,
+						...(date_filters?.after && { search_after_date_filter: date_filters.after }),
+						...(date_filters?.before && { search_before_date_filter: date_filters.before }),
 					}),
 					signal: AbortSignal.timeout(
 						config.ai_response.perplexity.timeout,
