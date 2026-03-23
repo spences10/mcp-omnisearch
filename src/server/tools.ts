@@ -101,9 +101,9 @@ class ToolRegistry {
 						),
 						depth: v.optional(
 							v.pipe(
-								v.picklist(['standard', 'deep']),
+								v.picklist(['fast', 'standard', 'deep']),
 								v.description(
-									'Search depth (linkup only): standard (fast) or deep (thorough, 10x cost)',
+									'Search depth (linkup only): fast (sub-second), standard (default), deep (thorough, 10x cost)',
 								),
 							),
 						),
@@ -243,9 +243,9 @@ class ToolRegistry {
 						),
 						depth: v.optional(
 							v.pipe(
-								v.picklist(['standard', 'deep']),
+								v.picklist(['fast', 'standard', 'deep']),
 								v.description(
-									'Search depth (linkup_answer only): standard (fast) or deep (thorough, default)',
+									'Search depth (linkup_answer only): fast (sub-second), standard (moderate), deep (thorough, default)',
 								),
 							),
 						),

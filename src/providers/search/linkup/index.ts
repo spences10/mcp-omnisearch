@@ -30,7 +30,7 @@ export class LinkupSearchProvider implements SearchProvider {
 		'Agentic web search via Linkup. #1 factuality on SimpleQA benchmark. Returns structured search results with source content. Supports domain and date filtering.';
 
 	async search(
-		params: BaseSearchParams & { depth?: 'standard' | 'deep' },
+		params: BaseSearchParams & { depth?: 'fast' | 'standard' | 'deep' },
 	): Promise<SearchResult[]> {
 		const api_key = validate_api_key(
 			config.search.linkup.api_key,

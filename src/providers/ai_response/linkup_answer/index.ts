@@ -30,7 +30,7 @@ export class LinkupAnswerProvider implements SearchProvider {
 		'AI-powered sourced answers from Linkup deep search. Uses multi-step agentic retrieval for comprehensive, cited responses. Best for complex queries requiring synthesis across multiple sources.';
 
 	async search(
-		params: BaseSearchParams & { depth?: 'standard' | 'deep' },
+		params: BaseSearchParams & { depth?: 'fast' | 'standard' | 'deep' },
 	): Promise<SearchResult[]> {
 		const api_key = validate_api_key(
 			config.ai_response.linkup_answer.api_key,
