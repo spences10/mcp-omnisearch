@@ -80,36 +80,36 @@ export const config = {
 		firecrawl_scrape: {
 			api_key: FIRECRAWL_API_KEY,
 			base_url: FIRECRAWL_BASE_URL
-				? `${FIRECRAWL_BASE_URL}/v1/scrape`
-				: 'https://api.firecrawl.dev/v1/scrape',
+				? `${FIRECRAWL_BASE_URL}/v2/scrape`
+				: 'https://api.firecrawl.dev/v2/scrape',
 			timeout: 60000, // 60 seconds - web scraping can take longer
 		},
 		firecrawl_crawl: {
 			api_key: FIRECRAWL_API_KEY,
 			base_url: FIRECRAWL_BASE_URL
-				? `${FIRECRAWL_BASE_URL}/v1/crawl`
-				: 'https://api.firecrawl.dev/v1/crawl',
+				? `${FIRECRAWL_BASE_URL}/v2/crawl`
+				: 'https://api.firecrawl.dev/v2/crawl',
 			timeout: 120000, // 120 seconds - crawling can take even longer
 		},
 		firecrawl_map: {
 			api_key: FIRECRAWL_API_KEY,
 			base_url: FIRECRAWL_BASE_URL
-				? `${FIRECRAWL_BASE_URL}/v1/map`
-				: 'https://api.firecrawl.dev/v1/map',
+				? `${FIRECRAWL_BASE_URL}/v2/map`
+				: 'https://api.firecrawl.dev/v2/map',
 			timeout: 60000, // 60 seconds
 		},
 		firecrawl_extract: {
 			api_key: FIRECRAWL_API_KEY,
 			base_url: FIRECRAWL_BASE_URL
-				? `${FIRECRAWL_BASE_URL}/v1/extract`
-				: 'https://api.firecrawl.dev/v1/extract',
+				? `${FIRECRAWL_BASE_URL}/v2/extract`
+				: 'https://api.firecrawl.dev/v2/extract',
 			timeout: 60000, // 60 seconds
 		},
 		firecrawl_actions: {
 			api_key: FIRECRAWL_API_KEY,
 			base_url: FIRECRAWL_BASE_URL
-				? `${FIRECRAWL_BASE_URL}/v1/scrape`
-				: 'https://api.firecrawl.dev/v1/scrape',
+				? `${FIRECRAWL_BASE_URL}/v2/scrape`
+				: 'https://api.firecrawl.dev/v2/scrape',
 			timeout: 90000, // 90 seconds - actions can take longer
 		},
 		exa_contents: {
