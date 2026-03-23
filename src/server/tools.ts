@@ -99,6 +99,14 @@ class ToolRegistry {
 								v.description('Domains to exclude'),
 							),
 						),
+						depth: v.optional(
+							v.pipe(
+								v.picklist(['standard', 'deep']),
+								v.description(
+									'Search depth (linkup only): standard (fast) or deep (thorough, 10x cost)',
+								),
+							),
+						),
 					}),
 				},
 				async ({
@@ -107,6 +115,7 @@ class ToolRegistry {
 					limit,
 					include_domains,
 					exclude_domains,
+					depth,
 				}) => {
 					try {
 						const results = await this.web_search_provider!.search({
@@ -115,6 +124,7 @@ class ToolRegistry {
 							limit,
 							include_domains,
 							exclude_domains,
+							depth,
 						} as any);
 						const safe_results = handle_large_result(
 							results,
@@ -231,14 +241,23 @@ class ToolRegistry {
 						limit: v.optional(
 							v.pipe(v.number(), v.description('Result limit')),
 						),
+						depth: v.optional(
+							v.pipe(
+								v.picklist(['standard', 'deep']),
+								v.description(
+									'Search depth (linkup_answer only): standard (fast) or deep (thorough, default)',
+								),
+							),
+						),
 					}),
 				},
-				async ({ query, provider, limit }) => {
+				async ({ query, provider, limit, depth }) => {
 					try {
 						const results = await this.ai_search_provider!.search({
 							query,
 							provider,
 							limit,
+							depth,
 						} as any);
 						const safe_results = handle_large_result(
 							results,

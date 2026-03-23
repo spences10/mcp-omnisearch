@@ -29,7 +29,9 @@ export class LinkupAnswerProvider implements SearchProvider {
 	description =
 		'AI-powered sourced answers from Linkup deep search. Uses multi-step agentic retrieval for comprehensive, cited responses. Best for complex queries requiring synthesis across multiple sources.';
 
-	async search(params: BaseSearchParams): Promise<SearchResult[]> {
+	async search(
+		params: BaseSearchParams & { depth?: 'standard' | 'deep' },
+	): Promise<SearchResult[]> {
 		const api_key = validate_api_key(
 			config.ai_response.linkup_answer.api_key,
 			this.name,
@@ -39,7 +41,7 @@ export class LinkupAnswerProvider implements SearchProvider {
 			try {
 				const request_body: Record<string, any> = {
 					q: sanitize_query(params.query),
-					depth: 'deep',
+					depth: params.depth ?? 'deep',
 					outputType: 'sourcedAnswer',
 				};
 
