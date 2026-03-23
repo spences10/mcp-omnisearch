@@ -5,7 +5,9 @@ import {
 	SearchResult,
 } from '../../../common/types.js';
 import {
+	apply_search_operators,
 	handle_provider_error,
+	parse_search_operators,
 	retry_with_backoff,
 	sanitize_query,
 	validate_api_key,
@@ -36,6 +38,9 @@ export class LinkupSearchProvider implements SearchProvider {
 			config.search.linkup.api_key,
 			this.name,
 		);
+
+		const parsed_query = parse_search_operators(params.query);
+		const search_params = apply_search_operators(parsed_query);
 
 		const search_request = async () => {
 			try {
@@ -73,6 +78,17 @@ export class LinkupSearchProvider implements SearchProvider {
 							'Linkup: excludeDomains truncated to 50 entries',
 						);
 					}
+				}
+
+				if (search_params.date_after) {
+					request_body.fromDate = new Date(
+						search_params.date_after,
+					).toISOString();
+				}
+				if (search_params.date_before) {
+					request_body.toDate = new Date(
+						search_params.date_before,
+					).toISOString();
 				}
 
 				const data = await http_json<LinkupSearchResponse>(
