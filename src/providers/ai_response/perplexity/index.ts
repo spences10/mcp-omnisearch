@@ -25,7 +25,7 @@ export interface PerplexityResponse {
 }
 
 export interface PerplexityOptions {
-	model?: 'sonar-pro' | 'sonar' | 'sonar-reasoning' | 'r1-1776';
+	model?: 'sonar-pro' | 'sonar' | 'sonar-reasoning-pro' | 'sonar-deep-research';
 	max_tokens?: number;
 	temperature?: number;
 	include_sources?: boolean;
