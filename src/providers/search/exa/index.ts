@@ -5,7 +5,9 @@ import {
 	SearchResult,
 } from '../../../common/types.js';
 import {
+	apply_search_operators,
 	handle_provider_error,
+	parse_search_operators,
 	retry_with_backoff,
 	sanitize_query,
 	validate_api_key,
@@ -24,6 +26,8 @@ interface ExaSearchRequest {
 	};
 	category?: string;
 	useAutoprompt?: boolean;
+	startPublishedDate?: string;
+	endPublishedDate?: string;
 }
 
 interface ExaSearchResult {
@@ -56,6 +60,10 @@ export class ExaSearchProvider implements SearchProvider {
 			this.name,
 		);
 
+		// Parse search operators from the query
+		const parsed_query = parse_search_operators(params.query);
+		const search_params = apply_search_operators(parsed_query);
+
 		const search_request = async () => {
 			try {
 				const request_body: ExaSearchRequest = {
@@ -68,6 +76,14 @@ export class ExaSearchProvider implements SearchProvider {
 						livecrawl: 'fallback',
 					},
 				};
+
+				// Add date filtering from parsed search operators
+				if (search_params.date_after) {
+					request_body.startPublishedDate = `${search_params.date_after}T00:00:00.000Z`;
+				}
+				if (search_params.date_before) {
+					request_body.endPublishedDate = `${search_params.date_before}T00:00:00.000Z`;
+				}
 
 				// Add domain filtering if provided
 				if (
