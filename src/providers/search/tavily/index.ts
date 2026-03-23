@@ -15,6 +15,7 @@ import {
 import { config } from '../../../config/env.js';
 
 interface TavilySearchResponse {
+	answer?: string;
 	results: {
 		title: string;
 		url: string;
@@ -49,7 +50,16 @@ export class TavilySearchProvider implements SearchProvider {
 					exclude_domains: params.exclude_domains ?? [],
 					search_depth: 'basic',
 					topic: 'general',
+					include_answer: 'basic',
 				};
+
+				// Add date filtering from parsed search operators
+				if (search_params.date_after) {
+					request_body.start_date = search_params.date_after;
+				}
+				if (search_params.date_before) {
+					request_body.end_date = search_params.date_before;
+				}
 
 				const data = await http_json<
 					TavilySearchResponse & { message?: string }
@@ -62,13 +72,29 @@ export class TavilySearchProvider implements SearchProvider {
 					body: JSON.stringify(request_body),
 				});
 
-				return (data.results || []).map((result) => ({
-					title: result.title,
-					url: result.url,
-					snippet: result.content,
-					score: result.score,
-					source_provider: this.name,
-				}));
+				const search_results: SearchResult[] = [];
+
+				if (data.answer) {
+					search_results.push({
+						title: 'Tavily AI Answer',
+						url: 'https://tavily.com',
+						snippet: data.answer,
+						score: 1.0,
+						source_provider: this.name,
+					});
+				}
+
+				search_results.push(
+					...(data.results || []).map((result) => ({
+						title: result.title,
+						url: result.url,
+						snippet: result.content,
+						score: result.score,
+						source_provider: this.name,
+					})),
+				);
+
+				return search_results;
 			} catch (error) {
 				handle_provider_error(
 					error,
