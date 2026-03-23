@@ -23,7 +23,6 @@ interface ExaSearchRequest {
 		livecrawl?: 'always' | 'fallback' | 'preferred';
 	};
 	category?: string;
-	useAutoprompt?: boolean;
 }
 
 interface ExaSearchResult {
@@ -40,7 +39,6 @@ interface ExaSearchResult {
 
 interface ExaSearchResponse {
 	requestId: string;
-	autopromptString?: string;
 	resolvedSearchType: string;
 	results: ExaSearchResult[];
 }
@@ -62,7 +60,6 @@ export class ExaSearchProvider implements SearchProvider {
 					query: sanitize_query(params.query),
 					type: 'auto', // Let Exa choose between neural and keyword search
 					numResults: params.limit ?? 10,
-					useAutoprompt: true,
 					contents: {
 						text: { maxCharacters: 3000 },
 						livecrawl: 'fallback',
@@ -110,7 +107,6 @@ export class ExaSearchProvider implements SearchProvider {
 						author: result.author,
 						publishedDate: result.publishedDate,
 						highlights: result.highlights,
-						autopromptString: data.autopromptString,
 						resolvedSearchType: data.resolvedSearchType,
 					},
 				}));

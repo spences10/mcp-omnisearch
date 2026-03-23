@@ -18,7 +18,6 @@ interface ExaAnswerRequest {
 	livecrawl?: 'always' | 'fallback' | 'preferred';
 	includeDomains?: string[];
 	excludeDomains?: string[];
-	useAutoprompt?: boolean;
 }
 
 interface ExaAnswerResponse {
@@ -51,7 +50,6 @@ export class ExaAnswerProvider implements SearchProvider {
 					query: sanitize_query(params.query),
 					type: 'auto',
 					livecrawl: 'fallback',
-					useAutoprompt: true,
 				};
 
 				// Add domain filtering if provided
