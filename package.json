@@ -59,7 +59,7 @@
 		"@changesets/cli": "^2.30.0",
 		"@types/node": "^25.4.0",
 		"prettier": "^3.8.1",
-		"typescript": "^5.9.3"
+		"typescript": "^6.0.0"
 	},
 	"dependencies": {
 		"@tmcp/adapter-valibot": "^0.1.5",
