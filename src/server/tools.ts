@@ -81,7 +81,7 @@ class ToolRegistry {
 					schema: v.object({
 						query: v.pipe(v.string(), v.description('Query')),
 						provider: v.pipe(
-							v.picklist(['tavily', 'brave', 'kagi', 'exa']),
+							v.picklist(['tavily', 'brave', 'kagi', 'exa', 'linkup']),
 							v.description('Search provider'),
 						),
 						limit: v.optional(
@@ -224,6 +224,7 @@ class ToolRegistry {
 								'perplexity',
 								'kagi_fastgpt',
 								'exa_answer',
+								'linkup_answer',
 							]),
 							v.description('AI provider'),
 						),

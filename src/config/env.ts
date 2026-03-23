@@ -15,6 +15,9 @@ export const JINA_AI_API_KEY = process.env.JINA_AI_API_KEY;
 export const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY;
 export const FIRECRAWL_BASE_URL = process.env.FIRECRAWL_BASE_URL;
 
+// Linkup API key
+export const LINKUP_API_KEY = process.env.LINKUP_API_KEY;
+
 // Provider configuration
 export const config = {
 	search: {
@@ -43,6 +46,11 @@ export const config = {
 			base_url: 'https://api.exa.ai',
 			timeout: 30000, // 30 seconds
 		},
+		linkup: {
+			api_key: LINKUP_API_KEY,
+			base_url: 'https://api.linkup.so/v1',
+			timeout: 30000, // 30 seconds
+		},
 	},
 	ai_response: {
 		perplexity: {
@@ -59,6 +67,11 @@ export const config = {
 			api_key: EXA_API_KEY,
 			base_url: 'https://api.exa.ai',
 			timeout: 30000, // 30 seconds
+		},
+		linkup_answer: {
+			api_key: LINKUP_API_KEY,
+			base_url: 'https://api.linkup.so/v1',
+			timeout: 60000, // 60 seconds - deep search can take longer
 		},
 	},
 	processing: {
@@ -122,6 +135,11 @@ export const config = {
 			base_url: 'https://api.exa.ai',
 			timeout: 30000, // 30 seconds
 		},
+		linkup_fetch: {
+			api_key: LINKUP_API_KEY,
+			base_url: 'https://api.linkup.so/v1',
+			timeout: 30000, // 30 seconds
+		},
 	},
 	enhancement: {
 		kagi_enrichment: {
@@ -166,6 +184,9 @@ export const validate_config = () => {
 
 	if (!EXA_API_KEY) missing_keys.push('EXA_API_KEY');
 	else available_keys.push('EXA_API_KEY');
+
+	if (!LINKUP_API_KEY) missing_keys.push('LINKUP_API_KEY');
+	else available_keys.push('LINKUP_API_KEY');
 
 	// Log available keys
 	if (available_keys.length > 0) {

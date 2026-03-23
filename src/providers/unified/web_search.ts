@@ -8,9 +8,10 @@ import {
 import { BraveSearchProvider } from '../search/brave/index.js';
 import { ExaSearchProvider } from '../search/exa/index.js';
 import { KagiSearchProvider } from '../search/kagi/index.js';
+import { LinkupSearchProvider } from '../search/linkup/index.js';
 import { TavilySearchProvider } from '../search/tavily/index.js';
 
-export type WebSearchProvider = 'tavily' | 'brave' | 'kagi' | 'exa';
+export type WebSearchProvider = 'tavily' | 'brave' | 'kagi' | 'exa' | 'linkup';
 
 export interface UnifiedWebSearchParams extends BaseSearchParams {
 	provider: WebSearchProvider;
@@ -19,7 +20,7 @@ export interface UnifiedWebSearchParams extends BaseSearchParams {
 export class UnifiedWebSearchProvider implements SearchProvider {
 	name = 'web_search';
 	description =
-		'Search the web. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic). Brave/Kagi support query operators like site:, filetype:, lang:, etc.';
+		'Search the web. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), linkup (agentic/factuality). Brave/Kagi support query operators like site:, filetype:, lang:, etc.';
 
 	private providers: Map<WebSearchProvider, SearchProvider> =
 		new Map();
@@ -29,6 +30,7 @@ export class UnifiedWebSearchProvider implements SearchProvider {
 		this.providers.set('brave', new BraveSearchProvider());
 		this.providers.set('kagi', new KagiSearchProvider());
 		this.providers.set('exa', new ExaSearchProvider());
+		this.providers.set('linkup', new LinkupSearchProvider());
 	}
 
 	async search(

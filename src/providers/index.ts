@@ -1,6 +1,7 @@
 import { JinaGroundingProvider } from './enhancement/jina_grounding/index.js';
 import { KagiEnrichmentProvider } from './enhancement/kagi_enrichment/index.js';
 import { KagiSummarizerProvider } from './processing/kagi_summarizer/index.js';
+import { LinkupFetchProvider } from './processing/linkup_fetch/index.js';
 import { TavilyExtractProvider } from './processing/tavily_extract/index.js';
 import { UnifiedAISearchProvider } from './unified/ai_search.js';
 import { UnifiedExaProcessProvider } from './unified/exa_process.js';
@@ -27,7 +28,8 @@ export const initialize_providers = () => {
 		is_api_key_valid(config.search.tavily.api_key, 'tavily') ||
 		is_api_key_valid(config.search.brave.api_key, 'brave') ||
 		is_api_key_valid(config.search.kagi.api_key, 'kagi') ||
-		is_api_key_valid(config.search.exa.api_key, 'exa');
+		is_api_key_valid(config.search.exa.api_key, 'exa') ||
+		is_api_key_valid(config.search.linkup.api_key, 'linkup');
 
 	if (has_web_search) {
 		register_web_search_provider(new UnifiedWebSearchProvider());
@@ -53,6 +55,10 @@ export const initialize_providers = () => {
 		is_api_key_valid(
 			config.ai_response.exa_answer.api_key,
 			'exa_answer',
+		) ||
+		is_api_key_valid(
+			config.ai_response.linkup_answer.api_key,
+			'linkup_answer',
 		);
 
 	if (has_ai_search) {
@@ -120,6 +126,15 @@ export const initialize_providers = () => {
 		)
 	) {
 		register_processing_provider(new TavilyExtractProvider());
+	}
+
+	if (
+		is_api_key_valid(
+			config.processing.linkup_fetch.api_key,
+			'linkup_fetch',
+		)
+	) {
+		register_processing_provider(new LinkupFetchProvider());
 	}
 
 	// Initialize enhancement providers
