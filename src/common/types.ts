@@ -35,20 +35,6 @@ export interface ProcessingResult {
 	source_provider: string;
 }
 
-export interface EnhancementResult {
-	original_content: string;
-	enhanced_content: string;
-	enhancements: {
-		type: string;
-		description: string;
-	}[];
-	sources?: Array<{
-		title: string;
-		url: string;
-	}>;
-	source_provider: string;
-}
-
 // Provider interfaces
 export interface SearchProvider {
 	search(params: BaseSearchParams): Promise<SearchResult[]>;
@@ -61,12 +47,6 @@ export interface ProcessingProvider {
 		url: string | string[],
 		extract_depth?: 'basic' | 'advanced',
 	): Promise<ProcessingResult>;
-	name: string;
-	description: string;
-}
-
-export interface EnhancementProvider {
-	enhance_content(content: string): Promise<EnhancementResult>;
 	name: string;
 	description: string;
 }

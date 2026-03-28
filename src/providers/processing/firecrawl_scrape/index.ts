@@ -1,10 +1,13 @@
+import { handle_provider_error } from '../../../common/errors.js';
 import {
-	aggregate_url_results,
 	make_firecrawl_request,
 	validate_firecrawl_response,
-	validate_firecrawl_urls,
-	type ProcessedUrlResult,
 } from '../../../common/firecrawl_utils.js';
+import {
+	aggregate_url_results,
+	type ProcessedUrlResult,
+} from '../../../common/results.js';
+import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	ErrorType,
 	ProcessingProvider,
@@ -12,10 +15,9 @@ import {
 	ProviderError,
 } from '../../../common/types.js';
 import {
-	handle_provider_error,
-	retry_with_backoff,
 	validate_api_key,
-} from '../../../common/utils.js';
+	validate_processing_urls,
+} from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
 interface FirecrawlScrapeResponse {
@@ -50,7 +52,7 @@ export class FirecrawlScrapeProvider implements ProcessingProvider {
 		url: string | string[],
 		extract_depth: 'basic' | 'advanced' = 'basic',
 	): Promise<ProcessingResult> {
-		const urls = validate_firecrawl_urls(url, this.name);
+		const urls = validate_processing_urls(url, this.name);
 
 		const scrape_request = async () => {
 			const api_key = validate_api_key(

@@ -1,16 +1,16 @@
-import { http_json } from '../../../common/http.js';
-import {
-	EnhancementProvider,
-	EnhancementResult,
-	ErrorType,
-	ProviderError,
-} from '../../../common/types.js';
 import {
 	handle_provider_error,
-	retry_with_backoff,
 	sanitize_query,
-	validate_api_key,
-} from '../../../common/utils.js';
+} from '../../../common/errors.js';
+import { http_json } from '../../../common/http.js';
+import { retry_with_backoff } from '../../../common/retry.js';
+import {
+	ErrorType,
+	ProviderError,
+	SearchProvider,
+	SearchResult,
+} from '../../../common/types.js';
+import { validate_api_key } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
 export interface EnrichmentResponse {
@@ -26,29 +26,32 @@ export interface EnrichmentResponse {
 	};
 }
 
-export class KagiEnrichmentProvider implements EnhancementProvider {
+export class KagiEnrichmentSearchProvider implements SearchProvider {
 	name = 'kagi_enrichment';
 	description =
-		'Provides supplementary content from specialized indexes (Teclis for web, TinyGem for news). Ideal for discovering non-mainstream results and enriching content with specialized knowledge.';
+		'Search specialized indexes (Teclis for web, TinyGem for news). Ideal for discovering non-mainstream results and supplementary knowledge.';
 
-	async enhance_content(content: string): Promise<EnhancementResult> {
+	async search(params: {
+		query: string;
+		limit?: number;
+	}): Promise<SearchResult[]> {
 		const api_key = validate_api_key(
 			config.enhancement.kagi_enrichment.api_key,
 			this.name,
 		);
 
+		const query = sanitize_query(params.query);
+		const limit = params.limit ?? 5;
+
 		const enrich_request = async () => {
 			try {
-				// Try both web and news endpoints
 				const [webData, newsData] = await Promise.all([
 					http_json<EnrichmentResponse & { message?: string }>(
 						this.name,
 						`https://kagi.com/api/v0/enrich/web?${new URLSearchParams(
 							{
-								q: sanitize_query(
-									'artificial intelligence software development',
-								),
-								limit: '5',
+								q: query,
+								limit: String(limit),
 							},
 						)}`,
 						{
@@ -66,10 +69,8 @@ export class KagiEnrichmentProvider implements EnhancementProvider {
 						this.name,
 						`https://kagi.com/api/v0/enrich/news?${new URLSearchParams(
 							{
-								q: sanitize_query(
-									'artificial intelligence code generation testing',
-								),
-								limit: '5',
+								q: query,
+								limit: String(limit),
 							},
 						)}`,
 						{
@@ -93,51 +94,22 @@ export class KagiEnrichmentProvider implements EnhancementProvider {
 					);
 				}
 
-				// Combine and filter results
-				const allData = [...webData.data, ...newsData.data].filter(
-					(result) =>
-						// Filter for results about software/development/AI
-						result.snippet?.toLowerCase().includes('software') ||
-						result.snippet?.toLowerCase().includes('develop') ||
-						result.snippet?.toLowerCase().includes('programming') ||
-						result.snippet?.toLowerCase().includes('code') ||
-						result.snippet
-							?.toLowerCase()
-							.includes('artificial intelligence') ||
-						result.snippet?.toLowerCase().includes('ai'),
-				);
+				const allData = [...webData.data, ...newsData.data];
 
-				// Clean and combine snippets
-				const enhanced_content = allData
-					.map((result) => result.snippet)
-					.filter(Boolean)
-					.map((snippet) =>
-						// Fix HTML entities
-						snippet
-							.replace(/&#39;/g, "'")
+				return allData
+					.map((result) => ({
+						title: result.title,
+						url: result.url,
+						snippet: result.snippet
+							?.replace(/&#39;/g, "'")
 							.replace(/&quot;/g, '"')
 							.replace(/&amp;/g, '&')
 							.replace(/&lt;/g, '<')
 							.replace(/&gt;/g, '>'),
-					)
-					.join('\n\n');
-
-				return {
-					original_content: content,
-					enhanced_content,
-					enhancements: [
-						{
-							type: 'content_enrichment',
-							description:
-								'Added supplementary information from Teclis (web) and TinyGem (news) specialized indexes',
-						},
-					],
-					sources: allData.map((result) => ({
-						title: result.title,
-						url: result.url,
-					})),
-					source_provider: this.name,
-				};
+						score: result.rank ? 1 / result.rank : undefined,
+						source_provider: this.name,
+					}))
+					.filter((r) => r.title && r.url && r.snippet);
 			} catch (error) {
 				handle_provider_error(error, this.name, 'enrich content');
 			}

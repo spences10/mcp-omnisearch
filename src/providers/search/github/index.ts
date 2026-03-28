@@ -1,4 +1,5 @@
 import { Octokit } from 'octokit';
+import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	BaseSearchParams,
 	ErrorType,
@@ -6,10 +7,7 @@ import {
 	SearchProvider,
 	SearchResult,
 } from '../../../common/types.js';
-import {
-	retry_with_backoff,
-	validate_api_key,
-} from '../../../common/utils.js';
+import { validate_api_key } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
 // Interface for individual code search result item from GitHub API

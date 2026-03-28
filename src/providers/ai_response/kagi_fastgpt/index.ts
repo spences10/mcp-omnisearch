@@ -4,7 +4,7 @@ import {
 	SearchProvider,
 	SearchResult,
 } from '../../../common/types.js';
-import { validate_api_key } from '../../../common/utils.js';
+import { validate_api_key } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
 export interface KagiFastGPTResponse {
