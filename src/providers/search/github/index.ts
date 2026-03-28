@@ -24,10 +24,10 @@ interface GitHubCodeSearchResultItem {
 		html_url: string;
 	};
 	text_matches?: {
-		object_url: string;
-		object_type: string;
-		property: string;
-		fragment: string;
+		object_url?: string;
+		object_type?: string | null;
+		property?: string;
+		fragment?: string;
 	}[];
 }
 
