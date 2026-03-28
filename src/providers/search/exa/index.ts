@@ -20,10 +20,8 @@ interface ExaSearchRequest {
 	excludeDomains?: string[];
 	contents?: {
 		text?: { maxCharacters?: number };
-		livecrawl?: 'always' | 'fallback' | 'preferred';
 	};
 	category?: string;
-	useAutoprompt?: boolean;
 }
 
 interface ExaSearchResult {
@@ -62,10 +60,8 @@ export class ExaSearchProvider implements SearchProvider {
 					query: sanitize_query(params.query),
 					type: 'auto', // Let Exa choose between neural and keyword search
 					numResults: params.limit ?? 10,
-					useAutoprompt: true,
 					contents: {
 						text: { maxCharacters: 3000 },
-						livecrawl: 'fallback',
 					},
 				};
 

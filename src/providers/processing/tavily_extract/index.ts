@@ -17,12 +17,12 @@ interface TavilyExtractResponse {
 	results: {
 		url: string;
 		raw_content: string;
-		images?: {
-			url: string;
-			alt_text?: string;
-		}[];
+		images?: string[];
 	}[];
-	failed_results: string[];
+	failed_results: {
+		url: string;
+		error: string;
+	}[];
 	response_time: number;
 }
 
@@ -92,7 +92,7 @@ export class TavilyExtractProvider implements ProcessingProvider {
 				// Include any failed URLs in metadata
 				const failed_urls =
 					data.failed_results.length > 0
-						? data.failed_results
+						? data.failed_results.map((f) => f.url)
 						: undefined;
 
 				return {
