@@ -17,7 +17,6 @@ interface ExaContentsRequest {
 	text?: boolean;
 	highlights?: boolean;
 	summary?: boolean;
-	livecrawl?: 'always' | 'fallback' | 'preferred';
 }
 
 interface ExaContentResult {
@@ -77,8 +76,6 @@ export class ExaContentsProvider implements ProcessingProvider {
 					text: true,
 					highlights: extract_depth === 'advanced',
 					summary: extract_depth === 'advanced',
-					livecrawl:
-						extract_depth === 'advanced' ? 'preferred' : 'fallback',
 				};
 
 				const data = await http_json<ExaContentsResponse>(

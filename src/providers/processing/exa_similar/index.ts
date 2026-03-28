@@ -20,7 +20,6 @@ interface ExaSimilarRequest {
 		text?: { maxCharacters?: number };
 		highlights?: boolean;
 		summary?: boolean;
-		livecrawl?: 'always' | 'fallback' | 'preferred';
 	};
 	includeDomains?: string[];
 	excludeDomains?: string[];
@@ -83,8 +82,6 @@ export class ExaSimilarProvider implements ProcessingProvider {
 						},
 						highlights: extract_depth === 'advanced',
 						summary: extract_depth === 'advanced',
-						livecrawl:
-							extract_depth === 'advanced' ? 'preferred' : 'fallback',
 					},
 				};
 

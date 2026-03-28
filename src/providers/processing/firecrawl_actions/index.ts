@@ -40,7 +40,13 @@ interface FirecrawlActionsResponse {
 }
 
 // Define the action types
-type ActionType = 'click' | 'type' | 'scroll' | 'wait' | 'select';
+type ActionType =
+	| 'click'
+	| 'write'
+	| 'scroll'
+	| 'wait'
+	| 'executeJavascript'
+	| 'screenshot';
 
 interface Action {
 	type: ActionType;
@@ -48,8 +54,9 @@ interface Action {
 	text?: string;
 	x?: number;
 	y?: number;
-	duration?: number;
-	value?: string;
+	milliseconds?: number;
+	direction?: 'up' | 'down';
+	script?: string;
 }
 
 export class FirecrawlActionsProvider implements ProcessingProvider {
@@ -78,23 +85,22 @@ export class FirecrawlActionsProvider implements ProcessingProvider {
 				const actions: Action[] =
 					extract_depth === 'advanced'
 						? [
-								{ type: 'wait', duration: 2000 }, // Wait for initial page load
-								{ type: 'scroll', duration: 1000 }, // Scroll down
-								{ type: 'wait', duration: 1000 }, // Wait for content to load
-								{ type: 'scroll', duration: 1000 }, // Scroll down more
-								{ type: 'wait', duration: 1000 }, // Wait for content to load
-								// Click on "Read more" or "Show more" buttons if they exist
+								{ type: 'wait', milliseconds: 2000 },
+								{ type: 'scroll', direction: 'down' },
+								{ type: 'wait', milliseconds: 1000 },
+								{ type: 'scroll', direction: 'down' },
+								{ type: 'wait', milliseconds: 1000 },
 								{
 									type: 'click',
 									selector:
 										'button:contains("Read more"), button:contains("Show more"), a:contains("Read more"), a:contains("Show more")',
 								},
-								{ type: 'wait', duration: 2000 }, // Wait for content to expand
+								{ type: 'wait', milliseconds: 2000 },
 							]
 						: [
-								{ type: 'wait', duration: 2000 }, // Wait for initial page load
-								{ type: 'scroll', duration: 1000 }, // Scroll down once
-								{ type: 'wait', duration: 1000 }, // Wait for content to load
+								{ type: 'wait', milliseconds: 2000 },
+								{ type: 'scroll', direction: 'down' },
+								{ type: 'wait', milliseconds: 1000 },
 							];
 
 				// Start the actions
@@ -106,44 +112,7 @@ export class FirecrawlActionsProvider implements ProcessingProvider {
 						{
 							url: actions_url,
 							formats: ['markdown', 'screenshot'],
-							actions: actions.map((action) => {
-								// Convert our action format to Firecrawl's action format
-								switch (action.type) {
-									case 'wait':
-										return {
-											type: 'wait',
-											milliseconds: action.duration || 1000,
-											selector: action.selector,
-										};
-									case 'scroll':
-										return {
-											type: 'scroll',
-											// Firecrawl might use different parameters for scroll
-											// Adjust as needed based on their documentation
-										};
-									case 'click':
-										return {
-											type: 'click',
-											selector: action.selector,
-											x: action.x,
-											y: action.y,
-										};
-									case 'type':
-										return {
-											type: 'type',
-											selector: action.selector,
-											text: action.text || '',
-										};
-									case 'select':
-										return {
-											type: 'select',
-											selector: action.selector,
-											value: action.value || '',
-										};
-									default:
-										return action;
-								}
-							}),
+							actions: actions,
 						},
 						config.processing.firecrawl_actions.timeout,
 					);
@@ -192,14 +161,16 @@ export class FirecrawlActionsProvider implements ProcessingProvider {
 							switch (action.type) {
 								case 'click':
 									return `${index + 1}. Click on ${action.selector || `coordinates (${action.x}, ${action.y})`}`;
-								case 'type':
-									return `${index + 1}. Type "${action.text}" ${action.selector ? `into ${action.selector}` : ''}`;
+								case 'write':
+									return `${index + 1}. Write "${action.text}" ${action.selector ? `into ${action.selector}` : ''}`;
 								case 'scroll':
-									return `${index + 1}. Scroll ${action.duration ? `for ${action.duration}ms` : ''}`;
+									return `${index + 1}. Scroll ${action.direction || 'down'}`;
 								case 'wait':
-									return `${index + 1}. Wait ${action.duration ? `for ${action.duration}ms` : ''}`;
-								case 'select':
-									return `${index + 1}. Select "${action.value}" from ${action.selector}`;
+									return `${index + 1}. Wait ${action.milliseconds ? `for ${action.milliseconds}ms` : ''}`;
+								case 'executeJavascript':
+									return `${index + 1}. Execute JavaScript`;
+								case 'screenshot':
+									return `${index + 1}. Take screenshot`;
 								default:
 									return `${index + 1}. Perform ${action.type} action`;
 							}

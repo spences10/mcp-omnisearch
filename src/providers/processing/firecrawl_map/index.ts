@@ -16,9 +16,14 @@ import {
 } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
+interface FirecrawlMapLink {
+	url: string;
+	title?: string;
+}
+
 interface FirecrawlMapResponse {
 	success: boolean;
-	links?: string[];
+	links?: FirecrawlMapLink[];
 	error?: string;
 }
 
@@ -51,7 +56,6 @@ export class FirecrawlMapProvider implements ProcessingProvider {
 						{
 							url: map_url,
 							limit: extract_depth === 'advanced' ? 200 : 50,
-							ignoreSitemap: false,
 							includeSubdomains: false,
 						},
 						config.processing.firecrawl_map.timeout,
@@ -76,7 +80,13 @@ export class FirecrawlMapProvider implements ProcessingProvider {
 				const formatted_content =
 					`# Site Map for ${map_url}\n\n` +
 					`Found ${map_data.links.length} URLs:\n\n` +
-					map_data.links.map((url) => `- ${url}`).join('\n');
+					map_data.links
+						.map((link) =>
+							link.title
+								? `- ${link.url} — ${link.title}`
+								: `- ${link.url}`,
+						)
+						.join('\n');
 
 				// Create a single raw_content entry with all URLs
 				const raw_contents = [
