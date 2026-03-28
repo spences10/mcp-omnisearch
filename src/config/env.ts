@@ -6,6 +6,7 @@ export const BRAVE_API_KEY = process.env.BRAVE_API_KEY;
 export const KAGI_API_KEY = process.env.KAGI_API_KEY;
 export const GITHUB_API_KEY = process.env.GITHUB_API_KEY;
 export const EXA_API_KEY = process.env.EXA_API_KEY;
+export const LINKUP_API_KEY = process.env.LINKUP_API_KEY;
 
 // AI provider API keys
 export const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
@@ -58,6 +59,11 @@ export const config = {
 		exa_answer: {
 			api_key: EXA_API_KEY,
 			base_url: 'https://api.exa.ai',
+			timeout: 30000, // 30 seconds
+		},
+		linkup: {
+			api_key: LINKUP_API_KEY,
+			base_url: 'https://api.linkup.so/v1',
 			timeout: 30000, // 30 seconds
 		},
 	},
@@ -166,6 +172,9 @@ export const validate_config = () => {
 
 	if (!EXA_API_KEY) missing_keys.push('EXA_API_KEY');
 	else available_keys.push('EXA_API_KEY');
+
+	if (!LINKUP_API_KEY) missing_keys.push('LINKUP_API_KEY');
+	else available_keys.push('LINKUP_API_KEY');
 
 	// Log available keys
 	if (available_keys.length > 0) {

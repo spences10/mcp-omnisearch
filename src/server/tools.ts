@@ -224,6 +224,7 @@ class ToolRegistry {
 								'perplexity',
 								'kagi_fastgpt',
 								'exa_answer',
+								'linkup',
 							]),
 							v.description('AI provider'),
 						),

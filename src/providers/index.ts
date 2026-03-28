@@ -53,7 +53,8 @@ export const initialize_providers = () => {
 		is_api_key_valid(
 			config.ai_response.exa_answer.api_key,
 			'exa_answer',
-		);
+		) ||
+		is_api_key_valid(config.ai_response.linkup.api_key, 'linkup');
 
 	if (has_ai_search) {
 		register_ai_search_provider(new UnifiedAISearchProvider());
