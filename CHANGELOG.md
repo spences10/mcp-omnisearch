@@ -1,5 +1,14 @@
 # mcp-omnisearch
 
+## 0.0.22
+
+### Patch Changes
+
+- 8383048: fix: update Exa, Firecrawl v2, and Tavily APIs to match
+  current specs
+- 91f2889: fix: update tsconfig for TypeScript 6 and fix Octokit type
+  compatibility
+
 ## 0.0.21
 
 ### Patch Changes
