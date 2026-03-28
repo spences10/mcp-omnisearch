@@ -1,5 +1,14 @@
 # mcp-omnisearch
 
+## 0.0.21
+
+### Patch Changes
+
+- a9b7c3c: Add Linkup.so as ai_search provider with sourced answer
+  support
+- 9de2d09: feat: consolidate to 4 tools, remove Perplexity/Jina, split
+  utils, add tool annotations
+
 ## 0.0.20
 
 ### Patch Changes
