@@ -5,9 +5,11 @@ import { StdioTransport } from '@tmcp/transport-stdio';
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import { validate_config } from './config/env.js';
-import { initialize_providers } from './providers/index.js';
 import { setup_handlers } from './server/handlers.js';
-import { register_tools } from './server/tools.js';
+import {
+	initialize_providers,
+	register_tools,
+} from './server/tools/index.js';
 
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -45,10 +47,8 @@ class OmnisearchServer {
 		// Validate environment configuration
 		validate_config();
 
-		// Initialize and register providers
+		// Initialize and register providers + tools
 		initialize_providers();
-
-		// Register tools and setup handlers
 		register_tools(this.server);
 		setup_handlers(this.server);
 

@@ -1,5 +1,5 @@
+import { handle_rate_limit } from './errors.js';
 import { ErrorType, ProviderError } from './types.js';
-import { handle_rate_limit } from './utils.js';
 
 export interface HttpJsonOptions extends RequestInit {
 	expectedStatuses?: number[];

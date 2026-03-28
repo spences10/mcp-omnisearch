@@ -1,15 +1,15 @@
+import {
+	handle_provider_error,
+	sanitize_query,
+} from '../../../common/errors.js';
 import { http_json } from '../../../common/http.js';
+import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	BaseSearchParams,
 	SearchProvider,
 	SearchResult,
 } from '../../../common/types.js';
-import {
-	handle_provider_error,
-	retry_with_backoff,
-	sanitize_query,
-	validate_api_key,
-} from '../../../common/utils.js';
+import { validate_api_key } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
 interface ExaAnswerRequest {

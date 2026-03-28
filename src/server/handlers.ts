@@ -1,6 +1,6 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
-import { available_providers } from './tools.js';
+import { available_providers } from './tools/index.js';
 
 export const setup_handlers = (server: McpServer<GenericSchema>) => {
 	// Provider Status Resource
@@ -27,20 +27,15 @@ export const setup_handlers = (server: McpServer<GenericSchema>) => {
 									processing: Array.from(
 										available_providers.processing,
 									),
-									enhancement: Array.from(
-										available_providers.enhancement,
-									),
 								},
 								available_count: {
 									search: available_providers.search.size,
 									ai_response: available_providers.ai_response.size,
 									processing: available_providers.processing.size,
-									enhancement: available_providers.enhancement.size,
 									total:
 										available_providers.search.size +
 										available_providers.ai_response.size +
-										available_providers.processing.size +
-										available_providers.enhancement.size,
+										available_providers.processing.size,
 								},
 							},
 							null,

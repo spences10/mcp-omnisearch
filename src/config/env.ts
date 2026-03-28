@@ -8,11 +8,7 @@ export const GITHUB_API_KEY = process.env.GITHUB_API_KEY;
 export const EXA_API_KEY = process.env.EXA_API_KEY;
 export const LINKUP_API_KEY = process.env.LINKUP_API_KEY;
 
-// AI provider API keys
-export const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
-
 // Content processing API keys
-export const JINA_AI_API_KEY = process.env.JINA_AI_API_KEY;
 export const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY;
 export const FIRECRAWL_BASE_URL = process.env.FIRECRAWL_BASE_URL;
 
@@ -46,11 +42,6 @@ export const config = {
 		},
 	},
 	ai_response: {
-		perplexity: {
-			api_key: PERPLEXITY_API_KEY,
-			base_url: 'https://api.perplexity.ai',
-			timeout: 60000, // 60 seconds
-		},
 		kagi_fastgpt: {
 			api_key: KAGI_API_KEY,
 			base_url: 'https://kagi.com/api/v0/fastgpt',
@@ -68,11 +59,6 @@ export const config = {
 		},
 	},
 	processing: {
-		jina_reader: {
-			api_key: JINA_AI_API_KEY,
-			base_url: 'https://api.jina.ai/v1/reader',
-			timeout: 30000, // 30 seconds
-		},
 		kagi_summarizer: {
 			api_key: KAGI_API_KEY,
 			base_url: 'https://kagi.com/api/v0/summarize',
@@ -135,11 +121,6 @@ export const config = {
 			base_url: 'https://kagi.com/api/v0/enrich',
 			timeout: 20000, // 20 seconds
 		},
-		jina_grounding: {
-			api_key: JINA_AI_API_KEY,
-			base_url: 'https://api.jina.ai/v1/ground',
-			timeout: 20000, // 20 seconds
-		},
 	},
 };
 
@@ -160,12 +141,6 @@ export const validate_config = () => {
 
 	if (!GITHUB_API_KEY) missing_keys.push('GITHUB_API_KEY');
 	else available_keys.push('GITHUB_API_KEY');
-
-	if (!PERPLEXITY_API_KEY) missing_keys.push('PERPLEXITY_API_KEY');
-	else available_keys.push('PERPLEXITY_API_KEY');
-
-	if (!JINA_AI_API_KEY) missing_keys.push('JINA_AI_API_KEY');
-	else available_keys.push('JINA_AI_API_KEY');
 
 	if (!FIRECRAWL_API_KEY) missing_keys.push('FIRECRAWL_API_KEY');
 	else available_keys.push('FIRECRAWL_API_KEY');

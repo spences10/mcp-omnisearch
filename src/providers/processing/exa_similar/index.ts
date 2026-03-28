@@ -1,4 +1,6 @@
+import { handle_provider_error } from '../../../common/errors.js';
 import { http_json } from '../../../common/http.js';
+import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	ErrorType,
 	ProcessingProvider,
@@ -6,11 +8,9 @@ import {
 	ProviderError,
 } from '../../../common/types.js';
 import {
-	handle_provider_error,
-	retry_with_backoff,
 	validate_api_key,
 	validate_processing_urls,
-} from '../../../common/utils.js';
+} from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
 interface ExaSimilarRequest {

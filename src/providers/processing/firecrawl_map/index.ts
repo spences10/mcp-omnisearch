@@ -1,8 +1,9 @@
+import { handle_provider_error } from '../../../common/errors.js';
 import {
 	make_firecrawl_request,
 	validate_firecrawl_response,
-	validate_firecrawl_urls,
 } from '../../../common/firecrawl_utils.js';
+import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	ErrorType,
 	ProcessingProvider,
@@ -10,10 +11,9 @@ import {
 	ProviderError,
 } from '../../../common/types.js';
 import {
-	handle_provider_error,
-	retry_with_backoff,
 	validate_api_key,
-} from '../../../common/utils.js';
+	validate_processing_urls,
+} from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
 interface FirecrawlMapResponse {
@@ -32,7 +32,7 @@ export class FirecrawlMapProvider implements ProcessingProvider {
 		extract_depth: 'basic' | 'advanced' = 'basic',
 	): Promise<ProcessingResult> {
 		// Map only works with a single URL (the starting point)
-		const urls = validate_firecrawl_urls(url, this.name);
+		const urls = validate_processing_urls(url, this.name);
 		const map_url = urls[0];
 
 		const map_request = async () => {

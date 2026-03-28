@@ -63,7 +63,7 @@ code that’s easy to reason about and safe to extend.
   tokens). Several existing providers are good references.
 - Timeouts come from `config`; do not hard‑code.
 - Return the minimal, structured shape expected by our common types
-  (search, processing, enhancement).
+  (search, processing).
 
 ## Local Dev Quickstart
 

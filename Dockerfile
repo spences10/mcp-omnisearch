@@ -36,8 +36,9 @@ RUN echo '{\
         "BRAVE_API_KEY": "${BRAVE_API_KEY}",\
         "TAVILY_API_KEY": "${TAVILY_API_KEY}",\
         "KAGI_API_KEY": "${KAGI_API_KEY}",\
-        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",\
-        "JINA_AI_API_KEY": "${JINA_AI_API_KEY}",\
+        "GITHUB_API_KEY": "${GITHUB_API_KEY}",\
+        "EXA_API_KEY": "${EXA_API_KEY}",\
+        "LINKUP_API_KEY": "${LINKUP_API_KEY}",\
         "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"\
       }\
     }\

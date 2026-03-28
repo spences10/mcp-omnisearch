@@ -1,21 +1,6 @@
 import { http_json } from './http.js';
 import { ErrorType, ProviderError } from './types.js';
-import {
-	aggregate_url_results as aggregate_url_results_common,
-	validate_processing_urls,
-	type ProcessedUrlResult as ProcessedUrlResultCommon,
-} from './utils.js';
 
-/**
- * Validate URLs for Firecrawl processing
- * @deprecated Use validate_processing_urls from utils.ts instead
- * Throws ProviderError if any URL is invalid
- */
-export const validate_firecrawl_urls = validate_processing_urls;
-
-/**
- * Make a Firecrawl API request with standard headers and error handling
- */
 export const make_firecrawl_request = async <T>(
 	provider_name: string,
 	base_url: string,
@@ -34,10 +19,6 @@ export const make_firecrawl_request = async <T>(
 	});
 };
 
-/**
- * Check Firecrawl response for errors
- * Throws ProviderError if response indicates failure
- */
 export const validate_firecrawl_response = (
 	data: { success: boolean; error?: string },
 	provider_name: string,
@@ -52,19 +33,6 @@ export const validate_firecrawl_response = (
 	}
 };
 
-/**
- * Interface for processed URL results
- * @deprecated Use ProcessedUrlResult from utils.ts instead
- */
-export type ProcessedUrlResult = ProcessedUrlResultCommon;
-
-/**
- * Aggregate results from multiple URL processing attempts
- * @deprecated Use aggregate_url_results from utils.ts instead
- * Returns combined content and metadata, throws if all URLs failed
- */
-export const aggregate_url_results = aggregate_url_results_common;
-
 export interface PollingConfig {
 	provider_name: string;
 	status_url: string;
@@ -74,10 +42,6 @@ export interface PollingConfig {
 	timeout: number;
 }
 
-/**
- * Poll a Firecrawl job until completion
- * Returns the completed status response or throws on error/timeout
- */
 export const poll_firecrawl_job = async <
 	T extends {
 		success: boolean;
@@ -103,12 +67,14 @@ export const poll_firecrawl_job = async <
 				config.status_url,
 				{
 					method: 'GET',
-					headers: { Authorization: `Bearer ${config.api_key}` },
+					headers: {
+						Authorization: `Bearer ${config.api_key}`,
+					},
 					signal: AbortSignal.timeout(config.timeout),
 				},
 			);
 		} catch {
-			continue; // skip this poll attempt on transient HTTP errors
+			continue;
 		}
 
 		if (!status_result.success) {
@@ -128,8 +94,6 @@ export const poll_firecrawl_job = async <
 				config.provider_name,
 			);
 		}
-
-		// If still processing, continue polling
 	}
 
 	throw new ProviderError(
