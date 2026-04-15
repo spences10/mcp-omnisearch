@@ -1,5 +1,8 @@
 # mcp-omnisearch
 
+[![built with vite+](https://img.shields.io/badge/built%20with-Vite+-646CFF?logo=vite&logoColor=white)](https://viteplus.dev)
+[![tested with vitest](https://img.shields.io/badge/tested%20with-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev)
+
 A Model Context Protocol (MCP) server that provides unified access to
 multiple search providers and AI tools. This server combines the
 capabilities of Tavily, Brave, Kagi, Exa AI, GitHub, Linkup, and

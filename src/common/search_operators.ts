@@ -26,8 +26,8 @@ export interface ParsedQuery {
 }
 
 const operator_patterns = {
-	site: /site:([^\s]+)/g,
 	exclude_site: /-site:([^\s]+)/g,
+	site: /site:([^\s]+)/g,
 	filetype: /filetype:([^\s]+)/g,
 	ext: /ext:([^\s]+)/g,
 	intitle: /intitle:([^\s]+)/g,
