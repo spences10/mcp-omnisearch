@@ -1,5 +1,14 @@
 # mcp-omnisearch
 
+## 0.0.24
+
+### Patch Changes
+
+- bb2f1c5: Add Tavily search operator support: map
+  site/date/exact/location operators to native API parameters.
+- 6db2d23: Add comprehensive Vitest coverage for shared utilities and
+  document tooling with Vite+ and Vitest badges.
+
 ## 0.0.23
 
 ### Patch Changes
