@@ -117,7 +117,7 @@ export class FirecrawlExtractProvider implements ProcessingProvider {
 								for (const [itemKey, itemValue] of Object.entries(
 									item,
 								)) {
-									formatted_content += `- **${itemKey}**: ${itemValue}\n`;
+									formatted_content += `- **${itemKey}**: ${String(itemValue)}\n`;
 								}
 								formatted_content += '\n';
 							} else {

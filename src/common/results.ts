@@ -80,7 +80,7 @@ const format_as_text = (
 			add_line('');
 		}
 	} else if (result.content) {
-		add_content(String(result.content));
+		add_content(JSON.stringify(result.content));
 	} else {
 		add_content(JSON.stringify(result, null, 2));
 	}

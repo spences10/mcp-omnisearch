@@ -37,21 +37,58 @@ export class TavilySearchProvider implements SearchProvider {
 			this.name,
 		);
 
-		// Parse search operators from the query
 		const parsed_query = parse_search_operators(params.query);
 		const search_params = apply_search_operators(parsed_query);
 
 		const search_request = async () => {
 			try {
-				// Only use officially supported parameters
+				// Merge operator-extracted domains with explicit params
+				const include_domains = [
+					...(params.include_domains ?? []),
+					...(search_params.include_domains ?? []),
+				];
+				const exclude_domains = [
+					...(params.exclude_domains ?? []),
+					...(search_params.exclude_domains ?? []),
+				];
+
 				const request_body: Record<string, any> = {
-					query: sanitize_query(params.query), // Use original query without operators
+					query: sanitize_query(search_params.query),
 					max_results: params.limit ?? 5,
-					include_domains: params.include_domains ?? [],
-					exclude_domains: params.exclude_domains ?? [],
+					include_domains:
+						include_domains.length > 0 ? include_domains : [],
+					exclude_domains:
+						exclude_domains.length > 0 ? exclude_domains : [],
 					search_depth: 'basic',
 					topic: 'general',
 				};
+
+				// Map date operators to Tavily's start_date/end_date
+				if (search_params.date_after) {
+					request_body.start_date = search_params.date_after;
+				}
+				if (search_params.date_before) {
+					request_body.end_date = search_params.date_before;
+				}
+
+				// Map exact phrases to Tavily's exact_match
+				if (
+					search_params.exact_phrases &&
+					search_params.exact_phrases.length > 0
+				) {
+					request_body.exact_match = true;
+					// Re-add quoted phrases to the query for Tavily
+					const exact_query_parts = search_params.exact_phrases.map(
+						(phrase) => `"${phrase}"`,
+					);
+					request_body.query =
+						`${request_body.query} ${exact_query_parts.join(' ')}`.trim();
+				}
+
+				// Map location operator to Tavily's country param
+				if (search_params.location) {
+					request_body.country = search_params.location.toLowerCase();
+				}
 
 				const data = await http_json<
 					TavilySearchResponse & { message?: string }

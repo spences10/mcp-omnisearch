@@ -172,7 +172,7 @@ export class FirecrawlActionsProvider implements ProcessingProvider {
 								case 'screenshot':
 									return `${index + 1}. Take screenshot`;
 								default:
-									return `${index + 1}. Perform ${action.type} action`;
+									return `${index + 1}. Perform ${String(action.type)} action`;
 							}
 						})
 						.join('\n') +
