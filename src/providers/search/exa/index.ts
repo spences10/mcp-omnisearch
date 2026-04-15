@@ -46,7 +46,7 @@ interface ExaSearchResponse {
 export class ExaSearchProvider implements SearchProvider {
 	name = 'exa';
 	description =
-		'AI-powered web search using neural and keyword search. Optimized for AI applications with semantic understanding, content extraction, and research capabilities.';
+		'Exa is the fastest and most accurate web search API for AI. Supports auto, neural, keyword, fast, deep, and instant search types with semantic understanding, content extraction, and research capabilities.';
 
 	async search(params: BaseSearchParams): Promise<SearchResult[]> {
 		const api_key = validate_api_key(
