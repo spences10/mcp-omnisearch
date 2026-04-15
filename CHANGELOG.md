@@ -4,7 +4,8 @@
 
 ### Patch Changes
 
-- a49aae8: Migrate build toolchain from tsc/prettier to vite-plus; add CI workflow, CLAUDE.md, and VSCode settings
+- a49aae8: Migrate build toolchain from tsc/prettier to vite-plus; add
+  CI workflow, CLAUDE.md, and VSCode settings
 
 ## 0.0.22
 
