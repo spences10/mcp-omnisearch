@@ -70,6 +70,6 @@
 	"engines": {
 		"node": ">=22.0.0"
 	},
-	"packageManager": "pnpm@10.33.0",
+	"packageManager": "pnpm@10.33.2",
 	"mcpName": "io.github.spences10/mcp-omnisearch"
 }
