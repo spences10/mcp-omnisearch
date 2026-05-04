@@ -1,6 +1,7 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
+import { omit_raw_contents } from '../../common/results.js';
 import {
 	ErrorType,
 	ProcessingProvider,
@@ -9,7 +10,11 @@ import {
 import { config } from '../../config/env.js';
 import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
-import { url_or_urls_schema } from './schemas.js';
+import {
+	include_raw_contents_schema,
+	large_result_mode_schema,
+	url_or_urls_schema,
+} from './schemas.js';
 
 // Concrete provider imports
 import { ExaContentsProvider } from '../../providers/processing/exa-contents/index.js';
@@ -172,30 +177,50 @@ export const register_web_extract = (
 						v.description('Extraction depth (default: basic)'),
 					),
 				),
+				large_result_mode: large_result_mode_schema,
+				include_raw_contents: include_raw_contents_schema,
 			}),
 		},
-		async ({ url, provider, mode, extract_depth }) =>
-			handle_tool_result('web_extract', async () => {
-				const provider_name = provider as WebExtractProvider;
-				const resolved_mode = mode || default_modes[provider_name];
-				const allowed = valid_modes[provider_name];
+		async ({
+			url,
+			provider,
+			mode,
+			extract_depth,
+			large_result_mode,
+			include_raw_contents = true,
+		}) =>
+			handle_tool_result(
+				'web_extract',
+				async () => {
+					const provider_name = provider as WebExtractProvider;
+					const resolved_mode = mode || default_modes[provider_name];
+					const allowed = valid_modes[provider_name];
 
-				if (allowed && !allowed.includes(resolved_mode)) {
-					throw new ProviderError(
-						ErrorType.INVALID_INPUT,
-						`Mode "${resolved_mode}" is not valid for provider "${provider}". Valid modes: ${allowed.join(', ')}`,
+					if (allowed && !allowed.includes(resolved_mode)) {
+						throw new ProviderError(
+							ErrorType.INVALID_INPUT,
+							`Mode "${resolved_mode}" is not valid for provider "${provider}". Valid modes: ${allowed.join(', ')}`,
+							'web_extract',
+						);
+					}
+
+					const key = make_key(provider, resolved_mode);
+					const selected = providers.require(
+						key,
 						'web_extract',
+						`Provider "${provider}" with mode "${resolved_mode}" is not available. Check your API keys.`,
 					);
-				}
 
-				const key = make_key(provider, resolved_mode);
-				const selected = providers.require(
-					key,
-					'web_extract',
-					`Provider "${provider}" with mode "${resolved_mode}" is not available. Check your API keys.`,
-				);
+					const result = await selected.process_content(
+						url,
+						extract_depth,
+					);
 
-				return selected.process_content(url, extract_depth);
-			}),
+					return include_raw_contents
+						? result
+						: omit_raw_contents(result);
+				},
+				{ large_result_mode },
+			),
 	);
 };

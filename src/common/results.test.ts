@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	aggregate_url_results,
 	handle_large_result,
+	omit_raw_contents,
 } from './results.js';
 import { ErrorType } from './types.js';
 
@@ -120,6 +121,52 @@ describe('handle_large_result', () => {
 		created_files.push(handled.file_path);
 
 		expect(handled.file_path).toContain('mcp-web_extract-');
+	});
+
+	it('lets per-request inline mode override the file-mode environment default', () => {
+		process.env.OMNISEARCH_LARGE_RESULT_MODE = 'file';
+		const result = {
+			content: 'x'.repeat(90000),
+			source_provider: 'tavily',
+		};
+
+		expect(
+			handle_large_result(result, 'web_extract', { mode: 'inline' }),
+		).toBe(result);
+	});
+
+	it('lets per-request file mode override the inline-mode environment default', () => {
+		process.env.OMNISEARCH_LARGE_RESULT_MODE = 'inline';
+		const result = {
+			content: 'x'.repeat(90000),
+			source_provider: 'tavily',
+		};
+
+		const handled = handle_large_result(result, 'web_extract', {
+			mode: 'file',
+		}) as { file_path: string };
+		created_files.push(handled.file_path);
+
+		expect(handled.file_path).toContain('mcp-web_extract-');
+	});
+});
+
+describe('omit_raw_contents', () => {
+	it('removes raw_contents while preserving combined content and metadata', () => {
+		const result = {
+			content: 'hello world',
+			raw_contents: [
+				{ url: 'https://example.com', content: 'hello world' },
+			],
+			metadata: { word_count: 2 },
+			source_provider: 'tavily',
+		};
+
+		expect(omit_raw_contents(result)).toEqual({
+			content: 'hello world',
+			metadata: { word_count: 2 },
+			source_provider: 'tavily',
+		});
 	});
 });
 

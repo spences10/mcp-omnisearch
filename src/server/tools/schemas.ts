@@ -5,8 +5,8 @@ const DOMAIN_PATTERN =
 
 export const query_schema = v.pipe(
 	v.string(),
-	v.trim(),
 	v.minLength(1, 'Query cannot be empty'),
+	v.regex(/\S/, 'Query cannot be empty'),
 	v.description('Search query'),
 );
 
@@ -20,9 +20,26 @@ export const limit_schema = v.optional(
 	),
 );
 
+export const large_result_mode_schema = v.optional(
+	v.pipe(
+		v.picklist(['inline', 'file']),
+		v.description(
+			'How to handle oversized responses for this request. Defaults to OMNISEARCH_LARGE_RESULT_MODE or file.',
+		),
+	),
+);
+
+export const include_raw_contents_schema = v.optional(
+	v.pipe(
+		v.boolean(),
+		v.description(
+			'Whether extraction responses should include per-URL raw_contents alongside combined content (default: true).',
+		),
+	),
+);
+
 export const domain_schema = v.pipe(
 	v.string(),
-	v.trim(),
 	v.regex(DOMAIN_PATTERN, 'Domain must be a hostname, not a URL'),
 );
 
@@ -44,16 +61,8 @@ export const exclude_domains_schema = v.optional(
 
 export const http_url_schema = v.pipe(
 	v.string(),
-	v.trim(),
 	v.url('URL must be valid'),
-	v.check((url) => {
-		try {
-			const protocol = new URL(url).protocol;
-			return protocol === 'http:' || protocol === 'https:';
-		} catch {
-			return false;
-		}
-	}, 'URL protocol must be http or https'),
+	v.regex(/^https?:\/\//, 'URL protocol must be http or https'),
 );
 
 export const url_or_urls_schema = v.pipe(

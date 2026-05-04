@@ -5,7 +5,11 @@ import { SearchProvider } from '../../common/types.js';
 import { config } from '../../config/env.js';
 import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
-import { limit_schema, query_schema } from './schemas.js';
+import {
+	large_result_mode_schema,
+	limit_schema,
+	query_schema,
+} from './schemas.js';
 
 // Concrete provider imports
 import { ExaAnswerProvider } from '../../providers/ai-response/exa-answer/index.js';
@@ -73,16 +77,21 @@ export const register_ai_search = (
 					v.description('AI search provider to use'),
 				),
 				limit: limit_schema,
+				large_result_mode: large_result_mode_schema,
 			}),
 		},
-		async ({ query, provider, limit }) =>
-			handle_tool_result('ai_search', async () => {
-				const selected = providers.require(provider, 'ai_search');
+		async ({ query, provider, limit, large_result_mode }) =>
+			handle_tool_result(
+				'ai_search',
+				async () => {
+					const selected = providers.require(provider, 'ai_search');
 
-				return selected.search({
-					query,
-					limit,
-				});
-			}),
+					return selected.search({
+						query,
+						limit,
+					});
+				},
+				{ large_result_mode },
+			),
 	);
 };

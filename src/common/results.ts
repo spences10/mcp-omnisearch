@@ -8,9 +8,17 @@ const CHARS_PER_TOKEN = 4;
 const MAX_SAFE_TOKENS = 20000;
 const MAX_SAFE_CHARS = MAX_SAFE_TOKENS * CHARS_PER_TOKEN;
 
-type LargeResultMode = 'inline' | 'file';
+export type LargeResultMode = 'inline' | 'file';
 
-const get_large_result_mode = (): LargeResultMode => {
+export interface HandleLargeResultOptions {
+	mode?: LargeResultMode;
+}
+
+const get_large_result_mode = (
+	mode_override?: LargeResultMode,
+): LargeResultMode => {
+	if (mode_override) return mode_override;
+
 	const configured_mode = process.env.OMNISEARCH_LARGE_RESULT_MODE;
 
 	if (configured_mode === 'inline' || configured_mode === 'file') {
@@ -116,6 +124,7 @@ const format_as_text = (
 export const handle_large_result = <T>(
 	result: T,
 	provider_name: string,
+	options: HandleLargeResultOptions = {},
 ): T | LargeResultResponse => {
 	const json = JSON.stringify(result, null, 2);
 	const char_count = json.length;
@@ -124,7 +133,7 @@ export const handle_large_result = <T>(
 		return result;
 	}
 
-	if (get_large_result_mode() === 'inline') {
+	if (get_large_result_mode(options.mode) === 'inline') {
 		return result;
 	}
 
@@ -166,6 +175,15 @@ export interface ProcessedUrlResult {
 	success: boolean;
 	error?: string;
 }
+
+export const omit_raw_contents = <
+	T extends { raw_contents?: unknown },
+>(
+	result: T,
+) => {
+	const { raw_contents: _raw_contents, ...compact_result } = result;
+	return compact_result;
+};
 
 export const aggregate_url_results = (
 	results: ProcessedUrlResult[],

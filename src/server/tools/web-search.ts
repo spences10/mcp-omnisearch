@@ -7,6 +7,7 @@ import { handle_tool_result } from './responses.js';
 import {
 	exclude_domains_schema,
 	include_domains_schema,
+	large_result_mode_schema,
 	limit_schema,
 	query_schema,
 } from './schemas.js';
@@ -98,6 +99,7 @@ export const register_web_search = (
 				limit: limit_schema,
 				include_domains: include_domains_schema,
 				exclude_domains: exclude_domains_schema,
+				large_result_mode: large_result_mode_schema,
 			}),
 		},
 		async ({
@@ -106,16 +108,21 @@ export const register_web_search = (
 			limit,
 			include_domains,
 			exclude_domains,
+			large_result_mode,
 		}) =>
-			handle_tool_result('web_search', async () => {
-				const selected = providers.require(provider, 'web_search');
+			handle_tool_result(
+				'web_search',
+				async () => {
+					const selected = providers.require(provider, 'web_search');
 
-				return selected.search({
-					query,
-					limit,
-					include_domains,
-					exclude_domains,
-				});
-			}),
+					return selected.search({
+						query,
+						limit,
+						include_domains,
+						exclude_domains,
+					});
+				},
+				{ large_result_mode },
+			),
 	);
 };

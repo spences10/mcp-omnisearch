@@ -5,7 +5,11 @@ import { config } from '../../config/env.js';
 import { GitHubSearchProvider } from '../../providers/search/github/index.js';
 import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
-import { limit_schema, query_schema } from './schemas.js';
+import {
+	large_result_mode_schema,
+	limit_schema,
+	query_schema,
+} from './schemas.js';
 
 const providers = new ProviderRegistry<GitHubSearchProvider>();
 
@@ -49,6 +53,7 @@ export const register_github_search = (
 					),
 				),
 				limit: limit_schema,
+				large_result_mode: large_result_mode_schema,
 				sort: v.optional(
 					v.pipe(
 						v.picklist(['stars', 'forks', 'updated']),
@@ -57,28 +62,41 @@ export const register_github_search = (
 				),
 			}),
 		},
-		async ({ query, search_type = 'code', limit, sort }) =>
-			handle_tool_result('github_search', async () => {
-				const selected = providers.require('github', 'github_search');
+		async ({
+			query,
+			search_type = 'code',
+			limit,
+			large_result_mode,
+			sort,
+		}) =>
+			handle_tool_result(
+				'github_search',
+				async () => {
+					const selected = providers.require(
+						'github',
+						'github_search',
+					);
 
-				switch (search_type) {
-					case 'code':
-						return selected.search_code({
-							query,
-							limit,
-						});
-					case 'repositories':
-						return selected.search_repositories({
-							query,
-							limit,
-							sort,
-						});
-					case 'users':
-						return selected.search_users({
-							query,
-							limit,
-						});
-				}
-			}),
+					switch (search_type) {
+						case 'code':
+							return selected.search_code({
+								query,
+								limit,
+							});
+						case 'repositories':
+							return selected.search_repositories({
+								query,
+								limit,
+								sort,
+							});
+						case 'users':
+							return selected.search_users({
+								query,
+								limit,
+							});
+					}
+				},
+				{ large_result_mode },
+			),
 	);
 };
