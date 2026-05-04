@@ -110,6 +110,7 @@ describe('http_json', () => {
 			type: ErrorType.PROVIDER_ERROR,
 			provider: 'tavily',
 			message: 'tavily API internal error',
+			details: { status: 503 },
 		});
 	});
 
@@ -127,6 +128,7 @@ describe('http_json', () => {
 			type: ErrorType.API_ERROR,
 			provider: 'exa',
 			message: 'Unexpected error: bad request body',
+			details: { status: 400 },
 		});
 	});
 });

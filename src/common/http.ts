@@ -55,12 +55,14 @@ export const http_json = async <T = any>(
 						ErrorType.PROVIDER_ERROR,
 						`${provider} API internal error`,
 						provider,
+						{ status: res.status },
 					);
 				}
 				throw new ProviderError(
 					ErrorType.API_ERROR,
 					`Unexpected error: ${message}`,
 					provider,
+					{ status: res.status },
 				);
 		}
 	}
