@@ -16,6 +16,19 @@ import {
 import { validate_api_key } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
+interface TavilySearchRequest {
+	query: string;
+	max_results: number;
+	include_domains: string[];
+	exclude_domains: string[];
+	search_depth: 'basic';
+	topic: 'general';
+	start_date?: string;
+	end_date?: string;
+	exact_match?: boolean;
+	country?: string;
+}
+
 interface TavilySearchResponse {
 	results: {
 		title: string;
@@ -52,7 +65,7 @@ export class TavilySearchProvider implements SearchProvider {
 					...(search_params.exclude_domains ?? []),
 				];
 
-				const request_body: Record<string, any> = {
+				const request_body: TavilySearchRequest = {
 					query: sanitize_query(search_params.query),
 					max_results: params.limit ?? 5,
 					include_domains:

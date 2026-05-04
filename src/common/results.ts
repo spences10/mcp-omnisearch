@@ -171,7 +171,7 @@ export const handle_large_result = <T>(
 export interface ProcessedUrlResult {
 	url: string;
 	content: string;
-	metadata?: any;
+	metadata?: Record<string, unknown> & { title?: string };
 	success: boolean;
 	error?: string;
 }

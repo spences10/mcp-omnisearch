@@ -44,6 +44,24 @@ interface GitHubRepositorySearchResultItem {
 	score: number;
 }
 
+interface GitHubUserSearchResultItem {
+	login: string;
+	html_url: string;
+	bio?: string | null;
+	type: string;
+	score: number;
+}
+
+interface GitHubSearchError {
+	status?: number;
+	message?: string;
+}
+
+const is_github_search_error = (
+	error: unknown,
+): error is GitHubSearchError =>
+	typeof error === 'object' && error !== null;
+
 export class GitHubSearchProvider implements SearchProvider {
 	name = 'github';
 	description =
@@ -106,7 +124,7 @@ export class GitHubSearchProvider implements SearchProvider {
 						};
 					},
 				);
-			} catch (error: any) {
+			} catch (error) {
 				return this.handle_search_error(error);
 			}
 		};
@@ -161,7 +179,7 @@ export class GitHubSearchProvider implements SearchProvider {
 						};
 					},
 				);
-			} catch (error: any) {
+			} catch (error) {
 				return this.handle_search_error(error);
 			}
 		};
@@ -195,20 +213,22 @@ export class GitHubSearchProvider implements SearchProvider {
 					per_page: params.limit ?? 10,
 				});
 
-				return response.data.items.map((user: any) => ({
-					title: user.login,
-					url: user.html_url,
-					snippet:
-						user.bio ?? `GitHub user: ${user.login} • ${user.type}`,
-					score: user.score,
-					source_provider: this.name,
-					metadata: {
-						username: user.login,
-						user_type: user.type,
-						search_type: 'user',
-					},
-				}));
-			} catch (error: any) {
+				return response.data.items.map(
+					(user: GitHubUserSearchResultItem) => ({
+						title: user.login,
+						url: user.html_url,
+						snippet:
+							user.bio ?? `GitHub user: ${user.login} • ${user.type}`,
+						score: user.score,
+						source_provider: this.name,
+						metadata: {
+							username: user.login,
+							user_type: user.type,
+							search_type: 'user',
+						},
+					}),
+				);
+			} catch (error) {
 				return this.handle_search_error(error);
 			}
 		};
@@ -217,9 +237,17 @@ export class GitHubSearchProvider implements SearchProvider {
 	}
 
 	// Centralized error handling
-	private handle_search_error(error: any): never {
-		const status = error.status || 500;
-		const message = error.message || 'An unexpected error occurred.';
+	private handle_search_error(error: unknown): never {
+		const status =
+			is_github_search_error(error) &&
+			typeof error.status === 'number'
+				? error.status
+				: 500;
+		const message =
+			is_github_search_error(error) &&
+			typeof error.message === 'string'
+				? error.message
+				: 'An unexpected error occurred.';
 
 		switch (status) {
 			case 401:

@@ -51,8 +51,7 @@ export class KagiSummarizerProvider implements ProcessingProvider {
 				});
 
 				if (!data?.data?.output) {
-					const error_message =
-						(data as any)?.message || 'Empty output';
+					const error_message = data?.message || 'Empty output';
 					throw new ProviderError(
 						ErrorType.API_ERROR,
 						`Unexpected error: ${error_message}`,

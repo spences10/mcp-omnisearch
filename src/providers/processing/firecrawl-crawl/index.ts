@@ -17,6 +17,15 @@ import {
 } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
+type FirecrawlMetadata = Record<string, unknown> & {
+	title?: string;
+	description?: string;
+	language?: string;
+	sourceURL?: string;
+	statusCode?: number;
+	error?: string;
+};
+
 interface FirecrawlCrawlResponse {
 	success: boolean;
 	id: string;
@@ -34,15 +43,7 @@ interface FirecrawlCrawlStatusResponse {
 		markdown?: string;
 		html?: string;
 		rawHtml?: string;
-		metadata?: {
-			title?: string;
-			description?: string;
-			language?: string;
-			sourceURL?: string;
-			statusCode?: number;
-			error?: string;
-			[key: string]: any;
-		};
+		metadata?: FirecrawlMetadata;
 		error?: string;
 	}>;
 	error?: string;

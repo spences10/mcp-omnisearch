@@ -27,7 +27,7 @@ interface FirecrawlExtractStatusResponse {
 	success: boolean;
 	id: string;
 	status: string;
-	data?: any;
+	data?: Record<string, unknown>;
 	error?: string;
 }
 
@@ -144,8 +144,9 @@ export class FirecrawlExtractProvider implements ProcessingProvider {
 
 				// Get title if available
 				const title =
-					status_data.data.title ||
-					`Extracted Data from ${extract_url}`;
+					typeof status_data.data.title === 'string'
+						? status_data.data.title
+						: `Extracted Data from ${extract_url}`;
 
 				// Count words in the formatted content
 				const word_count = formatted_content

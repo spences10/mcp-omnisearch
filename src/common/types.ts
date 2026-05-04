@@ -1,12 +1,14 @@
 // Common type definitions for the MCP Omnisearch server
 
+export type ProviderMetadata = Record<string, unknown>;
+
 export interface SearchResult {
 	title: string;
 	url: string;
 	snippet: string;
 	score?: number;
 	source_provider: string;
-	metadata?: Record<string, any>;
+	metadata?: ProviderMetadata;
 }
 
 export interface BaseSearchParams {
@@ -64,7 +66,7 @@ export class ProviderError extends Error {
 		public type: ErrorType,
 		message: string,
 		public provider: string,
-		public details?: any,
+		public details?: unknown,
 	) {
 		super(message);
 		this.name = 'ProviderError';

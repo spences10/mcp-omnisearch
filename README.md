@@ -31,6 +31,8 @@ Parameters:
   domains
 - `exclude_domains` (array, optional): Exclude results from these
   domains
+- `large_result_mode` (string, optional): `file` or `inline`;
+  overrides `OMNISEARCH_LARGE_RESULT_MODE` for this request
 
 ### 🤖 `ai_search` — AI-Powered Answers
 
@@ -44,6 +46,8 @@ Parameters:
 - `provider` (string, required): `kagi_fastgpt`, `exa_answer`, or
   `linkup`
 - `limit` (number, optional): Maximum number of results (default: 10)
+- `large_result_mode` (string, optional): `file` or `inline`;
+  overrides `OMNISEARCH_LARGE_RESULT_MODE` for this request
 
 ### 🔎 `github_search` — GitHub Search
 
@@ -78,6 +82,10 @@ Parameters:
   extract. Kagi: summarize. Defaults to provider default.
 - `extract_depth` (string, optional): `basic` or `advanced` (default:
   basic)
+- `large_result_mode` (string, optional): `file` or `inline`;
+  overrides `OMNISEARCH_LARGE_RESULT_MODE` for this request
+- `include_raw_contents` (boolean, optional): Set to `false` to omit
+  duplicate per-URL raw text from extraction responses
 
 ### 🎯 Search Operators
 
@@ -98,9 +106,17 @@ and parameters:
 - **Exact**: `"exact phrase"`
 - **Include/Exclude**: `+required`, `-excluded`
 
-**Tavily** (API parameters only):
+**Tavily** (translated to Tavily API parameters where supported):
 
-- Domain filtering: `include_domains`, `exclude_domains`
+- Domain filtering: `site:` and `-site:` become `include_domains` and
+  `exclude_domains`; explicit domain arrays are also supported
+- Date filtering: `after:` and `before:` become `start_date` and
+  `end_date`
+- Exact phrases: quoted phrases enable exact-match behavior
+- Country filtering: `loc:` becomes Tavily's country parameter
+
+Unsupported provider-specific operators remain part of the sanitized
+query when possible rather than being flattened globally.
 
 #### Example Usage
 
@@ -109,6 +125,18 @@ and parameters:
 {
   "query": "filetype:pdf lang:en site:microsoft.com +typescript -javascript",
   "provider": "brave"
+}
+
+// Brave: advanced discovery with native operator passthrough
+{
+  "query": "intitle:benchmark inurl:blog filetype:pdf lang:en before:2025-01-01 \"vector database\" -site:pinterest.com",
+  "provider": "brave"
+}
+
+// Kagi: focused research across docs and exact phrases
+{
+  "query": "site:docs.svelte.dev OR site:svelte.dev \"remote functions\" after:2025-01-01",
+  "provider": "kagi"
 }
 
 // Brave/Kagi: Search gists
@@ -129,7 +157,9 @@ and parameters:
 
 - **Brave Search**: Full native operator support in query string
 - **Kagi Search**: Complete operator support in query string
-- **Tavily Search**: Domain filtering through API parameters
+- **Tavily Search**: Domain/date/exact/country operator translation
+  into Tavily API parameters; explicit `include_domains` and
+  `exclude_domains` arrays are supported
 - **Exa Search**: Domain filtering through API parameters, semantic
   search with neural understanding
 - **GitHub Search**: Advanced code search syntax with qualifiers:
@@ -236,6 +266,28 @@ API keys will be activated:
 
 You can start with just one or two API keys and add more later as
 needed. The server will log which providers are available on startup.
+
+### Large Result Behavior
+
+Large search and extraction responses can exceed MCP client or
+transport limits. Each tool accepts `large_result_mode` to override
+the global `OMNISEARCH_LARGE_RESULT_MODE` setting for one request:
+
+- `file` (default): oversized responses are written to a server-side
+  temp file and the tool returns a path, section list, line count, and
+  read hint. This is compact for local stdio clients that share a
+  filesystem with the server.
+- `inline`: the full response is returned through MCP. Use this for
+  remote transports, clients with their own indexing/offload layer, or
+  hosts like Pi that can capture large tool output.
+
+For `web_extract`, set `include_raw_contents: false` when you only
+need the combined `content` field. This avoids duplicating huge
+per-URL text in both `content` and `raw_contents`.
+
+Remote transport caveat: server-side temp-file paths are only useful
+when the MCP client can read the server's filesystem. Prefer `inline`
+for HTTP, hosted, containerized, or otherwise remote MCP deployments.
 
 ### GitHub API Key Setup
 
@@ -571,6 +623,24 @@ requirements:
   [dashboard.exa.ai](https://dashboard.exa.ai)
 - **Linkup**: API key from their developer portal
 - **Firecrawl**: API key required from their developer portal
+
+Common failure modes:
+
+- Missing API key: the provider is not registered; other configured
+  providers continue working. Check `omnisearch://providers/status`
+  for secret-safe availability details.
+- Invalid or unauthorized key: the request fails without exposing the
+  key value. Verify the key belongs to the provider and has access to
+  the endpoint or plan tier.
+- Invalid query/input: empty queries, unsupported modes, malformed
+  domains, or unsupported URL protocols are rejected before calling
+  the provider.
+- Rate limits and transient provider failures: 429, timeouts, network
+  failures, and 5xx responses are retryable; invalid credentials and
+  validation failures are not retried.
+- Remote MCP temp files: if a response returns a server-side file path
+  that your client cannot read, retry with
+  `large_result_mode: "inline"`.
 
 ### Rate Limits
 

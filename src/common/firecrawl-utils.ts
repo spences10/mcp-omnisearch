@@ -5,7 +5,7 @@ export const make_firecrawl_request = async <T>(
 	provider_name: string,
 	base_url: string,
 	api_key: string,
-	body: Record<string, any>,
+	body: Record<string, unknown>,
 	timeout: number,
 ): Promise<T> => {
 	return http_json<T>(provider_name, base_url, {
@@ -47,7 +47,7 @@ export const poll_firecrawl_job = async <
 		success: boolean;
 		status: string;
 		error?: string;
-		data?: any;
+		data?: unknown;
 	},
 >(
 	config: PollingConfig,
