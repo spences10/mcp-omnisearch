@@ -3,7 +3,7 @@ import {
 	apply_search_operators,
 	build_query_with_operators,
 	parse_search_operators,
-} from './search_operators.js';
+} from './search-operators.js';
 
 describe('parse_search_operators', () => {
 	it('extracts supported operators and preserves the base query', () => {

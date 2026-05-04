@@ -4,22 +4,22 @@ import {
 	get_available_providers as get_ai_providers,
 	initialize_ai_search,
 	register_ai_search,
-} from './ai_search.js';
+} from './ai-search.js';
 import {
 	get_available as get_github_providers,
 	initialize_github_search,
 	register_github_search,
-} from './github_search.js';
+} from './github-search.js';
 import {
 	get_available_providers as get_extract_providers,
 	initialize_web_extract,
 	register_web_extract,
-} from './web_extract.js';
+} from './web-extract.js';
 import {
 	get_available_providers as get_search_providers,
 	initialize_web_search,
 	register_web_search,
-} from './web_search.js';
+} from './web-search.js';
 
 // Track available providers by category for the status resource
 export const available_providers = {

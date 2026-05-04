@@ -7,7 +7,7 @@ import { handle_tool_result } from './responses.js';
 
 // Concrete provider imports
 import { config } from '../../config/env.js';
-import { KagiEnrichmentSearchProvider } from '../../providers/enhancement/kagi_enrichment/index.js';
+import { KagiEnrichmentSearchProvider } from '../../providers/enhancement/kagi-enrichment/index.js';
 import { BraveSearchProvider } from '../../providers/search/brave/index.js';
 import { ExaSearchProvider } from '../../providers/search/exa/index.js';
 import { KagiSearchProvider } from '../../providers/search/kagi/index.js';

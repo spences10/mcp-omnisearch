@@ -15,7 +15,7 @@ import {
 	make_firecrawl_request,
 	poll_firecrawl_job,
 	validate_firecrawl_response,
-} from './firecrawl_utils.js';
+} from './firecrawl-utils.js';
 import { http_json } from './http.js';
 import { ErrorType } from './types.js';
 
@@ -77,7 +77,7 @@ describe('validate_firecrawl_response', () => {
 				'firecrawl',
 				'Scrape failed',
 			),
-		).toThrowError(
+		).toThrow(
 			expect.objectContaining({
 				type: ErrorType.PROVIDER_ERROR,
 				provider: 'firecrawl',

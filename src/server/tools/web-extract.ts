@@ -11,15 +11,15 @@ import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
 
 // Concrete provider imports
-import { ExaContentsProvider } from '../../providers/processing/exa_contents/index.js';
-import { ExaSimilarProvider } from '../../providers/processing/exa_similar/index.js';
-import { FirecrawlActionsProvider } from '../../providers/processing/firecrawl_actions/index.js';
-import { FirecrawlCrawlProvider } from '../../providers/processing/firecrawl_crawl/index.js';
-import { FirecrawlExtractProvider } from '../../providers/processing/firecrawl_extract/index.js';
-import { FirecrawlMapProvider } from '../../providers/processing/firecrawl_map/index.js';
-import { FirecrawlScrapeProvider } from '../../providers/processing/firecrawl_scrape/index.js';
-import { KagiSummarizerProvider } from '../../providers/processing/kagi_summarizer/index.js';
-import { TavilyExtractProvider } from '../../providers/processing/tavily_extract/index.js';
+import { ExaContentsProvider } from '../../providers/processing/exa-contents/index.js';
+import { ExaSimilarProvider } from '../../providers/processing/exa-similar/index.js';
+import { FirecrawlActionsProvider } from '../../providers/processing/firecrawl-actions/index.js';
+import { FirecrawlCrawlProvider } from '../../providers/processing/firecrawl-crawl/index.js';
+import { FirecrawlExtractProvider } from '../../providers/processing/firecrawl-extract/index.js';
+import { FirecrawlMapProvider } from '../../providers/processing/firecrawl-map/index.js';
+import { FirecrawlScrapeProvider } from '../../providers/processing/firecrawl-scrape/index.js';
+import { KagiSummarizerProvider } from '../../providers/processing/kagi-summarizer/index.js';
+import { TavilyExtractProvider } from '../../providers/processing/tavily-extract/index.js';
 
 export type WebExtractProvider =
 	| 'tavily'

@@ -7,9 +7,9 @@ import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
 
 // Concrete provider imports
-import { ExaAnswerProvider } from '../../providers/ai_response/exa_answer/index.js';
-import { KagiFastGPTProvider } from '../../providers/ai_response/kagi_fastgpt/index.js';
-import { LinkupProvider } from '../../providers/ai_response/linkup/index.js';
+import { ExaAnswerProvider } from '../../providers/ai-response/exa-answer/index.js';
+import { KagiFastGPTProvider } from '../../providers/ai-response/kagi-fastgpt/index.js';
+import { LinkupProvider } from '../../providers/ai-response/linkup/index.js';
 
 export type AISearchProviderName =
 	| 'kagi_fastgpt'

@@ -5,7 +5,7 @@ import {
 	apply_search_operators,
 	build_query_with_operators,
 	parse_search_operators,
-} from '../../../common/search_operators.js';
+} from '../../../common/search-operators.js';
 import {
 	BaseSearchParams,
 	SearchProvider,

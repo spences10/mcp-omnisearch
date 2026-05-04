@@ -2,7 +2,7 @@ import { handle_provider_error } from '../../../common/errors.js';
 import {
 	make_firecrawl_request,
 	validate_firecrawl_response,
-} from '../../../common/firecrawl_utils.js';
+} from '../../../common/firecrawl-utils.js';
 import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	ErrorType,

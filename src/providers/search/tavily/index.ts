@@ -7,7 +7,7 @@ import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	apply_search_operators,
 	parse_search_operators,
-} from '../../../common/search_operators.js';
+} from '../../../common/search-operators.js';
 import {
 	BaseSearchParams,
 	SearchProvider,
