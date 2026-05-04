@@ -1,0 +1,24 @@
+{
+	"lsp": {
+		"oxfmt": {
+			"initialization_options": {
+				"settings": {
+					"configPath": "./vite.config.ts",
+					"run": "onSave",
+				},
+			},
+		},
+	},
+	"languages": {
+		"JavaScript": {
+			"format_on_save": "on",
+			"prettier": { "allowed": false },
+			"formatter": [{ "language_server": { "name": "oxfmt" } }],
+		},
+		"TypeScript": {
+			"format_on_save": "on",
+			"prettier": { "allowed": false },
+			"formatter": [{ "language_server": { "name": "oxfmt" } }],
+		},
+	},
+}
