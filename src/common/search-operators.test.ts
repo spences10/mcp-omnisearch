@@ -8,10 +8,10 @@ import {
 describe('parse_search_operators', () => {
 	it('extracts supported operators and preserves the base query', () => {
 		const parsed = parse_search_operators(
-			'sveltekit site:kit.svelte.dev -site:spam.dev filetype:pdf ext:md intitle:guide inurl:docs inbody:"load" inpage:"actions" lang:en location:us before:2024-01-01 after:2023-01-01 "remote functions" +forms -legacy AND OR NOT',
+			'sveltekit in:title in:file site:kit.svelte.dev -site:spam.dev filetype:pdf ext:md intitle:guide inurl:docs inbody:"load" inpage:"actions" lang:en location:us before:2024-01-01 after:2023-01-01 "remote functions" +forms -legacy AND OR NOT',
 		);
 
-		expect(parsed.base_query).toBe('sveltekit');
+		expect(parsed.base_query).toBe('sveltekit in:title in:file');
 		expect(parsed.operators).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
