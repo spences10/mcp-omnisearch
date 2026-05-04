@@ -5,6 +5,7 @@ import { config } from '../../config/env.js';
 import { GitHubSearchProvider } from '../../providers/search/github/index.js';
 import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
+import { limit_schema, query_schema } from './schemas.js';
 
 const providers = new ProviderRegistry<GitHubSearchProvider>();
 
@@ -40,19 +41,14 @@ export const register_github_search = (
 				openWorldHint: true,
 			},
 			schema: v.object({
-				query: v.pipe(v.string(), v.description('Search query')),
+				query: query_schema,
 				search_type: v.optional(
 					v.pipe(
 						v.picklist(['code', 'repositories', 'users']),
 						v.description('What to search for (default: code)'),
 					),
 				),
-				limit: v.optional(
-					v.pipe(
-						v.number(),
-						v.description('Maximum number of results (default: 10)'),
-					),
-				),
+				limit: limit_schema,
 				sort: v.optional(
 					v.pipe(
 						v.picklist(['stars', 'forks', 'updated']),

@@ -4,6 +4,12 @@ import * as v from 'valibot';
 import { SearchProvider } from '../../common/types.js';
 import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
+import {
+	exclude_domains_schema,
+	include_domains_schema,
+	limit_schema,
+	query_schema,
+} from './schemas.js';
 
 // Concrete provider imports
 import { config } from '../../config/env.js';
@@ -84,29 +90,14 @@ export const register_web_search = (
 				openWorldHint: true,
 			},
 			schema: v.object({
-				query: v.pipe(v.string(), v.description('Search query')),
+				query: query_schema,
 				provider: v.pipe(
 					v.picklist(provider_names),
 					v.description('Search provider to use'),
 				),
-				limit: v.optional(
-					v.pipe(
-						v.number(),
-						v.description('Maximum number of results (default: 10)'),
-					),
-				),
-				include_domains: v.optional(
-					v.pipe(
-						v.array(v.string()),
-						v.description('Only return results from these domains'),
-					),
-				),
-				exclude_domains: v.optional(
-					v.pipe(
-						v.array(v.string()),
-						v.description('Exclude results from these domains'),
-					),
-				),
+				limit: limit_schema,
+				include_domains: include_domains_schema,
+				exclude_domains: exclude_domains_schema,
 			}),
 		},
 		async ({

@@ -9,6 +9,7 @@ import {
 import { config } from '../../config/env.js';
 import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
+import { url_or_urls_schema } from './schemas.js';
 
 // Concrete provider imports
 import { ExaContentsProvider } from '../../providers/processing/exa-contents/index.js';
@@ -143,10 +144,7 @@ export const register_web_extract = (
 				openWorldHint: true,
 			},
 			schema: v.object({
-				url: v.pipe(
-					v.union([v.string(), v.array(v.string())]),
-					v.description('URL or array of URLs to process'),
-				),
+				url: url_or_urls_schema,
 				provider: v.pipe(
 					v.picklist(available),
 					v.description('Processing provider to use'),

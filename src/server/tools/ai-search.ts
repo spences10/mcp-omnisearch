@@ -5,6 +5,7 @@ import { SearchProvider } from '../../common/types.js';
 import { config } from '../../config/env.js';
 import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
+import { limit_schema, query_schema } from './schemas.js';
 
 // Concrete provider imports
 import { ExaAnswerProvider } from '../../providers/ai-response/exa-answer/index.js';
@@ -66,20 +67,12 @@ export const register_ai_search = (
 				openWorldHint: true,
 			},
 			schema: v.object({
-				query: v.pipe(
-					v.string(),
-					v.description('Question or search query'),
-				),
+				query: query_schema,
 				provider: v.pipe(
 					v.picklist(provider_names),
 					v.description('AI search provider to use'),
 				),
-				limit: v.optional(
-					v.pipe(
-						v.number(),
-						v.description('Maximum number of results (default: 10)'),
-					),
-				),
+				limit: limit_schema,
 			}),
 		},
 		async ({ query, provider, limit }) =>
