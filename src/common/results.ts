@@ -8,6 +8,18 @@ const CHARS_PER_TOKEN = 4;
 const MAX_SAFE_TOKENS = 20000;
 const MAX_SAFE_CHARS = MAX_SAFE_TOKENS * CHARS_PER_TOKEN;
 
+type LargeResultMode = 'inline' | 'file';
+
+const get_large_result_mode = (): LargeResultMode => {
+	const configured_mode = process.env.OMNISEARCH_LARGE_RESULT_MODE;
+
+	if (configured_mode === 'inline' || configured_mode === 'file') {
+		return configured_mode;
+	}
+
+	return 'file';
+};
+
 export interface Section {
 	title: string;
 	line: number;
@@ -109,6 +121,10 @@ export const handle_large_result = <T>(
 	const char_count = json.length;
 
 	if (char_count <= MAX_SAFE_CHARS) {
+		return result;
+	}
+
+	if (get_large_result_mode() === 'inline') {
 		return result;
 	}
 

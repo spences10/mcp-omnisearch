@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, rmSync } from 'node:fs';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	aggregate_url_results,
 	handle_large_result,
@@ -7,6 +7,19 @@ import {
 import { ErrorType } from './types.js';
 
 const created_files: string[] = [];
+const original_large_result_mode =
+	process.env.OMNISEARCH_LARGE_RESULT_MODE;
+
+const restore_env = () => {
+	if (original_large_result_mode === undefined) {
+		delete process.env.OMNISEARCH_LARGE_RESULT_MODE;
+	} else {
+		process.env.OMNISEARCH_LARGE_RESULT_MODE =
+			original_large_result_mode;
+	}
+};
+
+beforeEach(restore_env);
 
 afterEach(() => {
 	for (const file of created_files.splice(0)) {
@@ -14,6 +27,8 @@ afterEach(() => {
 			rmSync(file);
 		}
 	}
+
+	restore_env();
 });
 
 describe('handle_large_result', () => {
@@ -81,6 +96,31 @@ describe('handle_large_result', () => {
 		expect(written).toContain('# Heading');
 		expect(written).toContain('METADATA');
 	});
+
+	it('returns oversized results inline when configured', () => {
+		process.env.OMNISEARCH_LARGE_RESULT_MODE = 'inline';
+		const result = {
+			content: 'x'.repeat(90000),
+			source_provider: 'tavily',
+		};
+
+		expect(handle_large_result(result, 'web_extract')).toBe(result);
+	});
+
+	it('writes oversized results to a temporary file when explicitly configured', () => {
+		process.env.OMNISEARCH_LARGE_RESULT_MODE = 'file';
+		const result = {
+			content: 'x'.repeat(90000),
+			source_provider: 'tavily',
+		};
+
+		const handled = handle_large_result(result, 'web_extract') as {
+			file_path: string;
+		};
+		created_files.push(handled.file_path);
+
+		expect(handled.file_path).toContain('mcp-web_extract-');
+	});
 });
 
 describe('aggregate_url_results', () => {
@@ -147,7 +187,7 @@ describe('aggregate_url_results', () => {
 				['https://example.com/a'],
 				'basic',
 			),
-		).toThrowError(
+		).toThrow(
 			expect.objectContaining({
 				type: ErrorType.PROVIDER_ERROR,
 				provider: 'firecrawl',

@@ -229,6 +229,10 @@ API keys will be activated:
   Extract, Actions)
 - `FIRECRAWL_BASE_URL`: For self-hosted Firecrawl instances (optional,
   defaults to Firecrawl cloud service)
+- `OMNISEARCH_LARGE_RESULT_MODE`: Controls oversized MCP responses:
+  `file` (default) writes temp-file pointers, `inline` returns full
+  content so MCP clients can handle indexing, truncation, or offload
+  themselves.
 
 You can start with just one or two API keys and add more later as
 needed. The server will log which providers are available on startup.
