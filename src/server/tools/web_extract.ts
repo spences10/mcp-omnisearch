@@ -1,15 +1,14 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
-import { create_error_response } from '../../common/errors.js';
-import { handle_large_result } from '../../common/results.js';
 import {
 	ErrorType,
 	ProcessingProvider,
 	ProviderError,
 } from '../../common/types.js';
-import { is_api_key_valid } from '../../common/validation.js';
 import { config } from '../../config/env.js';
+import { ProviderRegistry } from '../provider-registry.js';
+import { handle_tool_result } from './responses.js';
 
 // Concrete provider imports
 import { ExaContentsProvider } from '../../providers/processing/exa_contents/index.js';
@@ -41,89 +40,73 @@ export type WebExtractMode =
 // Provider key combines provider + mode
 type ProviderKey = string;
 
-const providers = new Map<ProviderKey, ProcessingProvider>();
+const providers = new ProviderRegistry<ProcessingProvider>();
 
 const make_key = (provider: string, mode: string): ProviderKey =>
 	`${provider}:${mode}`;
 
 export const initialize_web_extract = (): boolean => {
-	// Tavily
-	if (
-		is_api_key_valid(
-			config.processing.tavily_extract.api_key,
-			'tavily_extract',
-		)
-	)
-		providers.set(
-			make_key('tavily', 'extract'),
-			new TavilyExtractProvider(),
-		);
+	providers.clear();
+	providers.register({
+		id: make_key('tavily', 'extract'),
+		name: 'tavily',
+		category: 'processing',
+		api_key: config.processing.tavily_extract.api_key,
+		api_key_name: 'tavily_extract',
+		modes: ['extract'],
+		create: () => new TavilyExtractProvider(),
+	});
+	providers.register({
+		id: make_key('kagi', 'summarize'),
+		name: 'kagi',
+		category: 'processing',
+		api_key: config.processing.kagi_summarizer.api_key,
+		api_key_name: 'kagi_summarizer',
+		modes: ['summarize'],
+		create: () => new KagiSummarizerProvider(),
+	});
 
-	// Kagi
-	if (
-		is_api_key_valid(
-			config.processing.kagi_summarizer.api_key,
-			'kagi_summarizer',
-		)
-	)
-		providers.set(
-			make_key('kagi', 'summarize'),
-			new KagiSummarizerProvider(),
-		);
-
-	// Firecrawl
-	if (
-		is_api_key_valid(
-			config.processing.firecrawl_scrape.api_key,
-			'firecrawl',
-		)
-	) {
-		providers.set(
-			make_key('firecrawl', 'scrape'),
-			new FirecrawlScrapeProvider(),
-		);
-		providers.set(
-			make_key('firecrawl', 'crawl'),
-			new FirecrawlCrawlProvider(),
-		);
-		providers.set(
-			make_key('firecrawl', 'map'),
-			new FirecrawlMapProvider(),
-		);
-		providers.set(
-			make_key('firecrawl', 'extract'),
-			new FirecrawlExtractProvider(),
-		);
-		providers.set(
-			make_key('firecrawl', 'actions'),
-			new FirecrawlActionsProvider(),
-		);
+	const firecrawl_modes: Array<{
+		mode: WebExtractMode;
+		create: () => ProcessingProvider;
+	}> = [
+		{ mode: 'scrape', create: () => new FirecrawlScrapeProvider() },
+		{ mode: 'crawl', create: () => new FirecrawlCrawlProvider() },
+		{ mode: 'map', create: () => new FirecrawlMapProvider() },
+		{ mode: 'extract', create: () => new FirecrawlExtractProvider() },
+		{ mode: 'actions', create: () => new FirecrawlActionsProvider() },
+	];
+	for (const { mode, create } of firecrawl_modes) {
+		providers.register({
+			id: make_key('firecrawl', mode),
+			name: 'firecrawl',
+			category: 'processing',
+			api_key: config.processing.firecrawl_scrape.api_key,
+			api_key_name: 'firecrawl',
+			modes: [mode],
+			create,
+		});
 	}
 
-	// Exa
-	if (
-		is_api_key_valid(config.processing.exa_contents.api_key, 'exa')
-	) {
-		providers.set(
-			make_key('exa', 'contents'),
-			new ExaContentsProvider(),
-		);
-		providers.set(
-			make_key('exa', 'similar'),
-			new ExaSimilarProvider(),
-		);
+	for (const mode of ['contents', 'similar'] as const) {
+		providers.register({
+			id: make_key('exa', mode),
+			name: 'exa',
+			category: 'processing',
+			api_key: config.processing.exa_contents.api_key,
+			api_key_name: 'exa',
+			modes: [mode],
+			create: () =>
+				mode === 'contents'
+					? new ExaContentsProvider()
+					: new ExaSimilarProvider(),
+		});
 	}
 
 	return providers.size > 0;
 };
 
-export const get_available_providers = () => {
-	const available = new Set<string>();
-	for (const key of providers.keys()) {
-		available.add(key.split(':')[0]);
-	}
-	return Array.from(available);
-};
+export const get_available_providers = () => providers.names();
 
 // Default modes per provider
 const default_modes: Record<WebExtractProvider, WebExtractMode> = {
@@ -193,13 +176,12 @@ export const register_web_extract = (
 				),
 			}),
 		},
-		async ({ url, provider, mode, extract_depth }) => {
-			try {
-				const resolved_mode =
-					mode || default_modes[provider as WebExtractProvider];
+		async ({ url, provider, mode, extract_depth }) =>
+			handle_tool_result('web_extract', async () => {
+				const provider_name = provider as WebExtractProvider;
+				const resolved_mode = mode || default_modes[provider_name];
+				const allowed = valid_modes[provider_name];
 
-				// Validate mode for provider
-				const allowed = valid_modes[provider as WebExtractProvider];
 				if (allowed && !allowed.includes(resolved_mode)) {
 					throw new ProviderError(
 						ErrorType.INVALID_INPUT,
@@ -209,44 +191,13 @@ export const register_web_extract = (
 				}
 
 				const key = make_key(provider, resolved_mode);
-				const selected = providers.get(key);
-
-				if (!selected) {
-					throw new ProviderError(
-						ErrorType.INVALID_INPUT,
-						`Provider "${provider}" with mode "${resolved_mode}" is not available. Check your API keys.`,
-						'web_extract',
-					);
-				}
-
-				const result = await selected.process_content(
-					url,
-					extract_depth,
-				);
-				const safe_result = handle_large_result(
-					result,
+				const selected = providers.require(
+					key,
 					'web_extract',
+					`Provider "${provider}" with mode "${resolved_mode}" is not available. Check your API keys.`,
 				);
-				return {
-					content: [
-						{
-							type: 'text' as const,
-							text: JSON.stringify(safe_result, null, 2),
-						},
-					],
-				};
-			} catch (error) {
-				const error_response = create_error_response(error as Error);
-				return {
-					content: [
-						{
-							type: 'text' as const,
-							text: error_response.error,
-						},
-					],
-					isError: true,
-				};
-			}
-		},
+
+				return selected.process_content(url, extract_depth);
+			}),
 	);
 };

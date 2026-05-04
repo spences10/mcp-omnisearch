@@ -1,28 +1,32 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
-import { create_error_response } from '../../common/errors.js';
-import { handle_large_result } from '../../common/results.js';
-import { is_api_key_valid } from '../../common/validation.js';
 import { config } from '../../config/env.js';
 import { GitHubSearchProvider } from '../../providers/search/github/index.js';
+import { ProviderRegistry } from '../provider-registry.js';
+import { handle_tool_result } from './responses.js';
 
-let provider: GitHubSearchProvider | undefined;
+const providers = new ProviderRegistry<GitHubSearchProvider>();
 
 export const initialize_github_search = (): boolean => {
-	if (is_api_key_valid(config.search.github.api_key, 'github')) {
-		provider = new GitHubSearchProvider();
-		return true;
-	}
-	return false;
+	providers.clear();
+	providers.register({
+		id: 'github',
+		name: 'github',
+		category: 'search',
+		api_key: config.search.github.api_key,
+		create: () => new GitHubSearchProvider(),
+	});
+
+	return providers.size > 0;
 };
 
-export const get_available = () => (provider ? ['github'] : []);
+export const get_available = () => providers.names();
 
 export const register_github_search = (
 	server: McpServer<GenericSchema>,
 ) => {
-	if (!provider) return;
+	if (providers.size === 0) return;
 
 	server.tool(
 		{
@@ -57,54 +61,28 @@ export const register_github_search = (
 				),
 			}),
 		},
-		async ({ query, search_type = 'code', limit, sort }) => {
-			try {
-				let results;
+		async ({ query, search_type = 'code', limit, sort }) =>
+			handle_tool_result('github_search', async () => {
+				const selected = providers.require('github', 'github_search');
+
 				switch (search_type) {
 					case 'code':
-						results = await provider!.search_code({
+						return selected.search_code({
 							query,
 							limit,
 						});
-						break;
 					case 'repositories':
-						results = await provider!.search_repositories({
+						return selected.search_repositories({
 							query,
 							limit,
 							sort,
-						} as any);
-						break;
+						});
 					case 'users':
-						results = await provider!.search_users({
+						return selected.search_users({
 							query,
 							limit,
 						});
-						break;
 				}
-				const safe_results = handle_large_result(
-					results,
-					'github_search',
-				);
-				return {
-					content: [
-						{
-							type: 'text' as const,
-							text: JSON.stringify(safe_results, null, 2),
-						},
-					],
-				};
-			} catch (error) {
-				const error_response = create_error_response(error as Error);
-				return {
-					content: [
-						{
-							type: 'text' as const,
-							text: error_response.error,
-						},
-					],
-					isError: true,
-				};
-			}
-		},
+			}),
 	);
 };

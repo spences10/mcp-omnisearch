@@ -1,14 +1,9 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
-import { create_error_response } from '../../common/errors.js';
-import { handle_large_result } from '../../common/results.js';
-import {
-	ErrorType,
-	ProviderError,
-	SearchProvider,
-} from '../../common/types.js';
-import { is_api_key_valid } from '../../common/validation.js';
+import { SearchProvider } from '../../common/types.js';
+import { ProviderRegistry } from '../provider-registry.js';
+import { handle_tool_result } from './responses.js';
 
 // Concrete provider imports
 import { config } from '../../config/env.js';
@@ -25,42 +20,57 @@ export type WebSearchProviderName =
 	| 'exa'
 	| 'kagi_enrichment';
 
-const providers = new Map<string, SearchProvider>();
+const providers = new ProviderRegistry<SearchProvider>();
 
 export const initialize_web_search = (): boolean => {
-	if (is_api_key_valid(config.search.tavily.api_key, 'tavily'))
-		providers.set('tavily', new TavilySearchProvider());
-	if (is_api_key_valid(config.search.brave.api_key, 'brave'))
-		providers.set('brave', new BraveSearchProvider());
-	if (is_api_key_valid(config.search.kagi.api_key, 'kagi'))
-		providers.set('kagi', new KagiSearchProvider());
-	if (is_api_key_valid(config.search.exa.api_key, 'exa'))
-		providers.set('exa', new ExaSearchProvider());
-	if (
-		is_api_key_valid(
-			config.enhancement.kagi_enrichment.api_key,
-			'kagi_enrichment',
-		)
-	)
-		providers.set(
-			'kagi_enrichment',
-			new KagiEnrichmentSearchProvider(),
-		);
+	providers.clear();
+	providers.register({
+		id: 'tavily',
+		name: 'tavily',
+		category: 'search',
+		api_key: config.search.tavily.api_key,
+		create: () => new TavilySearchProvider(),
+	});
+	providers.register({
+		id: 'brave',
+		name: 'brave',
+		category: 'search',
+		api_key: config.search.brave.api_key,
+		create: () => new BraveSearchProvider(),
+	});
+	providers.register({
+		id: 'kagi',
+		name: 'kagi',
+		category: 'search',
+		api_key: config.search.kagi.api_key,
+		create: () => new KagiSearchProvider(),
+	});
+	providers.register({
+		id: 'exa',
+		name: 'exa',
+		category: 'search',
+		api_key: config.search.exa.api_key,
+		create: () => new ExaSearchProvider(),
+	});
+	providers.register({
+		id: 'kagi_enrichment',
+		name: 'kagi_enrichment',
+		category: 'search',
+		api_key: config.enhancement.kagi_enrichment.api_key,
+		create: () => new KagiEnrichmentSearchProvider(),
+	});
 
 	return providers.size > 0;
 };
 
-export const get_available_providers = () =>
-	Array.from(providers.keys());
+export const get_available_providers = () => providers.names();
 
 export const register_web_search = (
 	server: McpServer<GenericSchema>,
 ) => {
 	if (providers.size === 0) return;
 
-	const provider_names = Array.from(
-		providers.keys(),
-	) as WebSearchProviderName[];
+	const provider_names = providers.ids() as WebSearchProviderName[];
 
 	server.tool(
 		{
@@ -105,47 +115,16 @@ export const register_web_search = (
 			limit,
 			include_domains,
 			exclude_domains,
-		}) => {
-			try {
-				const selected = providers.get(provider);
-				if (!selected) {
-					throw new ProviderError(
-						ErrorType.INVALID_INPUT,
-						`Provider "${provider}" is not available. Available: ${Array.from(providers.keys()).join(', ')}`,
-						'web_search',
-					);
-				}
+		}) =>
+			handle_tool_result('web_search', async () => {
+				const selected = providers.require(provider, 'web_search');
 
-				const results = await selected.search({
+				return selected.search({
 					query,
 					limit,
 					include_domains,
 					exclude_domains,
 				});
-				const safe_results = handle_large_result(
-					results,
-					'web_search',
-				);
-				return {
-					content: [
-						{
-							type: 'text' as const,
-							text: JSON.stringify(safe_results, null, 2),
-						},
-					],
-				};
-			} catch (error) {
-				const error_response = create_error_response(error as Error);
-				return {
-					content: [
-						{
-							type: 'text' as const,
-							text: error_response.error,
-						},
-					],
-					isError: true,
-				};
-			}
-		},
+			}),
 	);
 };
