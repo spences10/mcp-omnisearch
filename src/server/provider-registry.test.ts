@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ProviderRegistry } from './provider-registry.js';
 import { ProviderError } from '../common/types.js';
+import { ProviderRegistry } from './provider-registry.js';
 
 describe('ProviderRegistry', () => {
 	it('registers providers with valid API keys', () => {
@@ -18,6 +18,15 @@ describe('ProviderRegistry', () => {
 		expect(registry.ids()).toEqual(['brave']);
 		expect(registry.names()).toEqual(['brave']);
 		expect(registry.get('brave')).toEqual({ name: 'brave' });
+		expect(registry.status_entries()).toEqual([
+			expect.objectContaining({
+				id: 'brave',
+				name: 'brave',
+				category: 'search',
+				status: 'available',
+				api_key_name: 'brave',
+			}),
+		]);
 	});
 
 	it('skips providers with missing API keys', () => {
@@ -33,6 +42,15 @@ describe('ProviderRegistry', () => {
 
 		expect(registry.size).toBe(0);
 		expect(registry.get('brave')).toBeUndefined();
+		expect(registry.status_entries()).toEqual([
+			expect.objectContaining({
+				id: 'brave',
+				name: 'brave',
+				category: 'search',
+				status: 'unavailable',
+				unavailable_reason: 'missing_api_key',
+			}),
+		]);
 	});
 
 	it('deduplicates provider names across multiple ids', () => {

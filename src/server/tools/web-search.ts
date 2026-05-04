@@ -35,6 +35,13 @@ export const initialize_web_search = (): boolean => {
 		id: 'tavily',
 		name: 'tavily',
 		category: 'search',
+		api_key_name: 'TAVILY_API_KEY',
+		tools: ['web_search'],
+		capabilities: [
+			'web_search',
+			'domain_filters',
+			'operator_translation',
+		],
 		api_key: config.search.tavily.api_key,
 		create: () => new TavilySearchProvider(),
 	});
@@ -42,6 +49,13 @@ export const initialize_web_search = (): boolean => {
 		id: 'brave',
 		name: 'brave',
 		category: 'search',
+		api_key_name: 'BRAVE_API_KEY',
+		tools: ['web_search'],
+		capabilities: [
+			'web_search',
+			'domain_filters',
+			'operator_passthrough',
+		],
 		api_key: config.search.brave.api_key,
 		create: () => new BraveSearchProvider(),
 	});
@@ -49,6 +63,13 @@ export const initialize_web_search = (): boolean => {
 		id: 'kagi',
 		name: 'kagi',
 		category: 'search',
+		api_key_name: 'KAGI_API_KEY',
+		tools: ['web_search'],
+		capabilities: [
+			'web_search',
+			'domain_filters',
+			'operator_passthrough',
+		],
 		api_key: config.search.kagi.api_key,
 		create: () => new KagiSearchProvider(),
 	});
@@ -56,6 +77,9 @@ export const initialize_web_search = (): boolean => {
 		id: 'exa',
 		name: 'exa',
 		category: 'search',
+		api_key_name: 'EXA_API_KEY',
+		tools: ['web_search'],
+		capabilities: ['web_search', 'domain_filters', 'semantic_search'],
 		api_key: config.search.exa.api_key,
 		create: () => new ExaSearchProvider(),
 	});
@@ -63,6 +87,9 @@ export const initialize_web_search = (): boolean => {
 		id: 'kagi_enrichment',
 		name: 'kagi_enrichment',
 		category: 'search',
+		api_key_name: 'KAGI_API_KEY',
+		tools: ['web_search'],
+		capabilities: ['specialized_indexes', 'web_enrichment'],
 		api_key: config.enhancement.kagi_enrichment.api_key,
 		create: () => new KagiEnrichmentSearchProvider(),
 	});
@@ -71,6 +98,9 @@ export const initialize_web_search = (): boolean => {
 };
 
 export const get_available_providers = () => providers.names();
+
+export const get_provider_status_entries = () =>
+	providers.status_entries();
 
 export const register_web_search = (
 	server: McpServer<GenericSchema>,

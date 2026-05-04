@@ -58,8 +58,10 @@ export const initialize_web_extract = (): boolean => {
 		name: 'tavily',
 		category: 'processing',
 		api_key: config.processing.tavily_extract.api_key,
-		api_key_name: 'tavily_extract',
+		api_key_name: 'TAVILY_API_KEY',
+		tools: ['web_extract'],
 		modes: ['extract'],
+		capabilities: ['content_extraction', 'raw_contents'],
 		create: () => new TavilyExtractProvider(),
 	});
 	providers.register({
@@ -67,29 +69,54 @@ export const initialize_web_extract = (): boolean => {
 		name: 'kagi',
 		category: 'processing',
 		api_key: config.processing.kagi_summarizer.api_key,
-		api_key_name: 'kagi_summarizer',
+		api_key_name: 'KAGI_API_KEY',
+		tools: ['web_extract'],
 		modes: ['summarize'],
+		capabilities: ['summarization'],
 		create: () => new KagiSummarizerProvider(),
 	});
 
 	const firecrawl_modes: Array<{
 		mode: WebExtractMode;
+		capabilities: readonly string[];
 		create: () => ProcessingProvider;
 	}> = [
-		{ mode: 'scrape', create: () => new FirecrawlScrapeProvider() },
-		{ mode: 'crawl', create: () => new FirecrawlCrawlProvider() },
-		{ mode: 'map', create: () => new FirecrawlMapProvider() },
-		{ mode: 'extract', create: () => new FirecrawlExtractProvider() },
-		{ mode: 'actions', create: () => new FirecrawlActionsProvider() },
+		{
+			mode: 'scrape',
+			capabilities: ['scraping'],
+			create: () => new FirecrawlScrapeProvider(),
+		},
+		{
+			mode: 'crawl',
+			capabilities: ['crawling'],
+			create: () => new FirecrawlCrawlProvider(),
+		},
+		{
+			mode: 'map',
+			capabilities: ['site_mapping'],
+			create: () => new FirecrawlMapProvider(),
+		},
+		{
+			mode: 'extract',
+			capabilities: ['structured_extraction'],
+			create: () => new FirecrawlExtractProvider(),
+		},
+		{
+			mode: 'actions',
+			capabilities: ['browser_actions'],
+			create: () => new FirecrawlActionsProvider(),
+		},
 	];
-	for (const { mode, create } of firecrawl_modes) {
+	for (const { mode, capabilities, create } of firecrawl_modes) {
 		providers.register({
 			id: make_key('firecrawl', mode),
 			name: 'firecrawl',
 			category: 'processing',
 			api_key: config.processing.firecrawl_scrape.api_key,
-			api_key_name: 'firecrawl',
+			api_key_name: 'FIRECRAWL_API_KEY',
+			tools: ['web_extract'],
 			modes: [mode],
+			capabilities,
 			create,
 		});
 	}
@@ -100,8 +127,13 @@ export const initialize_web_extract = (): boolean => {
 			name: 'exa',
 			category: 'processing',
 			api_key: config.processing.exa_contents.api_key,
-			api_key_name: 'exa',
+			api_key_name: 'EXA_API_KEY',
+			tools: ['web_extract'],
 			modes: [mode],
+			capabilities:
+				mode === 'contents'
+					? ['content_retrieval']
+					: ['similar_pages'],
 			create: () =>
 				mode === 'contents'
 					? new ExaContentsProvider()
@@ -113,6 +145,9 @@ export const initialize_web_extract = (): boolean => {
 };
 
 export const get_available_providers = () => providers.names();
+
+export const get_provider_status_entries = () =>
+	providers.status_entries();
 
 // Default modes per provider
 const default_modes: Record<WebExtractProvider, WebExtractMode> = {

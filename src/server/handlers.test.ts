@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { setup_handlers } from './handlers.js';
-import { available_providers } from './tools/index.js';
+import type { ProviderStatus } from './provider-registry.js';
+import {
+	available_providers,
+	provider_status_entries,
+} from './tools/index.js';
 
 interface RegisteredResource {
 	definition: { name: string; uri: string };
@@ -26,14 +30,53 @@ const reset_available_providers = () => {
 	available_providers.search.clear();
 	available_providers.ai_response.clear();
 	available_providers.processing.clear();
+	provider_status_entries.length = 0;
 };
+
+const provider_status = (
+	overrides: Partial<ProviderStatus>,
+): ProviderStatus => ({
+	id: 'brave',
+	name: 'brave',
+	category: 'search',
+	status: 'available',
+	api_key_name: 'BRAVE_API_KEY',
+	tools: ['web_search'],
+	modes: [],
+	capabilities: ['web_search'],
+	...overrides,
+});
 
 describe('setup_handlers', () => {
 	it('registers provider status and provider info resources', async () => {
 		reset_available_providers();
-		available_providers.search.add('brave');
-		available_providers.ai_response.add('linkup');
-		available_providers.processing.add('firecrawl');
+		provider_status_entries.push(
+			provider_status({
+				id: 'brave',
+				name: 'brave',
+				category: 'search',
+				api_key_name: 'BRAVE_API_KEY',
+			}),
+			provider_status({
+				id: 'linkup',
+				name: 'linkup',
+				category: 'ai_response',
+				api_key_name: 'LINKUP_API_KEY',
+				tools: ['ai_search'],
+				capabilities: ['answer_generation'],
+			}),
+			provider_status({
+				id: 'firecrawl:scrape',
+				name: 'firecrawl',
+				category: 'processing',
+				status: 'unavailable',
+				api_key_name: 'FIRECRAWL_API_KEY',
+				tools: ['web_extract'],
+				modes: ['scrape'],
+				capabilities: ['scraping'],
+				unavailable_reason: 'missing_api_key',
+			}),
+		);
 
 		const { resources, server } = create_mock_server();
 		setup_handlers(server as any);
@@ -42,31 +85,69 @@ describe('setup_handlers', () => {
 			resources.map((resource) => resource.definition.name),
 		).toEqual(['provider-status', 'provider-info']);
 
-		const provider_status = resources.find(
+		const provider_status_resource = resources.find(
 			(resource) => resource.definition.name === 'provider-status',
 		)!;
-		const status_response = await provider_status.handler();
+		const status_response = await provider_status_resource.handler();
 		const status_body = JSON.parse(status_response.contents[0].text);
 
-		expect(status_body).toEqual({
-			status: 'operational',
-			providers: {
-				search: ['brave'],
-				ai_response: ['linkup'],
-				processing: ['firecrawl'],
-			},
-			available_count: {
-				search: 1,
-				ai_response: 1,
-				processing: 1,
-				total: 3,
-			},
+		expect(status_body.status).toBe('degraded');
+		expect(status_body.providers.search).toEqual([
+			expect.objectContaining({
+				name: 'brave',
+				status: 'available',
+				api_key_name: 'BRAVE_API_KEY',
+				tools: ['web_search'],
+			}),
+		]);
+		expect(status_body.providers.ai_response).toEqual([
+			expect.objectContaining({
+				name: 'linkup',
+				status: 'available',
+				tools: ['ai_search'],
+			}),
+		]);
+		expect(status_body.providers.processing).toEqual([
+			expect.objectContaining({
+				name: 'firecrawl',
+				status: 'unavailable',
+				api_key_name: 'FIRECRAWL_API_KEY',
+				unavailable_reason: 'missing_api_key',
+			}),
+		]);
+		expect(status_body.available_count).toEqual({
+			search: 1,
+			ai_response: 1,
+			processing: 0,
+			total: 2,
+		});
+		expect(status_body.unavailable_count).toEqual({
+			search: 0,
+			ai_response: 0,
+			processing: 1,
+			total: 1,
 		});
 	});
 
 	it('returns provider information for available providers', async () => {
 		reset_available_providers();
-		available_providers.search.add('kagi');
+		provider_status_entries.push(
+			provider_status({
+				id: 'kagi',
+				name: 'kagi',
+				api_key_name: 'KAGI_API_KEY',
+				capabilities: ['web_search', 'operator_passthrough'],
+			}),
+			provider_status({
+				id: 'kagi:summarize',
+				name: 'kagi',
+				category: 'processing',
+				api_key_name: 'KAGI_API_KEY',
+				tools: ['web_extract'],
+				modes: ['summarize'],
+				capabilities: ['summarization'],
+			}),
+		);
 
 		const { resources, server } = create_mock_server();
 		setup_handlers(server as any);
@@ -81,12 +162,20 @@ describe('setup_handlers', () => {
 
 		expect(body).toEqual({
 			name: 'kagi',
-			status: 'active',
-			capabilities: ['web_search', 'news_search'],
-			rate_limits: {
-				requests_per_minute: 60,
-				requests_per_day: 1000,
-			},
+			status: 'available',
+			categories: ['search'],
+			tools: ['web_search'],
+			modes: [],
+			capabilities: ['operator_passthrough', 'web_search'],
+			providers: [
+				expect.objectContaining({
+					id: 'kagi',
+					name: 'kagi',
+					category: 'search',
+					status: 'available',
+					api_key_name: 'KAGI_API_KEY',
+				}),
+			],
 		});
 	});
 
@@ -102,9 +191,7 @@ describe('setup_handlers', () => {
 
 		await expect(
 			provider_info.handler('omnisearch://search/missing/info'),
-		).rejects.toThrow(
-			'Provider not available: missing (missing API key)',
-		);
+		).rejects.toThrow('Unknown provider: missing');
 
 		await expect(
 			provider_info.handler('omnisearch://unknown/resource'),

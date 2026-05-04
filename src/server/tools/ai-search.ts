@@ -29,6 +29,9 @@ export const initialize_ai_search = (): boolean => {
 		id: 'kagi_fastgpt',
 		name: 'kagi_fastgpt',
 		category: 'ai_response',
+		api_key_name: 'KAGI_API_KEY',
+		tools: ['ai_search'],
+		capabilities: ['answer_generation', 'citations'],
 		api_key: config.ai_response.kagi_fastgpt.api_key,
 		create: () => new KagiFastGPTProvider(),
 	});
@@ -36,6 +39,9 @@ export const initialize_ai_search = (): boolean => {
 		id: 'exa_answer',
 		name: 'exa_answer',
 		category: 'ai_response',
+		api_key_name: 'EXA_API_KEY',
+		tools: ['ai_search'],
+		capabilities: ['answer_generation', 'semantic_search'],
 		api_key: config.ai_response.exa_answer.api_key,
 		create: () => new ExaAnswerProvider(),
 	});
@@ -43,6 +49,9 @@ export const initialize_ai_search = (): boolean => {
 		id: 'linkup',
 		name: 'linkup',
 		category: 'ai_response',
+		api_key_name: 'LINKUP_API_KEY',
+		tools: ['ai_search'],
+		capabilities: ['answer_generation', 'citations'],
 		api_key: config.ai_response.linkup.api_key,
 		create: () => new LinkupProvider(),
 	});
@@ -51,6 +60,9 @@ export const initialize_ai_search = (): boolean => {
 };
 
 export const get_available_providers = () => providers.names();
+
+export const get_provider_status_entries = () =>
+	providers.status_entries();
 
 export const register_ai_search = (
 	server: McpServer<GenericSchema>,

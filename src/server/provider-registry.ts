@@ -13,8 +13,23 @@ export interface ProviderDefinition<T> {
 	api_key: string | undefined;
 	api_key_name?: string;
 	create: () => T;
+	description?: string;
+	tools?: readonly string[];
 	modes?: readonly string[];
 	capabilities?: readonly string[];
+}
+
+export interface ProviderStatus {
+	id: string;
+	name: string;
+	category: ProviderCategory;
+	status: 'available' | 'unavailable';
+	api_key_name: string;
+	description?: string;
+	tools: readonly string[];
+	modes: readonly string[];
+	capabilities: readonly string[];
+	unavailable_reason?: 'missing_api_key';
 }
 
 export interface RegisteredProvider<T> {
@@ -22,8 +37,10 @@ export interface RegisteredProvider<T> {
 	name: string;
 	category: ProviderCategory;
 	instance: T;
-	modes?: readonly string[];
-	capabilities?: readonly string[];
+	description?: string;
+	tools: readonly string[];
+	modes: readonly string[];
+	capabilities: readonly string[];
 }
 
 export class ProviderRegistry<T> {
@@ -31,35 +48,64 @@ export class ProviderRegistry<T> {
 		string,
 		RegisteredProvider<T>
 	>();
+	private readonly statuses = new Map<string, ProviderStatus>();
 	private readonly missing_api_key_names = new Set<string>();
 
 	clear() {
 		this.providers.clear();
+		this.statuses.clear();
 		this.missing_api_key_names.clear();
 	}
 
 	register(definition: ProviderDefinition<T>) {
 		const api_key_name = definition.api_key_name ?? definition.name;
+		const base_status = {
+			id: definition.id,
+			name: definition.name,
+			category: definition.category,
+			api_key_name,
+			description: definition.description,
+			tools: definition.tools ?? [],
+			modes: definition.modes ?? [],
+			capabilities: definition.capabilities ?? [],
+		};
 
 		if (!definition.api_key || definition.api_key.trim() === '') {
 			if (!this.missing_api_key_names.has(api_key_name)) {
 				is_api_key_valid(definition.api_key, api_key_name);
 				this.missing_api_key_names.add(api_key_name);
 			}
+			this.statuses.set(definition.id, {
+				...base_status,
+				status: 'unavailable',
+				unavailable_reason: 'missing_api_key',
+			});
 			return;
 		}
 
 		if (!is_api_key_valid(definition.api_key, api_key_name)) {
+			this.statuses.set(definition.id, {
+				...base_status,
+				status: 'unavailable',
+				unavailable_reason: 'missing_api_key',
+			});
 			return;
 		}
 
+		const instance = definition.create();
 		this.providers.set(definition.id, {
-			id: definition.id,
-			name: definition.name,
-			category: definition.category,
-			instance: definition.create(),
-			modes: definition.modes,
-			capabilities: definition.capabilities,
+			...base_status,
+			instance,
+			description:
+				definition.description ??
+				(instance as { description?: string }).description,
+		});
+		this.statuses.set(definition.id, {
+			...base_status,
+			status: 'available',
+			description:
+				definition.description ??
+				(instance as { description?: string }).description,
 		});
 	}
 
@@ -100,6 +146,10 @@ export class ProviderRegistry<T> {
 
 	entries(): RegisteredProvider<T>[] {
 		return Array.from(this.providers.values());
+	}
+
+	status_entries(): ProviderStatus[] {
+		return Array.from(this.statuses.values());
 	}
 
 	get size() {

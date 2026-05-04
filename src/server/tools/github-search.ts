@@ -19,6 +19,10 @@ export const initialize_github_search = (): boolean => {
 		id: 'github',
 		name: 'github',
 		category: 'search',
+		api_key_name: 'GITHUB_API_KEY',
+		tools: ['github_search'],
+		modes: ['code', 'repositories', 'users'],
+		capabilities: ['code_search', 'repository_search', 'user_search'],
 		api_key: config.search.github.api_key,
 		create: () => new GitHubSearchProvider(),
 	});
@@ -27,6 +31,9 @@ export const initialize_github_search = (): boolean => {
 };
 
 export const get_available = () => providers.names();
+
+export const get_provider_status_entries = () =>
+	providers.status_entries();
 
 export const register_github_search = (
 	server: McpServer<GenericSchema>,
