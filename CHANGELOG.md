@@ -1,5 +1,29 @@
 # mcp-omnisearch
 
+## 0.0.25
+
+### Patch Changes
+
+- 9bb4832: Make retries transient-aware with configurable jitter while
+  preserving provider error details and HTTP status metadata.
+- 7ad7a65: Make provider status resources metadata-driven,
+  secret-safe, and truthful across search, AI, and processing
+  providers.
+- 386efb5: Reduce unsafe TypeScript in provider response parsing,
+  metadata, HTTP helpers, and GitHub error handling.
+- 49c7044: Deduplicate provider registration and MCP tool response
+  handling with shared registry and response helpers.
+- 8678ebd: Make large-result offload configurable so clients can
+  receive oversized responses inline and handle them themselves.
+- 80469ef: Rename non-kebab-case source files and directories to
+  kebab-case, updating imports and validating checks/tests.
+- c7dfc44: Add per-request large-result controls and optional raw
+  content omission for extraction responses.
+- 386efb5: Document provider operator behavior, large-result
+  tradeoffs, remote transport caveats, and common failure modes.
+- 60623c0: Add shared tool input schemas for query, limit, domain, and
+  extraction URL validation.
+
 ## 0.0.24
 
 ### Patch Changes
