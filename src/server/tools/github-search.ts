@@ -1,8 +1,8 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
-import { config } from '../../config/env.js';
 import { GitHubSearchProvider } from '../../providers/search/github/index.js';
+import { github_provider_definitions } from '../provider-definitions.js';
 import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
 import {
@@ -15,17 +15,7 @@ const providers = new ProviderRegistry<GitHubSearchProvider>();
 
 export const initialize_github_search = (): boolean => {
 	providers.clear();
-	providers.register({
-		id: 'github',
-		name: 'github',
-		category: 'search',
-		api_key_name: 'GITHUB_API_KEY',
-		tools: ['github_search'],
-		modes: ['code', 'repositories', 'users'],
-		capabilities: ['code_search', 'repository_search', 'user_search'],
-		api_key: config.search.github.api_key,
-		create: () => new GitHubSearchProvider(),
-	});
+	providers.register_all(github_provider_definitions);
 
 	return providers.size > 0;
 };

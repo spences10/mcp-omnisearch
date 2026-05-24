@@ -109,6 +109,12 @@ export class ProviderRegistry<T> {
 		});
 	}
 
+	register_all(definitions: readonly ProviderDefinition<T>[]) {
+		for (const definition of definitions) {
+			this.register(definition);
+		}
+	}
+
 	get(id: string): T | undefined {
 		return this.providers.get(id)?.instance;
 	}

@@ -2,7 +2,10 @@ import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
 import { SearchProvider } from '../../common/types.js';
-import { config } from '../../config/env.js';
+import {
+	ai_search_provider_definitions,
+	type AISearchProviderName,
+} from '../provider-definitions.js';
 import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
 import {
@@ -11,50 +14,11 @@ import {
 	query_schema,
 } from './schemas.js';
 
-// Concrete provider imports
-import { ExaAnswerProvider } from '../../providers/ai-response/exa-answer/index.js';
-import { KagiFastGPTProvider } from '../../providers/ai-response/kagi-fastgpt/index.js';
-import { LinkupProvider } from '../../providers/ai-response/linkup/index.js';
-
-export type AISearchProviderName =
-	| 'kagi_fastgpt'
-	| 'exa_answer'
-	| 'linkup';
-
 const providers = new ProviderRegistry<SearchProvider>();
 
 export const initialize_ai_search = (): boolean => {
 	providers.clear();
-	providers.register({
-		id: 'kagi_fastgpt',
-		name: 'kagi_fastgpt',
-		category: 'ai_response',
-		api_key_name: 'KAGI_API_KEY',
-		tools: ['ai_search'],
-		capabilities: ['answer_generation', 'citations'],
-		api_key: config.ai_response.kagi_fastgpt.api_key,
-		create: () => new KagiFastGPTProvider(),
-	});
-	providers.register({
-		id: 'exa_answer',
-		name: 'exa_answer',
-		category: 'ai_response',
-		api_key_name: 'EXA_API_KEY',
-		tools: ['ai_search'],
-		capabilities: ['answer_generation', 'semantic_search'],
-		api_key: config.ai_response.exa_answer.api_key,
-		create: () => new ExaAnswerProvider(),
-	});
-	providers.register({
-		id: 'linkup',
-		name: 'linkup',
-		category: 'ai_response',
-		api_key_name: 'LINKUP_API_KEY',
-		tools: ['ai_search'],
-		capabilities: ['answer_generation', 'citations'],
-		api_key: config.ai_response.linkup.api_key,
-		create: () => new LinkupProvider(),
-	});
+	providers.register_all(ai_search_provider_definitions);
 
 	return providers.size > 0;
 };

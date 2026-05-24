@@ -2,6 +2,10 @@ import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
 import { SearchProvider } from '../../common/types.js';
+import {
+	web_search_provider_definitions,
+	type WebSearchProviderName,
+} from '../provider-definitions.js';
 import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
 import {
@@ -12,87 +16,11 @@ import {
 	query_schema,
 } from './schemas.js';
 
-// Concrete provider imports
-import { config } from '../../config/env.js';
-import { KagiEnrichmentSearchProvider } from '../../providers/enhancement/kagi-enrichment/index.js';
-import { BraveSearchProvider } from '../../providers/search/brave/index.js';
-import { ExaSearchProvider } from '../../providers/search/exa/index.js';
-import { KagiSearchProvider } from '../../providers/search/kagi/index.js';
-import { TavilySearchProvider } from '../../providers/search/tavily/index.js';
-
-export type WebSearchProviderName =
-	| 'tavily'
-	| 'brave'
-	| 'kagi'
-	| 'exa'
-	| 'kagi_enrichment';
-
 const providers = new ProviderRegistry<SearchProvider>();
 
 export const initialize_web_search = (): boolean => {
 	providers.clear();
-	providers.register({
-		id: 'tavily',
-		name: 'tavily',
-		category: 'search',
-		api_key_name: 'TAVILY_API_KEY',
-		tools: ['web_search'],
-		capabilities: [
-			'web_search',
-			'domain_filters',
-			'operator_translation',
-		],
-		api_key: config.search.tavily.api_key,
-		create: () => new TavilySearchProvider(),
-	});
-	providers.register({
-		id: 'brave',
-		name: 'brave',
-		category: 'search',
-		api_key_name: 'BRAVE_API_KEY',
-		tools: ['web_search'],
-		capabilities: [
-			'web_search',
-			'domain_filters',
-			'operator_passthrough',
-		],
-		api_key: config.search.brave.api_key,
-		create: () => new BraveSearchProvider(),
-	});
-	providers.register({
-		id: 'kagi',
-		name: 'kagi',
-		category: 'search',
-		api_key_name: 'KAGI_API_KEY',
-		tools: ['web_search'],
-		capabilities: [
-			'web_search',
-			'domain_filters',
-			'operator_passthrough',
-		],
-		api_key: config.search.kagi.api_key,
-		create: () => new KagiSearchProvider(),
-	});
-	providers.register({
-		id: 'exa',
-		name: 'exa',
-		category: 'search',
-		api_key_name: 'EXA_API_KEY',
-		tools: ['web_search'],
-		capabilities: ['web_search', 'domain_filters', 'semantic_search'],
-		api_key: config.search.exa.api_key,
-		create: () => new ExaSearchProvider(),
-	});
-	providers.register({
-		id: 'kagi_enrichment',
-		name: 'kagi_enrichment',
-		category: 'search',
-		api_key_name: 'KAGI_API_KEY',
-		tools: ['web_search'],
-		capabilities: ['specialized_indexes', 'web_enrichment'],
-		api_key: config.enhancement.kagi_enrichment.api_key,
-		create: () => new KagiEnrichmentSearchProvider(),
-	});
+	providers.register_all(web_search_provider_definitions);
 
 	return providers.size > 0;
 };
