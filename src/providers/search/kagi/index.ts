@@ -1,5 +1,7 @@
+import * as v from 'valibot';
 import { handle_provider_error } from '../../../common/errors.js';
 import { http_json } from '../../../common/http.js';
+import { parse_provider_response } from '../../../common/provider-response.js';
 import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	apply_search_operators,
@@ -14,18 +16,22 @@ import {
 import { validate_api_key } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
-interface KagiSearchResponse {
-	data: Array<{
-		title: string;
-		url: string;
-		snippet: string;
-		rank?: number;
-	}>;
-	meta?: {
-		total_hits: number;
-		api_balance?: number;
-	};
-}
+const kagi_search_response_schema = v.object({
+	data: v.array(
+		v.object({
+			title: v.string(),
+			url: v.string(),
+			snippet: v.string(),
+			rank: v.optional(v.number()),
+		}),
+	),
+	meta: v.optional(
+		v.object({
+			total_hits: v.number(),
+			api_balance: v.optional(v.number()),
+		}),
+	),
+});
 
 export class KagiSearchProvider implements SearchProvider {
 	name = 'kagi';
@@ -75,9 +81,7 @@ export class KagiSearchProvider implements SearchProvider {
 					query_params.append('time_range', time_range.join(','));
 				}
 
-				const data = await http_json<
-					KagiSearchResponse & { message?: string }
-				>(
+				const raw_data = await http_json(
 					this.name,
 					`${config.search.kagi.base_url}/search?${query_params}`,
 					{
@@ -90,7 +94,13 @@ export class KagiSearchProvider implements SearchProvider {
 					},
 				);
 
-				return (data.data || []).map((result) => ({
+				const data = parse_provider_response(
+					this.name,
+					kagi_search_response_schema,
+					raw_data,
+				);
+
+				return data.data.map((result) => ({
 					title: result.title,
 					url: result.url,
 					snippet: result.snippet,

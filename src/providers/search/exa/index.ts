@@ -1,8 +1,10 @@
+import * as v from 'valibot';
 import {
 	handle_provider_error,
 	sanitize_query,
 } from '../../../common/errors.js';
 import { http_json } from '../../../common/http.js';
+import { parse_provider_response } from '../../../common/provider-response.js';
 import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	BaseSearchParams,
@@ -24,24 +26,24 @@ interface ExaSearchRequest {
 	category?: string;
 }
 
-interface ExaSearchResult {
-	id: string;
-	title: string;
-	url: string;
-	publishedDate?: string;
-	author?: string;
-	text?: string;
-	score?: number;
-	highlights?: string[];
-	summary?: string;
-}
-
-interface ExaSearchResponse {
-	requestId: string;
-	autopromptString?: string;
-	resolvedSearchType: string;
-	results: ExaSearchResult[];
-}
+const exa_search_response_schema = v.object({
+	requestId: v.string(),
+	autopromptString: v.optional(v.string()),
+	resolvedSearchType: v.string(),
+	results: v.array(
+		v.object({
+			id: v.string(),
+			title: v.string(),
+			url: v.string(),
+			publishedDate: v.optional(v.string()),
+			author: v.optional(v.string()),
+			text: v.optional(v.string()),
+			score: v.optional(v.number()),
+			highlights: v.optional(v.array(v.string())),
+			summary: v.optional(v.string()),
+		}),
+	),
+});
 
 export class ExaSearchProvider implements SearchProvider {
 	name = 'exa';
@@ -79,7 +81,7 @@ export class ExaSearchProvider implements SearchProvider {
 					request_body.excludeDomains = params.exclude_domains;
 				}
 
-				const data = await http_json<ExaSearchResponse>(
+				const raw_data = await http_json(
 					this.name,
 					`${config.search.exa.base_url}/search`,
 					{
@@ -92,6 +94,12 @@ export class ExaSearchProvider implements SearchProvider {
 						},
 						body: JSON.stringify(request_body),
 					},
+				);
+
+				const data = parse_provider_response(
+					this.name,
+					exa_search_response_schema,
+					raw_data,
 				);
 
 				return data.results.map((result) => ({

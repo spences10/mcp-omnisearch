@@ -1,8 +1,10 @@
+import * as v from 'valibot';
 import {
 	handle_provider_error,
 	sanitize_query,
 } from '../../../common/errors.js';
 import { http_json } from '../../../common/http.js';
+import { parse_provider_response } from '../../../common/provider-response.js';
 import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	apply_search_operators,
@@ -29,15 +31,17 @@ interface TavilySearchRequest {
 	country?: string;
 }
 
-interface TavilySearchResponse {
-	results: {
-		title: string;
-		url: string;
-		content: string;
-		score: number;
-	}[];
-	response_time: string;
-}
+const tavily_search_response_schema = v.object({
+	results: v.array(
+		v.object({
+			title: v.string(),
+			url: v.string(),
+			content: v.string(),
+			score: v.number(),
+		}),
+	),
+	response_time: v.optional(v.string()),
+});
 
 export class TavilySearchProvider implements SearchProvider {
 	name = 'tavily';
@@ -103,18 +107,25 @@ export class TavilySearchProvider implements SearchProvider {
 					request_body.country = search_params.location.toLowerCase();
 				}
 
-				const data = await http_json<
-					TavilySearchResponse & { message?: string }
-				>(this.name, `${config.search.tavily.base_url}/search`, {
-					method: 'POST',
-					headers: {
-						Authorization: `Bearer ${api_key}`,
-						'Content-Type': 'application/json',
+				const raw_data = await http_json(
+					this.name,
+					`${config.search.tavily.base_url}/search`,
+					{
+						method: 'POST',
+						headers: {
+							Authorization: `Bearer ${api_key}`,
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify(request_body),
 					},
-					body: JSON.stringify(request_body),
-				});
+				);
+				const data = parse_provider_response(
+					this.name,
+					tavily_search_response_schema,
+					raw_data,
+				);
 
-				return (data.results || []).map((result) => ({
+				return data.results.map((result) => ({
 					title: result.title,
 					url: result.url,
 					snippet: result.content,
