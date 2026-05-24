@@ -1,5 +1,4 @@
-import { handle_rate_limit } from './errors.js';
-import { ErrorType, ProviderError } from './types.js';
+import { normalize_provider_http_error } from './errors.js';
 
 export interface HttpJsonOptions extends RequestInit {
 	expectedStatuses?: number[];
@@ -40,38 +39,11 @@ export const http_json = async <T = unknown>(
 
 	if (!okOrExpected) {
 		const message = get_error_message(body) || raw || res.statusText;
-
-		switch (res.status) {
-			case 401:
-				throw new ProviderError(
-					ErrorType.API_ERROR,
-					'Invalid API key',
-					provider,
-				);
-			case 403:
-				throw new ProviderError(
-					ErrorType.API_ERROR,
-					'API key does not have access to this endpoint',
-					provider,
-				);
-			case 429:
-				handle_rate_limit(provider);
-			default:
-				if (res.status >= 500) {
-					throw new ProviderError(
-						ErrorType.PROVIDER_ERROR,
-						`${provider} API internal error`,
-						provider,
-						{ status: res.status },
-					);
-				}
-				throw new ProviderError(
-					ErrorType.API_ERROR,
-					`Unexpected error: ${message}`,
-					provider,
-					{ status: res.status },
-				);
-		}
+		throw normalize_provider_http_error(
+			provider,
+			res.status,
+			message,
+		);
 	}
 
 	// Prefer JSON if parseable, otherwise return raw text.

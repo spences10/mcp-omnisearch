@@ -20,25 +20,21 @@ const is_object_with_name = (
 	'name' in error &&
 	typeof error.name === 'string';
 
-const get_status = (error: ProviderError): number | undefined => {
-	const details = error.details;
-	if (
-		typeof details === 'object' &&
-		details !== null &&
-		'status' in details &&
-		typeof details.status === 'number'
-	) {
-		return details.status;
-	}
-};
-
 export const is_retryable_error = (error: unknown): boolean => {
 	if (error instanceof ProviderError) {
-		if (error.type === ErrorType.RATE_LIMIT) {
+		if (typeof error.details?.retryable === 'boolean') {
+			return error.details.retryable;
+		}
+
+		if (
+			error.type === ErrorType.RATE_LIMIT ||
+			error.type === ErrorType.TIMEOUT ||
+			error.type === ErrorType.TRANSIENT_PROVIDER_ERROR
+		) {
 			return true;
 		}
 
-		const status = get_status(error);
+		const status = error.details?.status;
 		return (
 			status !== undefined &&
 			(status === 408 || status === 429 || status >= 500)

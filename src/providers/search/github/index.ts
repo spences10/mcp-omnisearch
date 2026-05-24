@@ -1,11 +1,10 @@
 import { Octokit } from 'octokit';
 import * as v from 'valibot';
+import { normalize_provider_http_error } from '../../../common/errors.js';
 import { parse_provider_response } from '../../../common/provider-response.js';
 import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	BaseSearchParams,
-	ErrorType,
-	ProviderError,
 	SearchProvider,
 	SearchResult,
 } from '../../../common/types.js';
@@ -266,34 +265,7 @@ export class GitHubSearchProvider implements SearchProvider {
 				? error.message
 				: 'An unexpected error occurred.';
 
-		switch (status) {
-			case 401:
-			case 403:
-				throw new ProviderError(
-					ErrorType.API_ERROR,
-					`Invalid or unauthorized GitHub API key: ${message}`,
-					this.name,
-				);
-			case 422:
-				throw new ProviderError(
-					ErrorType.INVALID_INPUT,
-					`Invalid GitHub search query: ${message}`,
-					this.name,
-				);
-			case 429:
-				throw new ProviderError(
-					ErrorType.RATE_LIMIT,
-					`GitHub API rate limit exceeded: ${message}`,
-					this.name,
-				);
-			default:
-				throw new ProviderError(
-					ErrorType.PROVIDER_ERROR,
-					`GitHub API error: ${message}`,
-					this.name,
-					{ status },
-				);
-		}
+		throw normalize_provider_http_error(this.name, status, message);
 	}
 }
 

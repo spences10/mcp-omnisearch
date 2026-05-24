@@ -101,7 +101,13 @@ export const poll_firecrawl_job = async <
 				schema,
 				raw_status_result,
 			) as typeof status_result;
-		} catch {
+		} catch (error) {
+			if (
+				error instanceof ProviderError &&
+				error.details?.retryable === false
+			) {
+				throw error;
+			}
 			continue;
 		}
 
@@ -125,8 +131,9 @@ export const poll_firecrawl_job = async <
 	}
 
 	throw new ProviderError(
-		ErrorType.PROVIDER_ERROR,
+		ErrorType.TIMEOUT,
 		'Job timed out - try again later or with a smaller scope',
 		config.provider_name,
+		{ retryable: true },
 	);
 };

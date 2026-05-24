@@ -65,9 +65,10 @@ describe('http_json', () => {
 		await expect(
 			http_json('kagi', 'https://api.example.com'),
 		).rejects.toMatchObject({
-			type: ErrorType.API_ERROR,
+			type: ErrorType.AUTH_ERROR,
 			provider: 'kagi',
 			message: 'Invalid API key',
+			details: { status: 401, retryable: false },
 		});
 	});
 
@@ -79,9 +80,10 @@ describe('http_json', () => {
 		await expect(
 			http_json('kagi', 'https://api.example.com'),
 		).rejects.toMatchObject({
-			type: ErrorType.API_ERROR,
+			type: ErrorType.AUTH_ERROR,
 			provider: 'kagi',
 			message: 'API key does not have access to this endpoint',
+			details: { status: 403, retryable: false },
 		});
 	});
 
@@ -107,10 +109,10 @@ describe('http_json', () => {
 		await expect(
 			http_json('tavily', 'https://api.example.com'),
 		).rejects.toMatchObject({
-			type: ErrorType.PROVIDER_ERROR,
+			type: ErrorType.TRANSIENT_PROVIDER_ERROR,
 			provider: 'tavily',
 			message: 'tavily API internal error',
-			details: { status: 503 },
+			details: { status: 503, retryable: true },
 		});
 	});
 
@@ -125,10 +127,10 @@ describe('http_json', () => {
 		await expect(
 			http_json('exa', 'https://api.example.com'),
 		).rejects.toMatchObject({
-			type: ErrorType.API_ERROR,
+			type: ErrorType.INVALID_INPUT,
 			provider: 'exa',
-			message: 'Unexpected error: bad request body',
-			details: { status: 400 },
+			message: 'Invalid request: bad request body',
+			details: { status: 400, retryable: false },
 		});
 	});
 });

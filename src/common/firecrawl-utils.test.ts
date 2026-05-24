@@ -189,10 +189,11 @@ describe('poll_firecrawl_job', () => {
 			firecrawl_job_schema,
 		);
 		const rejection = expect(promise).rejects.toMatchObject({
-			type: ErrorType.PROVIDER_ERROR,
+			type: ErrorType.TIMEOUT,
 			provider: 'firecrawl',
 			message:
 				'Job timed out - try again later or with a smaller scope',
+			details: { retryable: true },
 		});
 
 		await vi.advanceTimersByTimeAsync(20);

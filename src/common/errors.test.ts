@@ -11,11 +11,11 @@ describe('handle_rate_limit', () => {
 	it('throws a provider error with the reset time in details', () => {
 		const reset_time = new Date('2026-04-15T12:00:00.000Z');
 
-		expect(() => handle_rate_limit('brave', reset_time)).toThrowError(
+		expect(() => handle_rate_limit('brave', reset_time)).toThrow(
 			expect.objectContaining({
 				type: ErrorType.RATE_LIMIT,
 				provider: 'brave',
-				details: { reset_time },
+				details: { reset_time, retryable: true },
 				message:
 					'Rate limit exceeded for brave. Reset at 2026-04-15T12:00:00.000Z',
 			}),
@@ -43,7 +43,7 @@ describe('handle_provider_error', () => {
 				'tavily',
 				'fetch search results',
 			),
-		).toThrowError(
+		).toThrow(
 			expect.objectContaining({
 				type: ErrorType.API_ERROR,
 				provider: 'tavily',
@@ -62,21 +62,27 @@ describe('sanitize_query', () => {
 });
 
 describe('create_error_response', () => {
-	it('formats provider errors with the provider prefix', () => {
+	it('formats provider errors with typed retry metadata', () => {
 		const error = new ProviderError(
-			ErrorType.API_ERROR,
+			ErrorType.AUTH_ERROR,
 			'Invalid API key',
 			'exa',
+			{ retryable: false },
 		);
 
 		expect(create_error_response(error)).toEqual({
-			error: 'exa error: Invalid API key',
+			error: 'Invalid API key',
+			type: ErrorType.AUTH_ERROR,
+			provider: 'exa',
+			retryable: false,
 		});
 	});
 
 	it('formats generic errors as unexpected errors', () => {
 		expect(create_error_response(new Error('unexpected'))).toEqual({
 			error: 'Unexpected error: unexpected',
+			type: ErrorType.API_ERROR,
+			retryable: false,
 		});
 	});
 });

@@ -13,19 +13,10 @@ export const create_json_tool_response = (payload: unknown) => ({
 	],
 });
 
-export const create_error_tool_response = (error: Error) => {
-	const error_response = create_error_response(error);
-
-	return {
-		content: [
-			{
-				type: 'text' as const,
-				text: error_response.error,
-			},
-		],
-		isError: true,
-	};
-};
+export const create_error_tool_response = (error: Error) => ({
+	...create_json_tool_response(create_error_response(error)),
+	isError: true,
+});
 
 export interface ToolResultOptions {
 	large_result_mode?: LargeResultMode;

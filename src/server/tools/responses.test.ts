@@ -43,7 +43,16 @@ describe('tool responses', () => {
 			content: [
 				{
 					type: 'text',
-					text: 'web_search error: bad query',
+					text: JSON.stringify(
+						{
+							error: 'bad query',
+							type: ErrorType.INVALID_INPUT,
+							provider: 'web_search',
+							retryable: false,
+						},
+						null,
+						2,
+					),
 				},
 			],
 			isError: true,
@@ -95,7 +104,15 @@ describe('tool responses', () => {
 			content: [
 				{
 					type: 'text',
-					text: 'Unexpected error: boom',
+					text: JSON.stringify(
+						{
+							error: 'Unexpected error: boom',
+							type: ErrorType.API_ERROR,
+							retryable: false,
+						},
+						null,
+						2,
+					),
 				},
 			],
 			isError: true,

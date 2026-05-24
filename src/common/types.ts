@@ -56,9 +56,22 @@ export interface ProcessingProvider {
 // Error types
 export enum ErrorType {
 	API_ERROR = 'API_ERROR',
+	AUTH_ERROR = 'AUTH_ERROR',
 	RATE_LIMIT = 'RATE_LIMIT',
 	INVALID_INPUT = 'INVALID_INPUT',
+	TIMEOUT = 'TIMEOUT',
+	MALFORMED_RESPONSE = 'MALFORMED_RESPONSE',
 	PROVIDER_ERROR = 'PROVIDER_ERROR',
+	TRANSIENT_PROVIDER_ERROR = 'TRANSIENT_PROVIDER_ERROR',
+}
+
+export interface ProviderErrorDetails {
+	status?: number;
+	code?: string;
+	reset_time?: Date;
+	retryable?: boolean;
+	cause?: string;
+	[key: string]: unknown;
 }
 
 export class ProviderError extends Error {
@@ -66,7 +79,7 @@ export class ProviderError extends Error {
 		public type: ErrorType,
 		message: string,
 		public provider: string,
-		public details?: unknown,
+		public details?: ProviderErrorDetails,
 	) {
 		super(message);
 		this.name = 'ProviderError';
