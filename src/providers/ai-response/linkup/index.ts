@@ -1,8 +1,10 @@
+import * as v from 'valibot';
 import {
 	handle_provider_error,
 	sanitize_query,
 } from '../../../common/errors.js';
 import { http_json } from '../../../common/http.js';
+import { parse_provider_response } from '../../../common/provider-response.js';
 import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	BaseSearchParams,
@@ -21,15 +23,17 @@ interface LinkupSearchRequest {
 	maxResults?: number;
 }
 
-interface LinkupSourcedAnswerResponse {
-	answer: string;
-	sources: Array<{
-		favicon: string;
-		name: string;
-		snippet: string;
-		url: string;
-	}>;
-}
+const linkup_sourced_answer_response_schema = v.object({
+	answer: v.string(),
+	sources: v.array(
+		v.object({
+			favicon: v.string(),
+			name: v.string(),
+			snippet: v.string(),
+			url: v.string(),
+		}),
+	),
+});
 
 export class LinkupProvider implements SearchProvider {
 	name = 'linkup';
@@ -66,7 +70,7 @@ export class LinkupProvider implements SearchProvider {
 					request_body.maxResults = params.limit;
 				}
 
-				const data = await http_json<LinkupSourcedAnswerResponse>(
+				const raw_data = await http_json(
 					this.name,
 					`${config.ai_response.linkup.base_url}/search`,
 					{
@@ -80,6 +84,11 @@ export class LinkupProvider implements SearchProvider {
 							config.ai_response.linkup.timeout,
 						),
 					},
+				);
+				const data = parse_provider_response(
+					this.name,
+					linkup_sourced_answer_response_schema,
+					raw_data,
 				);
 
 				const results: SearchResult[] = [

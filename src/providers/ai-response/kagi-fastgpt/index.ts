@@ -1,4 +1,6 @@
+import * as v from 'valibot';
 import { http_json } from '../../../common/http.js';
+import { parse_provider_response } from '../../../common/provider-response.js';
 import {
 	BaseSearchParams,
 	SearchProvider,
@@ -7,22 +9,28 @@ import {
 import { validate_api_key } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
-export interface KagiFastGPTResponse {
-	meta: {
-		id: string;
-		node: string;
-		ms: number;
-	};
-	data: {
-		output: string;
-		tokens: number;
-		references: Array<{
-			title: string;
-			snippet: string;
-			url: string;
-		}>;
-	};
-}
+const kagi_fastgpt_response_schema = v.object({
+	meta: v.object({
+		id: v.string(),
+		node: v.string(),
+		ms: v.number(),
+	}),
+	data: v.object({
+		output: v.string(),
+		tokens: v.number(),
+		references: v.array(
+			v.object({
+				title: v.string(),
+				snippet: v.string(),
+				url: v.string(),
+			}),
+		),
+	}),
+});
+
+export type KagiFastGPTResponse = v.InferOutput<
+	typeof kagi_fastgpt_response_schema
+>;
 
 export interface KagiFastGPTOptions {
 	cache?: boolean;
@@ -92,7 +100,7 @@ export class KagiFastGPTProvider implements SearchProvider {
 		const final_options = { ...default_options, ...options };
 
 		try {
-			return await http_json<KagiFastGPTResponse>(
+			const raw_data = await http_json(
 				this.name,
 				'https://kagi.com/api/v0/fastgpt',
 				{
@@ -110,6 +118,12 @@ export class KagiFastGPTProvider implements SearchProvider {
 						config.ai_response.kagi_fastgpt.timeout,
 					),
 				},
+			);
+
+			return parse_provider_response(
+				this.name,
+				kagi_fastgpt_response_schema,
+				raw_data,
 			);
 		} catch (error: unknown) {
 			const error_message =

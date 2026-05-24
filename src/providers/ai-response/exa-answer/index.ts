@@ -1,8 +1,10 @@
+import * as v from 'valibot';
 import {
 	handle_provider_error,
 	sanitize_query,
 } from '../../../common/errors.js';
 import { http_json } from '../../../common/http.js';
+import { parse_provider_response } from '../../../common/provider-response.js';
 import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	BaseSearchParams,
@@ -12,20 +14,24 @@ import {
 import { validate_api_key } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
-interface ExaAnswerResponse {
-	answer: string;
-	citations?: Array<{
-		id: string;
-		title: string;
-		url: string;
-		publishedDate?: string;
-		text?: string;
-		image?: string;
-		favicon?: string;
-	}>;
-	requestId: string;
-	costDollars?: number;
-}
+const exa_answer_response_schema = v.object({
+	answer: v.string(),
+	citations: v.optional(
+		v.array(
+			v.object({
+				id: v.string(),
+				title: v.string(),
+				url: v.string(),
+				publishedDate: v.optional(v.string()),
+				text: v.optional(v.string()),
+				image: v.optional(v.string()),
+				favicon: v.optional(v.string()),
+			}),
+		),
+	),
+	requestId: v.string(),
+	costDollars: v.optional(v.number()),
+});
 
 export class ExaAnswerProvider implements SearchProvider {
 	name = 'exa_answer';
@@ -40,7 +46,7 @@ export class ExaAnswerProvider implements SearchProvider {
 
 		const search_request = async () => {
 			try {
-				const data = await http_json<ExaAnswerResponse>(
+				const raw_data = await http_json(
 					this.name,
 					`${config.ai_response.exa_answer.base_url}/answer`,
 					{
@@ -56,6 +62,11 @@ export class ExaAnswerProvider implements SearchProvider {
 							config.ai_response.exa_answer.timeout,
 						),
 					},
+				);
+				const data = parse_provider_response(
+					this.name,
+					exa_answer_response_schema,
+					raw_data,
 				);
 
 				const results: SearchResult[] = [
