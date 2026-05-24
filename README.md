@@ -288,6 +288,10 @@ per-URL text in both `content` and `raw_contents`.
 Remote transport caveat: server-side temp-file paths are only useful
 when the MCP client can read the server's filesystem. Prefer `inline`
 for HTTP, hosted, containerized, or otherwise remote MCP deployments.
+When `OMNISEARCH_LARGE_RESULT_MODE=file` is used in common remote or
+container environments, the server logs a startup warning. A future
+breaking release may rename this mode to `local_file`; keep using
+`inline` anywhere the MCP client and server do not share a filesystem.
 
 ### GitHub API Key Setup
 

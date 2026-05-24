@@ -124,6 +124,33 @@ export const config = {
 	},
 };
 
+const remote_deployment_markers = [
+	'AWS_LAMBDA_FUNCTION_NAME',
+	'CONTAINER',
+	'DOCKER_CONTAINER',
+	'FLY_APP_NAME',
+	'K_SERVICE',
+	'RENDER',
+	'VERCEL',
+];
+
+export const should_warn_for_local_file_offload = (
+	env: NodeJS.ProcessEnv = process.env,
+) =>
+	env.OMNISEARCH_LARGE_RESULT_MODE === 'file' &&
+	remote_deployment_markers.some((marker) => Boolean(env[marker]));
+
+export const warn_for_local_file_offload = (
+	env: NodeJS.ProcessEnv = process.env,
+	warn: (message: string) => void = console.warn,
+) => {
+	if (!should_warn_for_local_file_offload(env)) return;
+
+	warn(
+		'Warning: OMNISEARCH_LARGE_RESULT_MODE=file returns server-side temp-file paths and is only useful for local shared-filesystem stdio clients. Use OMNISEARCH_LARGE_RESULT_MODE=inline for remote, hosted, or containerized MCP deployments.',
+	);
+};
+
 // Validate required environment variables
 export const validate_config = () => {
 	const missing_keys: string[] = [];
@@ -168,4 +195,6 @@ export const validate_config = () => {
 			)}. Some providers will not be available.`,
 		);
 	}
+
+	warn_for_local_file_offload();
 };

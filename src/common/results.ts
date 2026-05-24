@@ -8,6 +8,9 @@ const CHARS_PER_TOKEN = 4;
 const MAX_SAFE_TOKENS = 20000;
 const MAX_SAFE_CHARS = MAX_SAFE_TOKENS * CHARS_PER_TOKEN;
 
+// `file` is legacy/local stdio behavior: it returns a path on the
+// server filesystem and only works when the MCP client can read that
+// same filesystem. Remote/container transports should prefer `inline`.
 export type LargeResultMode = 'inline' | 'file';
 
 export interface HandleLargeResultOptions {
@@ -137,6 +140,9 @@ export const handle_large_result = <T>(
 		return result;
 	}
 
+	// Server-side temp-file offload is intentionally local-only. Keep
+	// remote MCP deployments on `inline` so clients receive readable data
+	// instead of an inaccessible server path.
 	const file_id = randomUUID();
 	const file_path = join(
 		tmpdir(),

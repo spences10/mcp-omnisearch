@@ -24,7 +24,7 @@ export const large_result_mode_schema = v.optional(
 	v.pipe(
 		v.picklist(['inline', 'file']),
 		v.description(
-			'How to handle oversized responses for this request. Defaults to OMNISEARCH_LARGE_RESULT_MODE or file.',
+			'How to handle oversized responses for this request. Use inline for remote/container transports; file is local shared-filesystem behavior. Defaults to OMNISEARCH_LARGE_RESULT_MODE or file.',
 		),
 	),
 );
