@@ -26,16 +26,16 @@ importers:
     devDependencies:
       '@changesets/cli':
         specifier: ^2.31.0
-        version: 2.31.0(@types/node@25.6.2)
+        version: 2.31.0(@types/node@25.9.1)
       '@types/node':
         specifier: ^25.6.0
-        version: 25.6.2
+        version: 25.9.1
       vite-plus:
         specifier: ^0.1.20
-        version: 0.1.20(@types/node@25.6.2)(typescript@6.0.2)(vite@8.0.8(@types/node@25.6.2))
+        version: 0.1.20(@types/node@25.9.1)(typescript@6.0.2)(vite@8.0.8(@types/node@25.9.1))
       vitest:
         specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.2)(vite@8.0.8(@types/node@25.6.2))
+        version: 4.1.5(@types/node@25.9.1)(vite@8.0.8(@types/node@25.9.1))
 
 packages:
 
@@ -667,8 +667,8 @@ packages:
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
 
-  '@types/node@25.6.2':
-    resolution: {integrity: sha512-sokuT28dxf9JT5Kady1fsXOvI4HVpjZa95NKT5y9PNTIrs2AsobR4GFAA90ZG8M+nxVRLysCXsVj6eGC7Vbrlw==}
+  '@types/node@25.9.1':
+    resolution: {integrity: sha512-xfrlY7UD5rMJk3ZVJP8BNzS28J36YJg+xp+LPXV1TdWxr8uMH5A860QNxYDGQe/ylDSgjxE52Q9VnO7p75tJxg==}
 
   '@valibot/to-json-schema@1.7.0':
     resolution: {integrity: sha512-Y3pPVibbIOHzohrlxSINvO7w/bvXkoYS3BQHoImV9ynE+bXKf171bdMucPurV2zp7gdmt0L1HCcNAsbo7cFRQw==}
@@ -1236,6 +1236,10 @@ packages:
     resolution: {integrity: sha512-SoSL4+OSEtR99LHFZQiJLkT59C5B1amGO1NzTwj7TT1qCUgUO6hxOvzkOYxD+vMrXBM3XJIKzokoERdqQq/Zmg==}
     engines: {node: ^10 || ^12 || >=14}
 
+  postcss@8.5.15:
+    resolution: {integrity: sha512-FfR8sjd4em2T6fb3I2MwAJU7HWVMr9zba+enmQeeWFfCbm+UOC/0X4DS8XtpUTMwWMGbjKYP7xjfNekzyGmB3A==}
+    engines: {node: ^10 || ^12 || >=14}
+
   prettier@2.8.8:
     resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
     engines: {node: '>=10.13.0'}
@@ -1371,8 +1375,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  undici-types@7.19.2:
-    resolution: {integrity: sha512-qYVnV5OEm2AW8cJMCpdV20CDyaN3g0AjDlOGf1OW4iaDEx8MwdtChUp4zu4H0VP3nDRF/8RKWH+IPp9uW0YGZg==}
+  undici-types@7.24.6:
+    resolution: {integrity: sha512-WRNW+sJgj5OBN4/0JpHFqtqzhpbnV0GuB+OozA9gCL7a993SmU+1JBZCzLNxYsbMfIeDL+lTsphD5jN5N+n0zg==}
 
   universal-github-app-jwt@2.2.2:
     resolution: {integrity: sha512-dcmbeSrOdTnsjGjUfAlqNDJrhxXizjAz94ija9Qw8YkZ1uu0d+GoZzyH+Jb9tIIqvGsadUfwg+22k5aDqqwzbw==}
@@ -1539,7 +1543,7 @@ snapshots:
     dependencies:
       '@changesets/types': 6.1.0
 
-  '@changesets/cli@2.31.0(@types/node@25.6.2)':
+  '@changesets/cli@2.31.0(@types/node@25.9.1)':
     dependencies:
       '@changesets/apply-release-plan': 7.1.1
       '@changesets/assemble-release-plan': 6.0.10
@@ -1555,7 +1559,7 @@ snapshots:
       '@changesets/should-skip-package': 0.1.2
       '@changesets/types': 6.1.0
       '@changesets/write': 0.4.0
-      '@inquirer/external-editor': 1.0.3(@types/node@25.6.2)
+      '@inquirer/external-editor': 1.0.3(@types/node@25.9.1)
       '@manypkg/get-packages': 1.1.3
       ansi-colors: 4.1.3
       enquirer: 2.4.1
@@ -1669,12 +1673,12 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@inquirer/external-editor@1.0.3(@types/node@25.6.2)':
+  '@inquirer/external-editor@1.0.3(@types/node@25.9.1)':
     dependencies:
       chardet: 2.1.1
       iconv-lite: 0.7.2
     optionalDependencies:
-      '@types/node': 25.6.2
+      '@types/node': 25.9.1
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
@@ -2083,9 +2087,9 @@ snapshots:
 
   '@types/node@12.20.55': {}
 
-  '@types/node@25.6.2':
+  '@types/node@25.9.1':
     dependencies:
-      undici-types: 7.19.2
+      undici-types: 7.24.6
 
   '@valibot/to-json-schema@1.7.0(valibot@1.4.0(typescript@6.0.2))':
     dependencies:
@@ -2100,13 +2104,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.0
 
-  '@vitest/mocker@4.1.5(vite@8.0.8(@types/node@25.6.2))':
+  '@vitest/mocker@4.1.5(vite@8.0.8(@types/node@25.9.1))':
     dependencies:
       '@vitest/spy': 4.1.5
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 8.0.8(@types/node@25.6.2)
+      vite: 8.0.8(@types/node@25.9.1)
 
   '@vitest/pretty-format@4.1.5':
     dependencies:
@@ -2132,14 +2136,14 @@ snapshots:
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.0
 
-  '@voidzero-dev/vite-plus-core@0.1.20(@types/node@25.6.2)(typescript@6.0.2)':
+  '@voidzero-dev/vite-plus-core@0.1.20(@types/node@25.9.1)(typescript@6.0.2)':
     dependencies:
       '@oxc-project/runtime': 0.127.0
       '@oxc-project/types': 0.127.0
       lightningcss: 1.32.0
       postcss: 8.5.14
     optionalDependencies:
-      '@types/node': 25.6.2
+      '@types/node': 25.9.1
       fsevents: 2.3.3
       typescript: 6.0.2
 
@@ -2161,11 +2165,11 @@ snapshots:
   '@voidzero-dev/vite-plus-linux-x64-musl@0.1.20':
     optional: true
 
-  '@voidzero-dev/vite-plus-test@0.1.20(@types/node@25.6.2)(typescript@6.0.2)(vite@8.0.8(@types/node@25.6.2))':
+  '@voidzero-dev/vite-plus-test@0.1.20(@types/node@25.9.1)(typescript@6.0.2)(vite@8.0.8(@types/node@25.9.1))':
     dependencies:
       '@standard-schema/spec': 1.1.0
       '@types/chai': 5.2.3
-      '@voidzero-dev/vite-plus-core': 0.1.20(@types/node@25.6.2)(typescript@6.0.2)
+      '@voidzero-dev/vite-plus-core': 0.1.20(@types/node@25.9.1)(typescript@6.0.2)
       es-module-lexer: 1.7.0
       obug: 2.1.1
       pixelmatch: 7.2.0
@@ -2175,10 +2179,10 @@ snapshots:
       tinybench: 2.9.0
       tinyexec: 1.1.2
       tinyglobby: 0.2.16
-      vite: 8.0.8(@types/node@25.6.2)
+      vite: 8.0.8(@types/node@25.9.1)
       ws: 8.20.0
     optionalDependencies:
-      '@types/node': 25.6.2
+      '@types/node': 25.9.1
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
       - '@tsdown/css'
@@ -2563,6 +2567,12 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
+  postcss@8.5.15:
+    dependencies:
+      nanoid: 3.3.12
+      picocolors: 1.1.1
+      source-map-js: 1.2.1
+
   prettier@2.8.8: {}
 
   quansync@0.2.11: {}
@@ -2687,7 +2697,7 @@ snapshots:
   typescript@6.0.2:
     optional: true
 
-  undici-types@7.19.2: {}
+  undici-types@7.24.6: {}
 
   universal-github-app-jwt@2.2.2: {}
 
@@ -2701,11 +2711,11 @@ snapshots:
     optionalDependencies:
       typescript: 6.0.2
 
-  vite-plus@0.1.20(@types/node@25.6.2)(typescript@6.0.2)(vite@8.0.8(@types/node@25.6.2)):
+  vite-plus@0.1.20(@types/node@25.9.1)(typescript@6.0.2)(vite@8.0.8(@types/node@25.9.1)):
     dependencies:
       '@oxc-project/types': 0.127.0
-      '@voidzero-dev/vite-plus-core': 0.1.20(@types/node@25.6.2)(typescript@6.0.2)
-      '@voidzero-dev/vite-plus-test': 0.1.20(@types/node@25.6.2)(typescript@6.0.2)(vite@8.0.8(@types/node@25.6.2))
+      '@voidzero-dev/vite-plus-core': 0.1.20(@types/node@25.9.1)(typescript@6.0.2)
+      '@voidzero-dev/vite-plus-test': 0.1.20(@types/node@25.9.1)(typescript@6.0.2)(vite@8.0.8(@types/node@25.9.1))
       oxfmt: 0.46.0
       oxlint: 1.61.0(oxlint-tsgolint@0.22.0)
       oxlint-tsgolint: 0.22.0
@@ -2748,21 +2758,21 @@ snapshots:
       - vite
       - yaml
 
-  vite@8.0.8(@types/node@25.6.2):
+  vite@8.0.8(@types/node@25.9.1):
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.4
-      postcss: 8.5.14
+      postcss: 8.5.15
       rolldown: 1.0.0-rc.15
       tinyglobby: 0.2.16
     optionalDependencies:
-      '@types/node': 25.6.2
+      '@types/node': 25.9.1
       fsevents: 2.3.3
 
-  vitest@4.1.5(@types/node@25.6.2)(vite@8.0.8(@types/node@25.6.2)):
+  vitest@4.1.5(@types/node@25.9.1)(vite@8.0.8(@types/node@25.9.1)):
     dependencies:
       '@vitest/expect': 4.1.5
-      '@vitest/mocker': 4.1.5(vite@8.0.8(@types/node@25.6.2))
+      '@vitest/mocker': 4.1.5(vite@8.0.8(@types/node@25.9.1))
       '@vitest/pretty-format': 4.1.5
       '@vitest/runner': 4.1.5
       '@vitest/snapshot': 4.1.5
@@ -2779,10 +2789,10 @@ snapshots:
       tinyexec: 1.1.2
       tinyglobby: 0.2.16
       tinyrainbow: 3.1.0
-      vite: 8.0.8(@types/node@25.6.2)
+      vite: 8.0.8(@types/node@25.9.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 25.6.2
+      '@types/node': 25.9.1
     transitivePeerDependencies:
       - msw
 
