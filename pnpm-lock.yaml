@@ -10,16 +10,16 @@ importers:
     dependencies:
       '@tmcp/adapter-valibot':
         specifier: ^0.1.5
-        version: 0.1.6(tmcp@1.19.3)(valibot@1.4.0)
+        version: 0.1.6(tmcp@1.19.4)(valibot@1.4.0)
       '@tmcp/transport-stdio':
         specifier: ^0.4.2
-        version: 0.4.3(tmcp@1.19.3)
+        version: 0.4.3(tmcp@1.19.4)
       octokit:
         specifier: ^5.0.5
         version: 5.0.5
       tmcp:
         specifier: ^1.19.3
-        version: 1.19.3
+        version: 1.19.4
       valibot:
         specifier: ^1.3.1
         version: 1.4.0
@@ -1355,8 +1355,8 @@ packages:
     resolution: {integrity: sha512-Bf+ILmBgretUrdJxzXM0SgXLZ3XfiaUuOj/IKQHuTXip+05Xn+uyEYdVg0kYDipTBcLrCVyUzAPz7QmArb0mmw==}
     engines: {node: '>=14.0.0'}
 
-  tmcp@1.19.3:
-    resolution: {integrity: sha512-plz/TLKNFrdfQN32LjCTN6ULy6pynfGPgHcU7KGCI5dBrxQ9Mub99SmcYuzxEkLjJooQuOD3gosSwZEl1htOtw==}
+  tmcp@1.19.4:
+    resolution: {integrity: sha512-fMoUJ3Gef9iA0yKZNeW2SQCCKTluCwghUyOz/qxPS8XxrQk6Jlw4lgql3S+s6L//FteLeSJ7erKxMWl727mZoQ==}
 
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
@@ -2058,16 +2058,16 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@tmcp/adapter-valibot@0.1.6(tmcp@1.19.3)(valibot@1.4.0)':
+  '@tmcp/adapter-valibot@0.1.6(tmcp@1.19.4)(valibot@1.4.0)':
     dependencies:
       '@standard-schema/spec': 1.1.0
       '@valibot/to-json-schema': 1.7.0(valibot@1.4.0)
-      tmcp: 1.19.3
+      tmcp: 1.19.4
       valibot: 1.4.0
 
-  '@tmcp/transport-stdio@0.4.3(tmcp@1.19.3)':
+  '@tmcp/transport-stdio@0.4.3(tmcp@1.19.4)':
     dependencies:
-      tmcp: 1.19.3
+      tmcp: 1.19.4
 
   '@tybys/wasm-util@0.10.2':
     dependencies:
@@ -2667,7 +2667,7 @@ snapshots:
 
   tinyrainbow@3.1.0: {}
 
-  tmcp@1.19.3:
+  tmcp@1.19.4:
     dependencies:
       '@standard-schema/spec': 1.1.0
       json-rpc-2.0: 1.7.1
