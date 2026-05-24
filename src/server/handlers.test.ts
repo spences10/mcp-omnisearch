@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { setup_handlers } from './handlers.js';
+import { web_search_provider_definitions } from './provider-definitions.js';
 import type { ProviderStatus } from './provider-registry.js';
 import {
 	available_providers,
@@ -177,6 +178,43 @@ describe('setup_handlers', () => {
 				}),
 			],
 		});
+	});
+
+	it('returns provider info aligned with declarative provider metadata', async () => {
+		reset_available_providers();
+		const brave_definition = web_search_provider_definitions.find(
+			(definition) => definition.id === 'brave',
+		)!;
+		provider_status_entries.push(
+			provider_status({
+				id: brave_definition.id,
+				name: brave_definition.name,
+				category: brave_definition.category,
+				api_key_name: brave_definition.api_key_name,
+				tools: brave_definition.tools,
+				capabilities: brave_definition.capabilities,
+			}),
+		);
+
+		const { resources, server } = create_mock_server();
+		setup_handlers(server as any);
+
+		const provider_info = resources.find(
+			(resource) => resource.definition.name === 'provider-info',
+		)!;
+		const response = await provider_info.handler(
+			'omnisearch://search/brave/info',
+		);
+		const body = JSON.parse(response.contents[0].text);
+
+		expect(body).toEqual(
+			expect.objectContaining({
+				name: brave_definition.name,
+				categories: [brave_definition.category],
+				tools: brave_definition.tools,
+				capabilities: [...brave_definition.capabilities].sort(),
+			}),
+		);
 	});
 
 	it('throws for unavailable providers and unknown URIs', async () => {
