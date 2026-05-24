@@ -1,5 +1,30 @@
 # mcp-omnisearch
 
+## 0.0.26
+
+### Patch Changes
+
+- 21e97fc: Add runtime response validation for search providers so
+  malformed API payloads fail with ProviderError.
+- 4ea9d22: Validate processing and Firecrawl provider responses at
+  runtime before extracting content from external payloads.
+- a362de4: Warn remote deployments about local file offload and
+  clarify inline mode for large results.
+- 3490c8d: Centralize provider definitions and derive web_extract
+  routing metadata from shared declarative provider-mode
+  configuration.
+- 819109c: Split README into focused operational docs covering
+  providers, operators, large results, deployment, and
+  troubleshooting.
+- aa7c1a3: Add MCP contract tests for tool registration, schemas,
+  responses, resources, large results, and compact extraction.
+- 67a01d5: Validate AI and GitHub provider responses at runtime before
+  mapping external payloads into results.
+- d75f2b4: Normalize provider errors, retry semantics, Firecrawl
+  polling, GitHub handling, and structured MCP error responses.
+- 372e335: Add advisory architecture check that warns when production
+  source files exceed the large-file threshold.
+
 ## 0.0.25
 
 ### Patch Changes
