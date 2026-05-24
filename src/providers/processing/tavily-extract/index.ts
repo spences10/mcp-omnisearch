@@ -1,5 +1,7 @@
+import * as v from 'valibot';
 import { handle_provider_error } from '../../../common/errors.js';
 import { http_json } from '../../../common/http.js';
+import { parse_provider_response } from '../../../common/provider-response.js';
 import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	ErrorType,
@@ -13,18 +15,22 @@ import {
 } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
-interface TavilyExtractResponse {
-	results: {
-		url: string;
-		raw_content: string;
-		images?: string[];
-	}[];
-	failed_results: {
-		url: string;
-		error: string;
-	}[];
-	response_time: number;
-}
+const tavily_extract_response_schema = v.object({
+	results: v.array(
+		v.object({
+			url: v.string(),
+			raw_content: v.string(),
+			images: v.optional(v.array(v.string())),
+		}),
+	),
+	failed_results: v.array(
+		v.object({
+			url: v.string(),
+			error: v.string(),
+		}),
+	),
+	response_time: v.number(),
+});
 
 export class TavilyExtractProvider implements ProcessingProvider {
 	name = 'tavily_extract';
@@ -44,7 +50,7 @@ export class TavilyExtractProvider implements ProcessingProvider {
 			);
 
 			try {
-				const data = await http_json<TavilyExtractResponse>(
+				const raw_data = await http_json(
 					this.name,
 					`${config.processing.tavily_extract.base_url}/extract`,
 					{
@@ -62,6 +68,11 @@ export class TavilyExtractProvider implements ProcessingProvider {
 							config.processing.tavily_extract.timeout,
 						),
 					},
+				);
+				const data = parse_provider_response(
+					this.name,
+					tavily_extract_response_schema,
+					raw_data,
 				);
 
 				// Check if there are any results

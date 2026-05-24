@@ -1,3 +1,4 @@
+import * as v from 'valibot';
 import { handle_provider_error } from '../../../common/errors.js';
 import {
 	make_firecrawl_request,
@@ -16,29 +17,26 @@ import {
 } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
-type FirecrawlMetadata = Record<string, unknown> & {
-	title?: string;
-	description?: string;
-	language?: string;
-	sourceURL?: string;
-	statusCode?: number;
-	error?: string;
-};
+const firecrawl_metadata_schema = v.record(v.string(), v.unknown());
 
-interface FirecrawlActionsResponse {
-	success: boolean;
-	data?: {
-		markdown?: string;
-		html?: string;
-		rawHtml?: string;
-		screenshot?: string;
-		actions?: {
-			screenshots?: string[];
-		};
-		metadata?: FirecrawlMetadata;
-	};
-	error?: string;
-}
+const firecrawl_actions_response_schema = v.object({
+	success: v.boolean(),
+	data: v.optional(
+		v.object({
+			markdown: v.optional(v.string()),
+			html: v.optional(v.string()),
+			rawHtml: v.optional(v.string()),
+			screenshot: v.optional(v.string()),
+			actions: v.optional(
+				v.object({
+					screenshots: v.optional(v.array(v.string())),
+				}),
+			),
+			metadata: v.optional(firecrawl_metadata_schema),
+		}),
+	),
+	error: v.optional(v.string()),
+});
 
 // Define the action types
 type ActionType =
@@ -105,18 +103,18 @@ export class FirecrawlActionsProvider implements ProcessingProvider {
 							];
 
 				// Start the actions
-				const actions_data =
-					await make_firecrawl_request<FirecrawlActionsResponse>(
-						this.name,
-						config.processing.firecrawl_actions.base_url,
-						api_key,
-						{
-							url: actions_url,
-							formats: ['markdown', 'screenshot'],
-							actions: actions,
-						},
-						config.processing.firecrawl_actions.timeout,
-					);
+				const actions_data = await make_firecrawl_request(
+					this.name,
+					config.processing.firecrawl_actions.base_url,
+					api_key,
+					{
+						url: actions_url,
+						formats: ['markdown', 'screenshot'],
+						actions: actions,
+					},
+					config.processing.firecrawl_actions.timeout,
+					firecrawl_actions_response_schema,
+				);
 
 				validate_firecrawl_response(
 					actions_data,

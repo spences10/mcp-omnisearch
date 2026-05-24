@@ -1,5 +1,7 @@
+import * as v from 'valibot';
 import { handle_provider_error } from '../../../common/errors.js';
 import { http_json } from '../../../common/http.js';
+import { parse_provider_response } from '../../../common/provider-response.js';
 import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	ErrorType,
@@ -25,22 +27,22 @@ interface ExaSimilarRequest {
 	excludeDomains?: string[];
 }
 
-interface ExaSimilarResult {
-	id: string;
-	title: string;
-	url: string;
-	text?: string;
-	highlights?: string[];
-	summary?: string;
-	publishedDate?: string;
-	author?: string;
-	score?: number;
-}
-
-interface ExaSimilarResponse {
-	results: ExaSimilarResult[];
-	requestId: string;
-}
+const exa_similar_response_schema = v.object({
+	results: v.array(
+		v.object({
+			id: v.string(),
+			title: v.string(),
+			url: v.string(),
+			text: v.optional(v.string()),
+			highlights: v.optional(v.array(v.string())),
+			summary: v.optional(v.string()),
+			publishedDate: v.optional(v.string()),
+			author: v.optional(v.string()),
+			score: v.optional(v.number()),
+		}),
+	),
+	requestId: v.string(),
+});
 
 export class ExaSimilarProvider implements ProcessingProvider {
 	name = 'exa_similar';
@@ -85,7 +87,7 @@ export class ExaSimilarProvider implements ProcessingProvider {
 					},
 				};
 
-				const data = await http_json<ExaSimilarResponse>(
+				const raw_data = await http_json(
 					this.name,
 					`${config.processing.exa_similar.base_url}/findSimilar`,
 					{
@@ -97,6 +99,11 @@ export class ExaSimilarProvider implements ProcessingProvider {
 						},
 						body: JSON.stringify(request_body),
 					},
+				);
+				const data = parse_provider_response(
+					this.name,
+					exa_similar_response_schema,
+					raw_data,
 				);
 
 				// Combine all content

@@ -1,3 +1,4 @@
+import * as v from 'valibot';
 import { handle_provider_error } from '../../../common/errors.js';
 import {
 	make_firecrawl_request,
@@ -20,29 +21,24 @@ import {
 } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
-type FirecrawlMetadata = Record<string, unknown> & {
-	title?: string;
-	description?: string;
-	language?: string;
-	sourceURL?: string;
-	statusCode?: number;
-	error?: string;
-};
+const firecrawl_metadata_schema = v.record(v.string(), v.unknown());
 
-interface FirecrawlScrapeResponse {
-	success: boolean;
-	data?: {
-		markdown?: string;
-		html?: string;
-		rawHtml?: string;
-		screenshot?: string;
-		links?: string[];
-		metadata?: FirecrawlMetadata;
-		llm_extraction?: unknown;
-		warning?: string;
-	};
-	error?: string;
-}
+const firecrawl_scrape_response_schema = v.object({
+	success: v.boolean(),
+	data: v.optional(
+		v.object({
+			markdown: v.optional(v.string()),
+			html: v.optional(v.string()),
+			rawHtml: v.optional(v.string()),
+			screenshot: v.optional(v.string()),
+			links: v.optional(v.array(v.string())),
+			metadata: v.optional(firecrawl_metadata_schema),
+			llm_extraction: v.optional(v.unknown()),
+			warning: v.optional(v.string()),
+		}),
+	),
+	error: v.optional(v.string()),
+});
 
 export class FirecrawlScrapeProvider implements ProcessingProvider {
 	name = 'firecrawl_scrape';
@@ -66,20 +62,19 @@ export class FirecrawlScrapeProvider implements ProcessingProvider {
 				const results: ProcessedUrlResult[] = await Promise.all(
 					urls.map(async (single_url) => {
 						try {
-							const data =
-								await make_firecrawl_request<FirecrawlScrapeResponse>(
-									this.name,
-									config.processing.firecrawl_scrape.base_url,
-									api_key,
-									{
-										url: single_url,
-										formats: ['markdown'],
-										onlyMainContent: true,
-										waitFor:
-											extract_depth === 'advanced' ? 5000 : 2000,
-									},
-									config.processing.firecrawl_scrape.timeout,
-								);
+							const data = await make_firecrawl_request(
+								this.name,
+								config.processing.firecrawl_scrape.base_url,
+								api_key,
+								{
+									url: single_url,
+									formats: ['markdown'],
+									onlyMainContent: true,
+									waitFor: extract_depth === 'advanced' ? 5000 : 2000,
+								},
+								config.processing.firecrawl_scrape.timeout,
+								firecrawl_scrape_response_schema,
+							);
 
 							validate_firecrawl_response(
 								data,

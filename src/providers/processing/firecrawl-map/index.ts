@@ -1,3 +1,4 @@
+import * as v from 'valibot';
 import { handle_provider_error } from '../../../common/errors.js';
 import {
 	make_firecrawl_request,
@@ -16,16 +17,18 @@ import {
 } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
-interface FirecrawlMapLink {
-	url: string;
-	title?: string;
-}
-
-interface FirecrawlMapResponse {
-	success: boolean;
-	links?: FirecrawlMapLink[];
-	error?: string;
-}
+const firecrawl_map_response_schema = v.object({
+	success: v.boolean(),
+	links: v.optional(
+		v.array(
+			v.object({
+				url: v.string(),
+				title: v.optional(v.string()),
+			}),
+		),
+	),
+	error: v.optional(v.string()),
+});
 
 export class FirecrawlMapProvider implements ProcessingProvider {
 	name = 'firecrawl_map';
@@ -48,18 +51,18 @@ export class FirecrawlMapProvider implements ProcessingProvider {
 
 			try {
 				// Start the map operation
-				const map_data =
-					await make_firecrawl_request<FirecrawlMapResponse>(
-						this.name,
-						config.processing.firecrawl_map.base_url,
-						api_key,
-						{
-							url: map_url,
-							limit: extract_depth === 'advanced' ? 200 : 50,
-							includeSubdomains: false,
-						},
-						config.processing.firecrawl_map.timeout,
-					);
+				const map_data = await make_firecrawl_request(
+					this.name,
+					config.processing.firecrawl_map.base_url,
+					api_key,
+					{
+						url: map_url,
+						limit: extract_depth === 'advanced' ? 200 : 50,
+						includeSubdomains: false,
+					},
+					config.processing.firecrawl_map.timeout,
+					firecrawl_map_response_schema,
+				);
 
 				validate_firecrawl_response(
 					map_data,

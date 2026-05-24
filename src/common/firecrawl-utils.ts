@@ -1,14 +1,23 @@
+import * as v from 'valibot';
 import { http_json } from './http.js';
+import { parse_provider_response } from './provider-response.js';
 import { ErrorType, ProviderError } from './types.js';
 
-export const make_firecrawl_request = async <T>(
+export const make_firecrawl_request = async <
+	const TSchema extends v.BaseSchema<
+		unknown,
+		unknown,
+		v.BaseIssue<unknown>
+	>,
+>(
 	provider_name: string,
 	base_url: string,
 	api_key: string,
 	body: Record<string, unknown>,
 	timeout: number,
-): Promise<T> => {
-	return http_json<T>(provider_name, base_url, {
+	schema: TSchema,
+): Promise<v.InferOutput<TSchema>> => {
+	const data = await http_json(provider_name, base_url, {
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${api_key}`,
@@ -17,6 +26,8 @@ export const make_firecrawl_request = async <T>(
 		body: JSON.stringify(body),
 		signal: AbortSignal.timeout(timeout),
 	});
+
+	return parse_provider_response(provider_name, schema, data);
 };
 
 export const validate_firecrawl_response = (
@@ -43,15 +54,22 @@ export interface PollingConfig {
 }
 
 export const poll_firecrawl_job = async <
-	T extends {
+	const TSchema extends v.BaseSchema<
+		unknown,
+		unknown,
+		v.BaseIssue<unknown>
+	>,
+>(
+	config: PollingConfig,
+	schema: TSchema,
+): Promise<
+	v.InferOutput<TSchema> & {
 		success: boolean;
 		status: string;
 		error?: string;
 		data?: unknown;
-	},
->(
-	config: PollingConfig,
-): Promise<T> => {
+	}
+> => {
 	let attempts = 0;
 
 	while (attempts < config.max_attempts) {
@@ -60,9 +78,14 @@ export const poll_firecrawl_job = async <
 			setTimeout(resolve, config.poll_interval),
 		);
 
-		let status_result: T;
+		let status_result: v.InferOutput<TSchema> & {
+			success: boolean;
+			status: string;
+			error?: string;
+			data?: unknown;
+		};
 		try {
-			status_result = await http_json<T>(
+			const raw_status_result = await http_json(
 				config.provider_name,
 				config.status_url,
 				{
@@ -73,6 +96,11 @@ export const poll_firecrawl_job = async <
 					signal: AbortSignal.timeout(config.timeout),
 				},
 			);
+			status_result = parse_provider_response(
+				config.provider_name,
+				schema,
+				raw_status_result,
+			) as typeof status_result;
 		} catch {
 			continue;
 		}
