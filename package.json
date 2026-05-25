@@ -1,6 +1,6 @@
 {
 	"name": "mcp-omnisearch",
-	"version": "0.0.26",
+	"version": "0.0.27",
 	"description": "MCP server for integrating Omnisearch with LLMs",
 	"keywords": [
 		"ai",

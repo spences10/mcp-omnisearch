@@ -1,5 +1,12 @@
 # mcp-omnisearch
 
+## 0.0.27
+
+### Patch Changes
+
+- 329a446: Fix Brave and Kagi search adapters to tolerate missing
+  fields and non-result provider rows.
+
 ## 0.0.26
 
 ### Patch Changes
