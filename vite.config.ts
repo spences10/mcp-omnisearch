@@ -10,6 +10,18 @@ export default defineConfig({
 	},
 	test: {
 		include: ['src/**/*.test.ts'],
+		coverage: {
+			provider: 'v8',
+			reporter: ['text', 'lcov'],
+			include: ['src/**/*.ts'],
+			exclude: ['src/**/*.test.ts'],
+			thresholds: {
+				lines: 79,
+				functions: 82,
+				branches: 63,
+				statements: 78,
+			},
+		},
 	},
 	fmt: {
 		useTabs: true,

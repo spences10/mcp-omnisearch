@@ -13,10 +13,9 @@ const json_response = (body: unknown) =>
 		headers: { 'content-type': 'application/json' },
 	});
 
-describe('search provider response shape regressions', () => {
+describe('KagiSearchProvider', () => {
 	beforeEach(() => {
 		vi.resetModules();
-		vi.stubEnv('BRAVE_API_KEY', 'test-brave-key');
 		vi.stubEnv('KAGI_API_KEY', 'test-kagi-key');
 	});
 
@@ -25,22 +24,7 @@ describe('search provider response shape regressions', () => {
 		vi.restoreAllMocks();
 	});
 
-	it('returns no Brave results when the web block is omitted', async () => {
-		vi.stubGlobal(
-			'fetch',
-			vi.fn(async () => json_response({ type: 'search' })),
-		);
-		const { BraveSearchProvider } = await import('./brave/index.js');
-
-		await expect(
-			new BraveSearchProvider().search({
-				query: 'no results',
-				limit: 10,
-			}),
-		).resolves.toEqual([]);
-	});
-
-	it('skips non-result Kagi rows and accepts omitted snippets and total_hits', async () => {
+	it('skips non-result rows and accepts omitted snippets and total_hits', async () => {
 		vi.stubGlobal(
 			'fetch',
 			vi.fn(async () =>
@@ -59,7 +43,7 @@ describe('search provider response shape regressions', () => {
 				}),
 			),
 		);
-		const { KagiSearchProvider } = await import('./kagi/index.js');
+		const { KagiSearchProvider } = await import('./index.js');
 
 		await expect(
 			new KagiSearchProvider().search({
