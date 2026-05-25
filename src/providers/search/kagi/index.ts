@@ -17,21 +17,31 @@ import { validate_api_key } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
 const kagi_search_response_schema = v.object({
-	data: v.array(
-		v.object({
-			title: v.string(),
-			url: v.string(),
-			snippet: v.string(),
-			rank: v.optional(v.number()),
-		}),
-	),
+	data: v.array(v.unknown()),
 	meta: v.optional(
 		v.object({
-			total_hits: v.number(),
+			total_hits: v.optional(v.number()),
 			api_balance: v.optional(v.number()),
 		}),
 	),
 });
+
+const is_kagi_search_result = (
+	result: unknown,
+): result is {
+	title: string;
+	url: string;
+	snippet?: string;
+	rank?: number;
+} =>
+	typeof result === 'object' &&
+	result !== null &&
+	'title' in result &&
+	'url' in result &&
+	typeof result.title === 'string' &&
+	typeof result.url === 'string' &&
+	(!('snippet' in result) || typeof result.snippet === 'string') &&
+	(!('rank' in result) || typeof result.rank === 'number');
 
 export class KagiSearchProvider implements SearchProvider {
 	name = 'kagi';
@@ -100,13 +110,15 @@ export class KagiSearchProvider implements SearchProvider {
 					raw_data,
 				);
 
-				return data.data.map((result) => ({
-					title: result.title,
-					url: result.url,
-					snippet: result.snippet,
-					score: result.rank,
-					source_provider: this.name,
-				}));
+				return data.data
+					.filter(is_kagi_search_result)
+					.map((result) => ({
+						title: result.title,
+						url: result.url,
+						snippet: result.snippet ?? '',
+						score: result.rank,
+						source_provider: this.name,
+					}));
 			} catch (error) {
 				handle_provider_error(
 					error,

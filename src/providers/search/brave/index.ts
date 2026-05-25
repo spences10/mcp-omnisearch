@@ -17,15 +17,17 @@ import { validate_api_key } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
 const brave_search_response_schema = v.object({
-	web: v.object({
-		results: v.array(
-			v.object({
-				title: v.string(),
-				url: v.string(),
-				description: v.string(),
-			}),
-		),
-	}),
+	web: v.optional(
+		v.object({
+			results: v.array(
+				v.object({
+					title: v.string(),
+					url: v.string(),
+					description: v.optional(v.string()),
+				}),
+			),
+		}),
+	),
 });
 
 export class BraveSearchProvider implements SearchProvider {
@@ -76,10 +78,10 @@ export class BraveSearchProvider implements SearchProvider {
 					raw_data,
 				);
 
-				return data.web.results.map((result) => ({
+				return (data.web?.results ?? []).map((result) => ({
 					title: result.title,
 					url: result.url,
-					snippet: result.description,
+					snippet: result.description ?? '',
 					source_provider: this.name,
 				}));
 			} catch (error) {
