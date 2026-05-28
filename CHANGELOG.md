@@ -1,5 +1,14 @@
 # mcp-omnisearch
 
+## 0.0.28
+
+### Patch Changes
+
+- 0bdfedd: Fix Tavily search response parsing by ignoring unused
+  response_time metadata and adding regression coverage tests.
+- 7cece81: Relax provider response parsing for current Exa, Kagi, and
+  Firecrawl API shapes.
+
 ## 0.0.27
 
 ### Patch Changes
