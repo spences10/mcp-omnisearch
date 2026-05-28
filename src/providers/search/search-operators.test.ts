@@ -109,7 +109,7 @@ describe('search provider operator handling', () => {
 						score: 0.9,
 					},
 				],
-				response_time: '0.1',
+				response_time: 0.1,
 			}),
 		);
 

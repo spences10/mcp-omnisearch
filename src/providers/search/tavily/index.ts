@@ -40,7 +40,6 @@ const tavily_search_response_schema = v.object({
 			score: v.number(),
 		}),
 	),
-	response_time: v.optional(v.string()),
 });
 
 export class TavilySearchProvider implements SearchProvider {
