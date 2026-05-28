@@ -64,7 +64,7 @@ export const poll_firecrawl_job = async <
 	schema: TSchema,
 ): Promise<
 	v.InferOutput<TSchema> & {
-		success: boolean;
+		success?: boolean;
 		status: string;
 		error?: string;
 		data?: unknown;
@@ -79,7 +79,7 @@ export const poll_firecrawl_job = async <
 		);
 
 		let status_result: v.InferOutput<TSchema> & {
-			success: boolean;
+			success?: boolean;
 			status: string;
 			error?: string;
 			data?: unknown;
@@ -111,7 +111,7 @@ export const poll_firecrawl_job = async <
 			continue;
 		}
 
-		if (!status_result.success) {
+		if (status_result.success === false) {
 			throw new ProviderError(
 				ErrorType.PROVIDER_ERROR,
 				`Error checking job status: ${status_result.error || 'Unknown error'}`,
@@ -121,7 +121,13 @@ export const poll_firecrawl_job = async <
 
 		if (status_result.status === 'completed' && status_result.data) {
 			return status_result;
-		} else if (status_result.status === 'error') {
+		}
+
+		if (
+			status_result.status === 'error' ||
+			status_result.status === 'failed' ||
+			status_result.status === 'cancelled'
+		) {
 			throw new ProviderError(
 				ErrorType.PROVIDER_ERROR,
 				`Job failed: ${status_result.error || 'Unknown error'}`,

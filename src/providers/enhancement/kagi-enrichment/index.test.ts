@@ -35,6 +35,7 @@ describe('KagiEnrichmentSearchProvider', () => {
 								snippet: 'Tom &amp; Jerry',
 								rank: 2,
 							},
+							{ t: 1, list: ['related'] },
 						],
 					}),
 				)
@@ -44,7 +45,7 @@ describe('KagiEnrichmentSearchProvider', () => {
 							{
 								title: 'News',
 								url: 'https://news.test',
-								snippet: '&quot;Quoted&quot;',
+								snippet: null,
 							},
 						],
 					}),
@@ -69,7 +70,7 @@ describe('KagiEnrichmentSearchProvider', () => {
 			{
 				title: 'News',
 				url: 'https://news.test',
-				snippet: '"Quoted"',
+				snippet: '',
 				score: undefined,
 				source_provider: 'kagi_enrichment',
 			},

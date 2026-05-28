@@ -28,24 +28,48 @@ const firecrawl_crawl_response_schema = v.object({
 });
 
 const firecrawl_crawl_status_response_schema = v.object({
-	success: v.boolean(),
-	id: v.string(),
 	status: v.string(),
 	total: v.optional(v.number()),
+	completed: v.optional(v.number()),
 	data: v.optional(
 		v.array(
 			v.object({
-				url: v.string(),
+				url: v.optional(v.string()),
 				markdown: v.optional(v.string()),
-				html: v.optional(v.string()),
-				rawHtml: v.optional(v.string()),
+				html: v.optional(v.nullable(v.string())),
+				rawHtml: v.optional(v.nullable(v.string())),
 				metadata: v.optional(firecrawl_metadata_schema),
-				error: v.optional(v.string()),
+				error: v.optional(v.nullable(v.string())),
 			}),
 		),
 	),
 	error: v.optional(v.string()),
 });
+
+const get_firecrawl_page_url = (
+	page: {
+		url?: string;
+		metadata?: Record<string, unknown>;
+	},
+	fallback_url: string,
+) => {
+	const metadata_url = page.metadata?.sourceURL ?? page.metadata?.url;
+	return (
+		page.url ??
+		(typeof metadata_url === 'string' ? metadata_url : fallback_url)
+	);
+};
+
+const get_firecrawl_page_error = (page: {
+	error?: string | null;
+	metadata?: Record<string, unknown>;
+}) => {
+	const metadata_error = page.metadata?.error;
+	return (
+		page.error ??
+		(typeof metadata_error === 'string' ? metadata_error : undefined)
+	);
+};
 
 export class FirecrawlCrawlProvider implements ProcessingProvider {
 	name = 'firecrawl_crawl';
@@ -78,7 +102,7 @@ export class FirecrawlCrawlProvider implements ProcessingProvider {
 							formats: ['markdown'],
 							onlyMainContent: true,
 						},
-						maxDepth: extract_depth === 'advanced' ? 3 : 1,
+						maxDiscoveryDepth: extract_depth === 'advanced' ? 3 : 1,
 						limit: extract_depth === 'advanced' ? 50 : 20,
 					},
 					config.processing.firecrawl_crawl.timeout,
@@ -116,7 +140,7 @@ export class FirecrawlCrawlProvider implements ProcessingProvider {
 				// Filter out failed pages
 				const successful_pages = status_data.data.filter(
 					(page) =>
-						!page.error &&
+						!get_firecrawl_page_error(page) &&
 						(page.markdown || page.html || page.rawHtml),
 				);
 
@@ -130,7 +154,7 @@ export class FirecrawlCrawlProvider implements ProcessingProvider {
 
 				// Map results to raw_contents array
 				const raw_contents = successful_pages.map((page) => ({
-					url: page.url,
+					url: get_firecrawl_page_url(page, crawl_url),
 					content: page.markdown || page.html || page.rawHtml || '',
 				}));
 
@@ -154,8 +178,8 @@ export class FirecrawlCrawlProvider implements ProcessingProvider {
 
 				// Track failed URLs
 				const failed_urls = status_data.data
-					.filter((page) => page.error)
-					.map((page) => page.url);
+					.filter((page) => get_firecrawl_page_error(page))
+					.map((page) => get_firecrawl_page_url(page, crawl_url));
 
 				return {
 					content: combined_content,

@@ -24,9 +24,9 @@ const firecrawl_actions_response_schema = v.object({
 	data: v.optional(
 		v.object({
 			markdown: v.optional(v.string()),
-			html: v.optional(v.string()),
-			rawHtml: v.optional(v.string()),
-			screenshot: v.optional(v.string()),
+			html: v.optional(v.nullable(v.string())),
+			rawHtml: v.optional(v.nullable(v.string())),
+			screenshot: v.optional(v.nullable(v.string())),
 			actions: v.optional(
 				v.object({
 					screenshots: v.optional(v.array(v.string())),

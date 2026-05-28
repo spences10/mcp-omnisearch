@@ -26,7 +26,7 @@ describe('KagiSummarizerProvider', () => {
 			'fetch',
 			vi.fn(async () =>
 				json_response({
-					meta: { id: 'id', node: 'node', ms: 3, api_balance: 1 },
+					meta: { id: 'id', node: 'node', ms: 3 },
 					data: { output: 'Summary text', tokens: 2 },
 				}),
 			),

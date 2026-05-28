@@ -27,7 +27,7 @@ describe('ExaSearchProvider', () => {
 				json_response({
 					requestId: 'req-1',
 					autopromptString: 'auto query',
-					resolvedSearchType: 'neural',
+					searchType: 'neural',
 					results: [
 						{
 							id: 'id-1',

@@ -28,9 +28,9 @@ const firecrawl_scrape_response_schema = v.object({
 	data: v.optional(
 		v.object({
 			markdown: v.optional(v.string()),
-			html: v.optional(v.string()),
-			rawHtml: v.optional(v.string()),
-			screenshot: v.optional(v.string()),
+			html: v.optional(v.nullable(v.string())),
+			rawHtml: v.optional(v.nullable(v.string())),
+			screenshot: v.optional(v.nullable(v.string())),
 			links: v.optional(v.array(v.string())),
 			metadata: v.optional(firecrawl_metadata_schema),
 			llm_extraction: v.optional(v.unknown()),

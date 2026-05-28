@@ -28,6 +28,10 @@ describe('ExaAnswerProvider', () => {
 				json_response({
 					answer: 'The answer',
 					requestId: 'req-1',
+					costDollars: {
+						total: 0.007,
+						search: { neural: 0.007 },
+					},
 					citations: [
 						{
 							id: '1',

@@ -24,33 +24,39 @@ describe('FirecrawlCrawlProvider', () => {
 	});
 
 	it('polls a crawl job and aggregates successful pages', async () => {
-		vi.stubGlobal(
-			'fetch',
-			vi
-				.fn()
-				.mockResolvedValueOnce(
-					json_response({
-						success: true,
-						id: 'job-1',
-						url: 'https://site.test',
-					}),
-				)
-				.mockResolvedValueOnce(
-					json_response({
-						success: true,
-						id: 'job-1',
-						status: 'completed',
-						data: [
-							{
-								url: 'https://site.test/a',
-								markdown: 'Page A content',
-								metadata: { title: 'A' },
+		const fetch = vi
+			.fn()
+			.mockResolvedValueOnce(
+				json_response({
+					success: true,
+					id: 'job-1',
+					url: 'https://site.test',
+				}),
+			)
+			.mockResolvedValueOnce(
+				json_response({
+					status: 'completed',
+					total: 2,
+					completed: 1,
+					data: [
+						{
+							markdown: 'Page A content',
+							html: null,
+							metadata: {
+								title: 'A',
+								sourceURL: 'https://site.test/a',
 							},
-							{ url: 'https://site.test/b', error: 'failed' },
-						],
-					}),
-				),
-		);
+						},
+						{
+							metadata: {
+								sourceURL: 'https://site.test/b',
+								error: 'failed',
+							},
+						},
+					],
+				}),
+			);
+		vi.stubGlobal('fetch', fetch);
 		const { FirecrawlCrawlProvider } = await import('./index.js');
 
 		const pending = new FirecrawlCrawlProvider().process_content(
@@ -59,6 +65,11 @@ describe('FirecrawlCrawlProvider', () => {
 		await vi.advanceTimersByTimeAsync(5000);
 		const result = await pending;
 
+		expect(
+			JSON.parse(fetch.mock.calls[0]?.[1]?.body as string),
+		).toMatchObject({
+			maxDiscoveryDepth: 1,
+		});
 		expect(result).toMatchObject({
 			content: expect.stringContaining('Page A content'),
 			raw_contents: [
@@ -72,5 +83,74 @@ describe('FirecrawlCrawlProvider', () => {
 			},
 			source_provider: 'firecrawl_crawl',
 		});
+	});
+
+	it('fails when crawl status returns no pages', async () => {
+		vi.stubGlobal(
+			'fetch',
+			vi
+				.fn()
+				.mockResolvedValueOnce(
+					json_response({
+						success: true,
+						id: 'job-1',
+						url: 'https://site.test',
+					}),
+				)
+				.mockResolvedValueOnce(
+					json_response({
+						status: 'completed',
+						data: [],
+					}),
+				),
+		);
+		const { FirecrawlCrawlProvider } = await import('./index.js');
+
+		const pending = new FirecrawlCrawlProvider().process_content(
+			'https://site.test',
+		);
+		const expectation = expect(pending).rejects.toThrow(
+			'Crawl returned no data',
+		);
+		await vi.advanceTimersByTimeAsync(5000);
+
+		await expectation;
+	});
+
+	it('fails when all crawled pages have extraction errors', async () => {
+		vi.stubGlobal(
+			'fetch',
+			vi
+				.fn()
+				.mockResolvedValueOnce(
+					json_response({
+						success: true,
+						id: 'job-1',
+						url: 'https://site.test',
+					}),
+				)
+				.mockResolvedValueOnce(
+					json_response({
+						status: 'completed',
+						data: [
+							{
+								markdown: 'Failed content',
+								metadata: { error: 'blocked' },
+							},
+						],
+					}),
+				),
+		);
+		const { FirecrawlCrawlProvider } = await import('./index.js');
+
+		const pending = new FirecrawlCrawlProvider().process_content(
+			'https://site.test',
+		);
+		const expectation = expect(pending).rejects.toThrow(
+			'All crawled pages failed to extract content',
+		);
+		await vi.advanceTimersByTimeAsync(5000);
+
+		await expectation;
 	});
 });

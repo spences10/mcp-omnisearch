@@ -35,8 +35,14 @@ describe('KagiSearchProvider', () => {
 						{
 							title: 'Also good',
 							url: 'https://example.org',
-							snippet: 'OK',
+							snippet: null,
 							rank: 2,
+						},
+						{
+							title: 'With snippet',
+							url: 'https://snippet.example',
+							snippet: 'OK',
+							rank: 3,
 						},
 					],
 					meta: {},
@@ -61,8 +67,15 @@ describe('KagiSearchProvider', () => {
 			{
 				title: 'Also good',
 				url: 'https://example.org',
-				snippet: 'OK',
+				snippet: '',
 				score: 2,
+				source_provider: 'kagi',
+			},
+			{
+				title: 'With snippet',
+				url: 'https://snippet.example',
+				snippet: 'OK',
+				score: 3,
 				source_provider: 'kagi',
 			},
 		]);

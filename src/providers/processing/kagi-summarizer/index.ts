@@ -15,7 +15,7 @@ const kagi_summarizer_response_schema = v.object({
 		id: v.string(),
 		node: v.string(),
 		ms: v.number(),
-		api_balance: v.number(),
+		api_balance: v.optional(v.number()),
 	}),
 	data: v.object({
 		output: v.string(),

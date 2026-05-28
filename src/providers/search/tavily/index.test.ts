@@ -61,4 +61,36 @@ describe('TavilySearchProvider', () => {
 			},
 		]);
 	});
+
+	it('normalizes date and country operators for Tavily API fields', async () => {
+		const fetch = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				json_response({
+					results: [
+						{
+							title: 'Result',
+							url: 'https://example.com',
+							content: 'Content',
+							score: 0.5,
+						},
+					],
+					response_time: 0.2,
+				}),
+		);
+		vi.stubGlobal('fetch', fetch);
+		const { TavilySearchProvider } = await import('./index.js');
+
+		await new TavilySearchProvider().search({
+			query:
+				'example after:2024-05 before:2024-05-10 loc:United-Kingdom',
+			limit: 1,
+		});
+
+		const request_init = fetch.mock.calls[0]?.[1];
+		expect(JSON.parse(request_init?.body as string)).toMatchObject({
+			start_date: '2024-05-01',
+			end_date: '2024-05-10',
+			country: 'united kingdom',
+		});
+	});
 });

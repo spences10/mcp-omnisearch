@@ -15,13 +15,13 @@ import { config } from '../../../config/env.js';
 
 export interface EnrichmentResponse {
 	data: Array<{
-		title: string;
-		url: string;
-		snippet: string;
+		title?: string;
+		url?: string;
+		snippet?: string | null;
 		rank?: number;
 	}>;
 	meta?: {
-		total_hits: number;
+		total_hits?: number;
 		api_balance?: number;
 	};
 }
@@ -96,20 +96,24 @@ export class KagiEnrichmentSearchProvider implements SearchProvider {
 
 				const allData = [...webData.data, ...newsData.data];
 
-				return allData
-					.map((result) => ({
-						title: result.title,
-						url: result.url,
-						snippet: result.snippet
-							?.replace(/&#39;/g, "'")
-							.replace(/&quot;/g, '"')
-							.replace(/&amp;/g, '&')
-							.replace(/&lt;/g, '<')
-							.replace(/&gt;/g, '>'),
-						score: result.rank ? 1 / result.rank : undefined,
-						source_provider: this.name,
-					}))
-					.filter((r) => r.title && r.url && r.snippet);
+				return allData.flatMap((result): SearchResult[] => {
+					if (!result.title || !result.url) return [];
+
+					return [
+						{
+							title: result.title,
+							url: result.url,
+							snippet: (result.snippet ?? '')
+								.replace(/&#39;/g, "'")
+								.replace(/&quot;/g, '"')
+								.replace(/&amp;/g, '&')
+								.replace(/&lt;/g, '<')
+								.replace(/&gt;/g, '>'),
+							score: result.rank ? 1 / result.rank : undefined,
+							source_provider: this.name,
+						},
+					];
+				});
 			} catch (error) {
 				handle_provider_error(error, this.name, 'enrich content');
 			}

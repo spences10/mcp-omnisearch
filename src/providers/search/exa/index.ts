@@ -29,7 +29,8 @@ interface ExaSearchRequest {
 const exa_search_response_schema = v.object({
 	requestId: v.string(),
 	autopromptString: v.optional(v.string()),
-	resolvedSearchType: v.string(),
+	resolvedSearchType: v.optional(v.string()),
+	searchType: v.optional(v.string()),
 	results: v.array(
 		v.object({
 			id: v.string(),
@@ -115,7 +116,8 @@ export class ExaSearchProvider implements SearchProvider {
 						publishedDate: result.publishedDate,
 						highlights: result.highlights,
 						autopromptString: data.autopromptString,
-						resolvedSearchType: data.resolvedSearchType,
+						resolvedSearchType:
+							data.resolvedSearchType ?? data.searchType,
 					},
 				}));
 			} catch (error) {

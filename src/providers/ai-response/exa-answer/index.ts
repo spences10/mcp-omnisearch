@@ -30,7 +30,6 @@ const exa_answer_response_schema = v.object({
 		),
 	),
 	requestId: v.string(),
-	costDollars: v.optional(v.number()),
 });
 
 export class ExaAnswerProvider implements SearchProvider {

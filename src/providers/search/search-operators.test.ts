@@ -131,10 +131,10 @@ describe('search provider operator handling', () => {
 			exclude_domains: ['ads.example.com', 'spam.dev'],
 			search_depth: 'basic',
 			topic: 'general',
-			start_date: '2023',
-			end_date: '2024',
+			start_date: '2023-01-01',
+			end_date: '2024-01-01',
 			exact_match: true,
-			country: 'us',
+			country: 'united states',
 		});
 	});
 });

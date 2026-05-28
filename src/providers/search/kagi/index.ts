@@ -31,7 +31,7 @@ const is_kagi_search_result = (
 ): result is {
 	title: string;
 	url: string;
-	snippet?: string;
+	snippet?: string | null;
 	rank?: number;
 } =>
 	typeof result === 'object' &&
@@ -40,7 +40,9 @@ const is_kagi_search_result = (
 	'url' in result &&
 	typeof result.title === 'string' &&
 	typeof result.url === 'string' &&
-	(!('snippet' in result) || typeof result.snippet === 'string') &&
+	(!('snippet' in result) ||
+		typeof result.snippet === 'string' ||
+		result.snippet === null) &&
 	(!('rank' in result) || typeof result.rank === 'number');
 
 export class KagiSearchProvider implements SearchProvider {
