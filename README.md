@@ -33,6 +33,7 @@ working.
 				"TAVILY_API_KEY": "your-tavily-key",
 				"KAGI_API_KEY": "your-kagi-key",
 				"BRAVE_API_KEY": "your-brave-key",
+				"YDC_API_KEY": "your-youcom-key",
 				"GITHUB_API_KEY": "your-github-token",
 				"EXA_API_KEY": "your-exa-key",
 				"LINKUP_API_KEY": "your-linkup-key",
@@ -111,6 +112,7 @@ Tavily, Kagi, Firecrawl, or Exa.
 - `TAVILY_API_KEY`
 - `KAGI_API_KEY`
 - `BRAVE_API_KEY`
+- `YDC_API_KEY`
 - `GITHUB_API_KEY`
 - `EXA_API_KEY`
 - `LINKUP_API_KEY`

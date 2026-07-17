@@ -20,6 +20,7 @@ import { BraveSearchProvider } from '../providers/search/brave/index.js';
 import { ExaSearchProvider } from '../providers/search/exa/index.js';
 import { GitHubSearchProvider } from '../providers/search/github/index.js';
 import { KagiSearchProvider } from '../providers/search/kagi/index.js';
+import { YouComSearchProvider } from '../providers/search/youcom/index.js';
 import { TavilySearchProvider } from '../providers/search/tavily/index.js';
 import type { ProviderDefinition } from './provider-registry.js';
 
@@ -28,6 +29,7 @@ export type WebSearchProviderName =
 	| 'brave'
 	| 'kagi'
 	| 'exa'
+	| 'youcom'
 	| 'kagi_enrichment';
 
 export type AISearchProviderName =
@@ -114,6 +116,16 @@ export const web_search_provider_definitions = [
 		capabilities: ['web_search', 'domain_filters', 'semantic_search'],
 		api_key: config.search.exa.api_key,
 		create: () => new ExaSearchProvider(),
+	},
+	{
+		id: 'youcom',
+		name: 'youcom',
+		category: 'search',
+		api_key_name: 'YDC_API_KEY',
+		tools: ['web_search'],
+		capabilities: ['web_search', 'news_search', 'operator_passthrough'],
+		api_key: config.search.youcom.api_key,
+		create: () => new YouComSearchProvider(),
 	},
 	{
 		id: 'kagi_enrichment',

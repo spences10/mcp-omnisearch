@@ -7,6 +7,7 @@ export const KAGI_API_KEY = process.env.KAGI_API_KEY;
 export const GITHUB_API_KEY = process.env.GITHUB_API_KEY;
 export const EXA_API_KEY = process.env.EXA_API_KEY;
 export const LINKUP_API_KEY = process.env.LINKUP_API_KEY;
+export const YDC_API_KEY = process.env.YDC_API_KEY;
 
 // Content processing API keys
 export const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY;
@@ -24,6 +25,11 @@ export const config = {
 			api_key: BRAVE_API_KEY,
 			base_url: 'https://api.search.brave.com/res/v1',
 			timeout: 10000, // 10 seconds
+		},
+		youcom: {
+			api_key: YDC_API_KEY,
+			base_url: 'https://ydc-index.io',
+			timeout: 20000, // 20 seconds
 		},
 		kagi: {
 			api_key: KAGI_API_KEY,
@@ -177,6 +183,9 @@ export const validate_config = () => {
 
 	if (!LINKUP_API_KEY) missing_keys.push('LINKUP_API_KEY');
 	else available_keys.push('LINKUP_API_KEY');
+
+	if (!YDC_API_KEY) missing_keys.push('YDC_API_KEY');
+	else available_keys.push('YDC_API_KEY');
 
 	// Log available keys
 	if (available_keys.length > 0) {

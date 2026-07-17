@@ -22,6 +22,7 @@ describe('provider definitions', () => {
 			{ id: 'brave', category: 'search', tools: ['web_search'] },
 			{ id: 'kagi', category: 'search', tools: ['web_search'] },
 			{ id: 'exa', category: 'search', tools: ['web_search'] },
+			{ id: 'youcom', category: 'search', tools: ['web_search'] },
 			{
 				id: 'kagi_enrichment',
 				category: 'search',
