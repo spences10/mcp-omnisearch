@@ -1,5 +1,7 @@
 # mcp-omnisearch
 
+[![MCP Toplist](https://mcptoplist.com/badge/io.github.spences10%2Fmcp-omnisearch.svg)](https://mcptoplist.com/server/io.github.spences10%2Fmcp-omnisearch)
+
 [![built with vite+](https://img.shields.io/badge/built%20with-Vite+-646CFF?logo=vite&logoColor=white)](https://viteplus.dev)
 [![tested with vitest](https://img.shields.io/badge/tested%20with-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev)
 
