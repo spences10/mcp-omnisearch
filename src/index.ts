@@ -4,6 +4,7 @@ import { ValibotJsonSchemaAdapter } from '@tmcp/adapter-valibot';
 import { StdioTransport } from '@tmcp/transport-stdio';
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
+import { warn_invalid_locale_config } from './common/locale.js';
 import { validate_config } from './config/env.js';
 import { setup_handlers } from './server/handlers.js';
 import {
@@ -46,6 +47,7 @@ class OmnisearchServer {
 
 		// Validate environment configuration
 		validate_config();
+		warn_invalid_locale_config();
 
 		// Initialize and register providers + tools
 		initialize_providers();

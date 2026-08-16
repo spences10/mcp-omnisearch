@@ -47,6 +47,9 @@ search only. See
 - Need native operators like `filetype:pdf`, `intitle:`, or `before:`?
   Start with `brave` or `kagi`.
 - Need API-level domain/date/country filtering? Use `tavily`.
+- Need non-US country/language defaults? Set `OMNISEARCH_COUNTRY` /
+  `OMNISEARCH_LANGUAGE` or pass `country` / `language` on `web_search`
+  for `brave`, `tavily`, and `kagi`.
 - Need semantic discovery, similar pages, or meaning-based results?
   Use `exa`.
 - Need source-grounded narrative answers? Use `ai_search` with

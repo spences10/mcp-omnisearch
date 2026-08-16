@@ -24,6 +24,30 @@ describe('KagiSearchProvider', () => {
 		vi.restoreAllMocks();
 	});
 
+	it('injects resolved locale into loc and lang query operators', async () => {
+		const fetch = vi.fn(async (_input: string, _init?: RequestInit) =>
+			json_response({
+				data: [{ title: 'Good', url: 'https://example.com' }],
+			}),
+		);
+		vi.stubGlobal('fetch', fetch);
+		const { KagiSearchProvider } = await import('./index.js');
+
+		await new KagiSearchProvider().search({
+			query: 'news loc:us lang:en',
+			limit: 5,
+			country: 'at',
+			language: 'de',
+		});
+
+		const request_url = String(fetch.mock.calls[0]?.[0]);
+		const query = new URL(request_url).searchParams.get('q');
+		expect(query).toContain('loc:at');
+		expect(query).toContain('lang:de');
+		expect(query).not.toContain('loc:us');
+		expect(query).not.toContain('lang:en');
+	});
+
 	it('skips non-result rows and accepts omitted snippets and total_hits', async () => {
 		vi.stubGlobal(
 			'fetch',

@@ -51,6 +51,32 @@ export const include_domains_schema = v.optional(
 	),
 );
 
+export const country_schema = v.optional(
+	v.pipe(
+		v.string(),
+		v.regex(
+			/^[A-Za-z]{2}$/,
+			'Country must be an ISO 3166-1 alpha-2 code',
+		),
+		v.description(
+			'ISO 3166-1 alpha-2 country code (e.g. at, de, ch). Overrides OMNISEARCH_COUNTRY. Query language never changes country.',
+		),
+	),
+);
+
+export const language_schema = v.optional(
+	v.pipe(
+		v.string(),
+		v.regex(
+			/^(?:auto|[A-Za-z]{2})$/i,
+			'Language must be an ISO 639-1 code or auto',
+		),
+		v.description(
+			'ISO 639-1 language code or auto. Overrides OMNISEARCH_LANGUAGE. auto enables conservative query-language inference.',
+		),
+	),
+);
+
 export const exclude_domains_schema = v.optional(
 	v.pipe(
 		v.array(domain_schema),

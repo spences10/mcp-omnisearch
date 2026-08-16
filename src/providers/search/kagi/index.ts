@@ -59,6 +59,12 @@ export class KagiSearchProvider implements SearchProvider {
 		// Parse search operators from the query
 		const parsed_query = parse_search_operators(params.query);
 		const search_params = apply_search_operators(parsed_query);
+		if (params.country) {
+			search_params.location = params.country;
+		}
+		if (params.language) {
+			search_params.language = params.language;
+		}
 
 		const search_request = async () => {
 			try {

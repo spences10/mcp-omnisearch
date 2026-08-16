@@ -1,6 +1,12 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
+import {
+	locale_query_language,
+	read_locale_env,
+	resolve_search_locale,
+	with_locale_metadata,
+} from '../../common/locale.js';
 import { SearchProvider } from '../../common/types.js';
 import {
 	web_search_provider_definitions,
@@ -9,8 +15,10 @@ import {
 import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
 import {
+	country_schema,
 	exclude_domains_schema,
 	include_domains_schema,
+	language_schema,
 	large_result_mode_schema,
 	limit_schema,
 	query_schema,
@@ -41,7 +49,7 @@ export const register_web_search = (
 		{
 			name: 'web_search',
 			description:
-				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Brave/Kagi support query operators like site:, filetype:, lang:, before:, after:.',
+				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Brave/Kagi support query operators like site:, filetype:, lang:, before:, after:. Optional country/language apply only to locale-aware providers (brave, tavily, kagi).',
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -57,6 +65,8 @@ export const register_web_search = (
 				limit: limit_schema,
 				include_domains: include_domains_schema,
 				exclude_domains: exclude_domains_schema,
+				country: country_schema,
+				language: language_schema,
 				large_result_mode: large_result_mode_schema,
 			}),
 		},
@@ -66,19 +76,33 @@ export const register_web_search = (
 			limit,
 			include_domains,
 			exclude_domains,
+			country,
+			language,
 			large_result_mode,
 		}) =>
 			handle_tool_result(
 				'web_search',
 				async () => {
 					const selected = providers.require(provider, 'web_search');
+					const locale_env = read_locale_env();
+					const locale = resolve_search_locale({
+						query,
+						param_country: country,
+						param_language: language,
+						config_country: locale_env.country,
+						config_language: locale_env.language,
+					});
 
-					return selected.search({
+					const results = await selected.search({
 						query,
 						limit,
 						include_domains,
 						exclude_domains,
+						country: locale.country,
+						language: locale_query_language(locale),
 					});
+
+					return with_locale_metadata(results, selected.name, locale);
 				},
 				{ large_result_mode },
 			),

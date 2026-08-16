@@ -15,6 +15,7 @@ import {
 	SearchProvider,
 	SearchResult,
 } from '../../../common/types.js';
+import { to_tavily_country } from '../../../common/locale.js';
 import { validate_api_key } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
@@ -46,17 +47,6 @@ const normalize_tavily_date = (date: string) => {
 	if (/^\d{4}$/.test(date)) return `${date}-01-01`;
 	if (/^\d{4}-\d{2}$/.test(date)) return `${date}-01`;
 	return date;
-};
-
-const tavily_country_aliases: Record<string, string> = {
-	uk: 'united kingdom',
-	us: 'united states',
-	usa: 'united states',
-};
-
-const normalize_tavily_country = (location: string) => {
-	const normalized = location.toLowerCase().replace(/-/g, ' ');
-	return tavily_country_aliases[normalized] ?? normalized;
 };
 
 export class TavilySearchProvider implements SearchProvider {
@@ -122,11 +112,9 @@ export class TavilySearchProvider implements SearchProvider {
 						`${request_body.query} ${exact_query_parts.join(' ')}`.trim();
 				}
 
-				// Map location operator to Tavily's country param
-				if (search_params.location) {
-					request_body.country = normalize_tavily_country(
-						search_params.location,
-					);
+				const country = params.country ?? search_params.location;
+				if (country) {
+					request_body.country = to_tavily_country(country);
 				}
 
 				const raw_data = await http_json(

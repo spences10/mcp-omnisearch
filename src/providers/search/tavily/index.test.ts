@@ -93,4 +93,34 @@ describe('TavilySearchProvider', () => {
 			country: 'united kingdom',
 		});
 	});
+
+	it('prefers resolved country params over location operators', async () => {
+		const fetch = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				json_response({
+					results: [
+						{
+							title: 'Result',
+							url: 'https://example.com',
+							content: 'Content',
+							score: 0.5,
+						},
+					],
+					response_time: 0.2,
+				}),
+		);
+		vi.stubGlobal('fetch', fetch);
+		const { TavilySearchProvider } = await import('./index.js');
+
+		await new TavilySearchProvider().search({
+			query: 'example loc:us',
+			limit: 1,
+			country: 'at',
+		});
+
+		const request_init = fetch.mock.calls[0]?.[1];
+		expect(JSON.parse(request_init?.body as string)).toMatchObject({
+			country: 'austria',
+		});
+	});
 });

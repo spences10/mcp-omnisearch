@@ -17,6 +17,8 @@ const API_KEY_NAMES = [
 	'EXA_API_KEY',
 	'LINKUP_API_KEY',
 	'FIRECRAWL_API_KEY',
+	'OMNISEARCH_COUNTRY',
+	'OMNISEARCH_LANGUAGE',
 ];
 
 const create_mock_server = () => {
@@ -152,6 +154,21 @@ describe('MCP tool contract', () => {
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
 		).toBe(false);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				country: 'at',
+				language: 'auto',
+			}).success,
+		).toBe(true);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				country: 'austria',
+			}).success,
+		).toBe(false);
 	});
 
 	it('validates public web_extract payloads and unavailable modes at the MCP layer', async () => {
@@ -261,6 +278,67 @@ describe('MCP tool contract', () => {
 			provider: 'brave',
 			retryable: false,
 		});
+	});
+
+	it('applies locale defaults and reports resolved source metadata', async () => {
+		const { tools } = await load_contract({
+			BRAVE_API_KEY: 'brave-key',
+			OMNISEARCH_COUNTRY: 'at',
+			OMNISEARCH_LANGUAGE: 'de',
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+		const fetch = vi.fn(
+			async (_input: string, _init?: RequestInit) =>
+				new Response(
+					JSON.stringify({
+						web: {
+							results: [
+								{
+									title: 'Example',
+									url: 'https://example.com',
+									description: 'Example result',
+								},
+							],
+						},
+					}),
+					{ status: 200 },
+				),
+		);
+		vi.stubGlobal('fetch', fetch);
+
+		const body = parse_tool_body(
+			await tool.handler({
+				query: 'news',
+				provider: 'brave',
+				country: 'ch',
+				large_result_mode: 'inline',
+			}),
+		);
+
+		const request_url = String(fetch.mock.calls[0]?.[0]);
+		const query_params = new URL(request_url).searchParams;
+		expect(query_params.get('country')).toBe('CH');
+		expect(query_params.get('search_lang')).toBe('de');
+		expect(body).toEqual([
+			{
+				title: 'Example',
+				url: 'https://example.com',
+				snippet: 'Example result',
+				source_provider: 'brave',
+				metadata: {
+					locale: {
+						country: 'ch',
+						language: 'de',
+						source: {
+							country: 'param',
+							language: 'config',
+						},
+					},
+				},
+			},
+		]);
 	});
 
 	it('covers large-result inline/file modes and compact extraction at the MCP layer', async () => {

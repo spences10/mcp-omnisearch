@@ -47,7 +47,13 @@ export class BraveSearchProvider implements SearchProvider {
 
 		const search_request = async () => {
 			try {
-				// Build query with all operators using shared utility
+				if (params.country) {
+					search_params.location = undefined;
+				}
+				if (params.language) {
+					search_params.language = undefined;
+				}
+
 				const query = build_query_with_operators(
 					search_params,
 					params.include_domains,
@@ -58,6 +64,16 @@ export class BraveSearchProvider implements SearchProvider {
 					q: query,
 					count: (params.limit ?? 10).toString(),
 				});
+
+				if (params.country) {
+					query_params.set('country', params.country.toUpperCase());
+				}
+				if (params.language) {
+					query_params.set(
+						'search_lang',
+						params.language.toLowerCase(),
+					);
+				}
 
 				const raw_data = await http_json(
 					this.name,

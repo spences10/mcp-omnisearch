@@ -1,9 +1,11 @@
 import * as v from 'valibot';
 import { describe, expect, it } from 'vitest';
 import {
+	country_schema,
 	domain_schema,
 	http_url_schema,
 	include_raw_contents_schema,
+	language_schema,
 	large_result_mode_schema,
 	limit_schema,
 	query_schema,
@@ -45,6 +47,19 @@ describe('tool schemas', () => {
 		expect(
 			v.safeParse(include_raw_contents_schema, 'false').success,
 		).toBe(false);
+	});
+
+	it('accepts ISO country and language overrides', () => {
+		expect(v.parse(country_schema, 'at')).toBe('at');
+		expect(v.parse(country_schema, 'CH')).toBe('CH');
+		expect(v.safeParse(country_schema, 'austria').success).toBe(
+			false,
+		);
+		expect(v.parse(language_schema, 'de')).toBe('de');
+		expect(v.parse(language_schema, 'auto')).toBe('auto');
+		expect(v.safeParse(language_schema, 'german').success).toBe(
+			false,
+		);
 	});
 
 	it('accepts hostnames but rejects URLs as domain filters', () => {

@@ -53,9 +53,17 @@ Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
 {
 	"query": "sveltekit remote functions site:docs.svelte.dev",
 	"provider": "brave",
-	"limit": 10
+	"limit": 10,
+	"country": "at",
+	"language": "de"
 }
 ```
+
+Optional `country` (ISO 3166-1 alpha-2) and `language` (ISO 639-1 or
+`auto`) override server defaults. They apply only to locale-aware
+providers (`brave`, `tavily`, `kagi`). Query language never changes
+country. Resolved locale and source (`config`, `param`, or `inferred`)
+are returned in result metadata.
 
 ### `ai_search`
 
@@ -117,6 +125,8 @@ Tavily, Kagi, Firecrawl, or Exa.
 - `FIRECRAWL_API_KEY`
 - `FIRECRAWL_BASE_URL` optional, for self-hosted Firecrawl
 - `OMNISEARCH_LARGE_RESULT_MODE` optional, `file` default or `inline`
+- `OMNISEARCH_COUNTRY` optional, ISO 3166-1 alpha-2 (e.g. `at`)
+- `OMNISEARCH_LANGUAGE` optional, ISO 639-1 or `auto` (e.g. `de`)
 
 ## Development
 

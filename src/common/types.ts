@@ -16,6 +16,8 @@ export interface BaseSearchParams {
 	limit?: number;
 	include_domains?: string[];
 	exclude_domains?: string[];
+	country?: string;
+	language?: string;
 }
 
 export interface ProcessingResult {

@@ -27,6 +27,23 @@ and GitHub uses GitHub search qualifiers.
 Unsupported provider-specific operators remain in the sanitized query
 where possible rather than being flattened globally.
 
+## Locale defaults
+
+Set `OMNISEARCH_COUNTRY` and/or `OMNISEARCH_LANGUAGE` for server-wide
+defaults. Per-call `country` / `language` on `web_search` win.
+`language=auto` enables conservative query-language inference. `lang:`
+/ `loc:` operators and unambiguous place names can infer values, but
+query language never changes country.
+
+Locale is applied only to providers with region/language parameters:
+
+- `brave`: `country` and `search_lang` request fields
+- `tavily`: `country` request field
+- `kagi`: `loc:` and `lang:` query operators
+
+`exa` and `kagi_enrichment` are unchanged. Without config or per-call
+overrides, current provider defaults stay in place.
+
 ## Tested examples
 
 ### Brave: native operator passthrough
