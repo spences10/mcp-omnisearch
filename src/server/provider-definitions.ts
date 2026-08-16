@@ -15,11 +15,13 @@ import { FirecrawlExtractProvider } from '../providers/processing/firecrawl-extr
 import { FirecrawlMapProvider } from '../providers/processing/firecrawl-map/index.js';
 import { FirecrawlScrapeProvider } from '../providers/processing/firecrawl-scrape/index.js';
 import { KagiSummarizerProvider } from '../providers/processing/kagi-summarizer/index.js';
+import { ParallelExtractProvider } from '../providers/processing/parallel-extract/index.js';
 import { TavilyExtractProvider } from '../providers/processing/tavily-extract/index.js';
 import { BraveSearchProvider } from '../providers/search/brave/index.js';
 import { ExaSearchProvider } from '../providers/search/exa/index.js';
 import { GitHubSearchProvider } from '../providers/search/github/index.js';
 import { KagiSearchProvider } from '../providers/search/kagi/index.js';
+import { ParallelSearchProvider } from '../providers/search/parallel/index.js';
 import { TavilySearchProvider } from '../providers/search/tavily/index.js';
 import type { ProviderDefinition } from './provider-registry.js';
 
@@ -28,7 +30,8 @@ export type WebSearchProviderName =
 	| 'brave'
 	| 'kagi'
 	| 'exa'
-	| 'kagi_enrichment';
+	| 'kagi_enrichment'
+	| 'parallel';
 
 export type AISearchProviderName =
 	| 'kagi_fastgpt'
@@ -39,7 +42,8 @@ export type WebExtractProvider =
 	| 'tavily'
 	| 'kagi'
 	| 'firecrawl'
-	| 'exa';
+	| 'exa'
+	| 'parallel';
 
 export type WebExtractMode =
 	| 'extract'
@@ -124,6 +128,16 @@ export const web_search_provider_definitions = [
 		capabilities: ['specialized_indexes', 'web_enrichment'],
 		api_key: config.enhancement.kagi_enrichment.api_key,
 		create: () => new KagiEnrichmentSearchProvider(),
+	},
+	{
+		id: 'parallel',
+		name: 'parallel',
+		category: 'search',
+		api_key_name: 'PARALLEL_API_KEY',
+		tools: ['web_search'],
+		capabilities: ['web_search', 'domain_filters', 'long_excerpts'],
+		api_key: config.search.parallel.api_key,
+		create: () => new ParallelSearchProvider(),
 	},
 ] satisfies readonly ProviderDefinition<SearchProvider>[];
 
@@ -277,6 +291,18 @@ export const web_extract_provider_definitions = [
 		modes: ['similar'],
 		capabilities: ['similar_pages'],
 		create: () => new ExaSimilarProvider(),
+	},
+	{
+		id: make_processing_provider_key('parallel', 'extract'),
+		name: 'parallel',
+		category: 'processing',
+		api_key: config.processing.parallel_extract.api_key,
+		api_key_name: 'PARALLEL_API_KEY',
+		tools: ['web_extract'],
+		modes: ['extract'],
+		capabilities: ['content_extraction', 'long_excerpts'],
+		default_mode: true,
+		create: () => new ParallelExtractProvider(),
 	},
 ] satisfies readonly ProcessingProviderDefinition[];
 

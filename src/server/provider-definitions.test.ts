@@ -27,6 +27,7 @@ describe('provider definitions', () => {
 				category: 'search',
 				tools: ['web_search'],
 			},
+			{ id: 'parallel', category: 'search', tools: ['web_search'] },
 		]);
 
 		expect(
@@ -125,6 +126,12 @@ describe('provider definitions', () => {
 				name: 'exa',
 				mode: 'similar',
 				default_mode: false,
+			},
+			{
+				id: 'parallel:extract',
+				name: 'parallel',
+				mode: 'extract',
+				default_mode: true,
 			},
 		]);
 

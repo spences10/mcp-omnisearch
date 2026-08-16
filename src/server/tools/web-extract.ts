@@ -55,7 +55,7 @@ export const register_web_extract = (
 		{
 			name: 'web_extract',
 			description:
-				'Extract, process, or summarize web content from URLs. Use when you need to read page content, summarize articles, crawl sites, or extract structured data. Providers: tavily (content extraction), kagi (summarization of pages/videos/podcasts), firecrawl (scraping/crawling/mapping/structured extraction/interactive), exa (content retrieval/similar pages).',
+				'Extract, process, or summarize web content from URLs. Use when you need to read page content, summarize articles, crawl sites, or extract structured data. Providers: tavily (content extraction), kagi (summarization of pages/videos/podcasts), firecrawl (scraping/crawling/mapping/structured extraction/interactive), exa (content retrieval/similar pages), parallel (long excerpts/full content).',
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -72,7 +72,7 @@ export const register_web_extract = (
 					v.pipe(
 						v.picklist(web_extract_modes),
 						v.description(
-							'Processing mode. Firecrawl: scrape/crawl/map/extract/actions. Exa: contents/similar. Tavily: extract. Kagi: summarize. Defaults to provider default.',
+							'Processing mode. Firecrawl: scrape/crawl/map/extract/actions. Exa: contents/similar. Tavily/Parallel: extract. Kagi: summarize. Defaults to provider default.',
 						),
 					),
 				),
