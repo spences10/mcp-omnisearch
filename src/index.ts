@@ -5,6 +5,10 @@ import { StdioTransport } from '@tmcp/transport-stdio';
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import { validate_config } from './config/env.js';
+import {
+	assert_http_can_start,
+	load_http_config,
+} from './config/http.js';
 import { setup_handlers } from './server/handlers.js';
 import {
 	initialize_providers,
@@ -59,6 +63,15 @@ class OmnisearchServer {
 	}
 
 	async run() {
+		const http_config = load_http_config();
+		if (http_config.transport === 'http') {
+			assert_http_can_start(http_config);
+			const { start_http_server } =
+				await import('./server/http-listen.js');
+			await start_http_server(this.server, http_config);
+			return;
+		}
+
 		const transport = new StdioTransport(this.server);
 		transport.listen();
 		console.error('Omnisearch MCP server running on stdio');

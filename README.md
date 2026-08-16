@@ -103,6 +103,8 @@ Tavily, Kagi, Firecrawl, or Exa.
   behavior and remote deployment caveats.
 - [Deployment](docs/deployment.md) — MCP client, WSL, Docker, cloud,
   and Firecrawl setup.
+- [HTTP auth](docs/http-auth.md) — bearer tokens, fail-closed remote
+  binds, and per-token rate limits.
 - [Troubleshooting](docs/troubleshooting.md) — keys, access,
   validation, rate limits, and common failures.
 
@@ -117,6 +119,14 @@ Tavily, Kagi, Firecrawl, or Exa.
 - `FIRECRAWL_API_KEY`
 - `FIRECRAWL_BASE_URL` optional, for self-hosted Firecrawl
 - `OMNISEARCH_LARGE_RESULT_MODE` optional, `file` default or `inline`
+- `TRANSPORT` optional, `stdio` default or `http`
+- `HOST` optional HTTP bind, defaults to `127.0.0.1`
+- `PORT` optional HTTP port, defaults to `8080`
+- `HTTP_PATH` optional MCP path, defaults to `/mcp`
+- `AUTH_TOKENS` required for non-loopback HTTP binds
+- `RATE_LIMIT_REQUESTS` optional, defaults to `120` per token
+- `RATE_LIMIT_WINDOW_MINUTES` optional, defaults to `1`
+- `UNAUTH_RATE_LIMIT_REQUESTS` optional, defaults to `20`
 
 ## Development
 

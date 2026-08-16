@@ -11,6 +11,9 @@ importers:
       '@tmcp/adapter-valibot':
         specifier: ^0.1.6
         version: 0.1.6(tmcp@1.19.4)(valibot@1.4.2)
+      '@tmcp/transport-http':
+        specifier: ^0.8.6
+        version: 0.8.6(tmcp@1.19.4)
       '@tmcp/transport-stdio':
         specifier: ^0.4.3
         version: 0.4.3(tmcp@1.19.4)
@@ -699,6 +702,20 @@ packages:
       tmcp: ^1.17.0
       valibot: ^1.1.0
 
+  '@tmcp/session-manager@0.2.2':
+    resolution: {integrity: sha512-UrCRpTsxh5XnMbplspvftEYboiZWgAiXqqAUbyFTHoHMJ0LoNDy8bQd0+7qtxtT4S5Qsnv650gvs/Nbec5NTCQ==}
+    peerDependencies:
+      tmcp: ^1.16.3
+
+  '@tmcp/transport-http@0.8.6':
+    resolution: {integrity: sha512-iLcxu+tEMbkVHbhFfyXQhxfPDDTfm+F0kEw8Xg/a1rm29s4cBg1vwcpbtk02XTxsdDh8RJ1AZkQwF9WDGeb/IA==}
+    peerDependencies:
+      '@tmcp/auth': ^0.3.3 || ^0.4.0
+      tmcp: ^1.18.0
+    peerDependenciesMeta:
+      '@tmcp/auth':
+        optional: true
+
   '@tmcp/transport-stdio@0.4.3':
     resolution: {integrity: sha512-chdmSwk7PSXjkaQId2OAY8ZMFrTFWwckfCyXJuw6b6WFK9IMK95EoU2VDFioybcmawuQox0MNPM5R2DVxlptoA==}
     peerDependencies:
@@ -1060,6 +1077,9 @@ packages:
 
   es-module-lexer@2.3.1:
     resolution: {integrity: sha512-shc1dbU90Yl/xq1QrC7QRtfcwURZuVRfPhZbDoldJ1cn1gzDvBaBWlv0eFolj5+0znnPJz5TXLxsN77X/12KTA==}
+
+  esm-env@1.2.2:
+    resolution: {integrity: sha512-Epxrv+Nr/CaL4ZcFGPJIYLWFom+YeV1DqMLHJoEd9SYRxNbaFruBwfEX/kkHUJf55j2+TUbmDcmuilbP1TmXHA==}
 
   estree-walker@3.0.3:
     resolution: {integrity: sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==}
@@ -2088,6 +2108,16 @@ snapshots:
       tmcp: 1.19.4
       valibot: 1.4.2
 
+  '@tmcp/session-manager@0.2.2(tmcp@1.19.4)':
+    dependencies:
+      tmcp: 1.19.4
+
+  '@tmcp/transport-http@0.8.6(tmcp@1.19.4)':
+    dependencies:
+      '@tmcp/session-manager': 0.2.2(tmcp@1.19.4)
+      esm-env: 1.2.2
+      tmcp: 1.19.4
+
   '@tmcp/transport-stdio@0.4.3(tmcp@1.19.4)':
     dependencies:
       tmcp: 1.19.4
@@ -2350,6 +2380,8 @@ snapshots:
   dom-accessibility-api@0.5.16: {}
 
   es-module-lexer@2.3.1: {}
+
+  esm-env@1.2.2: {}
 
   estree-walker@3.0.3:
     dependencies:

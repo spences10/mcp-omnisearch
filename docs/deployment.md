@@ -89,6 +89,13 @@ Once deployed through the container, the MCP server is accessible at:
 - OpenAPI endpoint: `/omnisearch`
 - Compatible with OpenWebUI and other tools expecting OpenAPI
 
+## Native HTTP / Streamable HTTP
+
+Set `TRANSPORT=http` to serve MCP over HTTP instead of stdio. Remote
+or wildcard binds require `AUTH_TOKENS`. See [HTTP auth](http-auth.md)
+for bearer tokens, `/health`, and per-token sliding-window rate
+limits.
+
 For HTTP, hosted, or containerized deployments, prefer
 `OMNISEARCH_LARGE_RESULT_MODE=inline`. See
 [large results](large-results.md).
