@@ -1,11 +1,15 @@
 import * as v from 'valibot';
 import { describe, expect, it } from 'vitest';
 import {
+	allowed_domains_schema,
+	blocked_domains_schema,
 	domain_schema,
+	filter_spam_schema,
 	http_url_schema,
 	include_raw_contents_schema,
 	large_result_mode_schema,
 	limit_schema,
+	max_results_per_domain_schema,
 	query_schema,
 	url_or_urls_schema,
 } from './schemas.js';
@@ -44,6 +48,38 @@ describe('tool schemas', () => {
 		).toBe(true);
 		expect(
 			v.safeParse(include_raw_contents_schema, 'false').success,
+		).toBe(false);
+	});
+
+	it('accepts optional spam-filter and domain-cap controls', () => {
+		expect(v.safeParse(filter_spam_schema, undefined).success).toBe(
+			true,
+		);
+		expect(v.safeParse(filter_spam_schema, false).success).toBe(true);
+		expect(v.safeParse(filter_spam_schema, 'false').success).toBe(
+			false,
+		);
+		expect(
+			v.safeParse(max_results_per_domain_schema, 0).success,
+		).toBe(true);
+		expect(
+			v.safeParse(max_results_per_domain_schema, 2).success,
+		).toBe(true);
+		expect(
+			v.safeParse(max_results_per_domain_schema, -1).success,
+		).toBe(false);
+		expect(
+			v.safeParse(max_results_per_domain_schema, 51).success,
+		).toBe(false);
+		expect(
+			v.safeParse(blocked_domains_schema, ['spam.dev']).success,
+		).toBe(true);
+		expect(
+			v.safeParse(allowed_domains_schema, ['newbedev.com']).success,
+		).toBe(true);
+		expect(
+			v.safeParse(blocked_domains_schema, ['https://spam.dev'])
+				.success,
 		).toBe(false);
 	});
 

@@ -198,3 +198,62 @@ export const validate_config = () => {
 
 	warn_for_local_file_offload();
 };
+
+export const parse_boolean_env = (
+	value: string | undefined,
+	fallback: boolean,
+): boolean => {
+	if (value === undefined) return fallback;
+
+	const normalized = value.trim().toLowerCase();
+	if (normalized === '') return fallback;
+	if (['1', 'true', 'yes', 'on'].includes(normalized)) {
+		return true;
+	}
+	if (['0', 'false', 'no', 'off'].includes(normalized)) {
+		return false;
+	}
+
+	return fallback;
+};
+
+export const parse_integer_env = (
+	value: string | undefined,
+	fallback: number,
+): number => {
+	if (value === undefined || value.trim() === '') return fallback;
+
+	const parsed = Number.parseInt(value, 10);
+	return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+export const parse_domain_list_env = (
+	value: string | undefined,
+): string[] =>
+	(value ?? '')
+		.split(',')
+		.map((entry) => entry.trim().toLowerCase())
+		.filter(Boolean);
+
+export const get_quality_settings = (
+	env: NodeJS.ProcessEnv = process.env,
+) => {
+	const max_results_per_domain = Math.min(
+		50,
+		Math.max(
+			0,
+			parse_integer_env(env.OMNISEARCH_MAX_RESULTS_PER_DOMAIN, 2),
+		),
+	);
+
+	return {
+		filter_spam: parse_boolean_env(env.OMNISEARCH_FILTER_SPAM, true),
+		max_results_per_domain,
+		blocked_domains: parse_domain_list_env(
+			env.OMNISEARCH_BLOCKED_DOMAINS,
+		),
+		allowed_domains: parse_domain_list_env(
+			env.OMNISEARCH_ALLOWED_DOMAINS,
+		),
+	};
+};

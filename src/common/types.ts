@@ -11,6 +11,19 @@ export interface SearchResult {
 	metadata?: ProviderMetadata;
 }
 
+export interface SpamFilteredMetadata {
+	removed_count: number;
+	domains: string[];
+	demoted_count: number;
+}
+
+export interface SearchToolResult {
+	results: SearchResult[];
+	metadata: {
+		spam_filtered: SpamFilteredMetadata;
+	};
+}
+
 export interface BaseSearchParams {
 	query: string;
 	limit?: number;

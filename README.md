@@ -57,6 +57,12 @@ Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
 }
 ```
 
+Known content mirrors are dropped by default and extra hits from the
+same registrable domain are moved behind more diverse results. Set
+`filter_spam` to `false` or `max_results_per_domain` to `0` to
+disable. `site:` and `include_domains` queries are exempt. See
+[result quality](docs/result-quality.md).
+
 ### `ai_search`
 
 Get sourced AI answers with Kagi FastGPT, Exa Answer, or Linkup.
@@ -99,6 +105,8 @@ Tavily, Kagi, Firecrawl, or Exa.
   by task, key, mode, and capability.
 - [Search operators](docs/search-operators.md) — operator support
   matrix and tested examples.
+- [Result quality](docs/result-quality.md) — spam/mirror filter,
+  per-domain cap, and `spam_filtered` metadata.
 - [Large results](docs/large-results.md) — inline vs file response
   behavior and remote deployment caveats.
 - [Deployment](docs/deployment.md) — MCP client, WSL, Docker, cloud,
@@ -117,6 +125,13 @@ Tavily, Kagi, Firecrawl, or Exa.
 - `FIRECRAWL_API_KEY`
 - `FIRECRAWL_BASE_URL` optional, for self-hosted Firecrawl
 - `OMNISEARCH_LARGE_RESULT_MODE` optional, `file` default or `inline`
+- `OMNISEARCH_FILTER_SPAM` optional, default `true`
+- `OMNISEARCH_MAX_RESULTS_PER_DOMAIN` optional, default `2`; `0`
+  disables the cap
+- `OMNISEARCH_BLOCKED_DOMAINS` optional, comma-separated extra
+  mirror/scraper hosts
+- `OMNISEARCH_ALLOWED_DOMAINS` optional, comma-separated blocklist
+  exceptions
 
 ## Development
 

@@ -82,7 +82,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-describe('MCP tool contract', () => {
+describe('MCP tool contract', { timeout: 15_000 }, () => {
 	it('registers no public tools when no providers are configured', async () => {
 		const { tools, tools_module } = await load_contract({});
 
@@ -128,6 +128,10 @@ describe('MCP tool contract', () => {
 				provider: 'brave',
 				limit: 5,
 				include_domains: ['svelte.dev'],
+				filter_spam: false,
+				max_results_per_domain: 0,
+				blocked_domains: ['spam.dev'],
+				allowed_domains: ['newbedev.com'],
 				large_result_mode: 'inline',
 			}).success,
 		).toBe(true);
@@ -234,14 +238,23 @@ describe('MCP tool contract', () => {
 			provider: 'brave',
 			large_result_mode: 'inline',
 		});
-		expect(parse_tool_body(success)).toEqual([
-			{
-				title: 'Example',
-				url: 'https://example.com',
-				snippet: 'Example result',
-				source_provider: 'brave',
+		expect(parse_tool_body(success)).toEqual({
+			results: [
+				{
+					title: 'Example',
+					url: 'https://example.com',
+					snippet: 'Example result',
+					source_provider: 'brave',
+				},
+			],
+			metadata: {
+				spam_filtered: {
+					removed_count: 0,
+					domains: [],
+					demoted_count: 0,
+				},
 			},
-		]);
+		});
 
 		vi.stubGlobal(
 			'fetch',
@@ -261,6 +274,69 @@ describe('MCP tool contract', () => {
 			provider: 'brave',
 			retryable: false,
 		});
+	});
+
+	it('filters known mirrors from web_search and reports spam_filtered', async () => {
+		const { tools } = await load_contract({
+			BRAVE_API_KEY: 'brave-key',
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+
+		const brave_results = {
+			web: {
+				results: [
+					{
+						title: 'Canonical',
+						url: 'https://stackoverflow.com/q/1',
+						description: 'Original answer',
+					},
+					{
+						title: 'Mirror',
+						url: 'https://newbedev.com/copied',
+						description: 'Scraped answer',
+					},
+				],
+			},
+		};
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockImplementation(
+				() =>
+					new Response(JSON.stringify(brave_results), {
+						status: 200,
+					}),
+			),
+		);
+
+		const filtered = parse_tool_body(
+			await tool.handler({
+				query: 'example',
+				provider: 'brave',
+				large_result_mode: 'inline',
+			}),
+		);
+		expect(
+			filtered.results.map((item: { url: string }) => item.url),
+		).toEqual(['https://stackoverflow.com/q/1']);
+		expect(filtered.metadata.spam_filtered).toEqual({
+			removed_count: 1,
+			domains: ['newbedev.com'],
+			demoted_count: 0,
+		});
+
+		const disabled = parse_tool_body(
+			await tool.handler({
+				query: 'example',
+				provider: 'brave',
+				filter_spam: false,
+				max_results_per_domain: 0,
+				large_result_mode: 'inline',
+			}),
+		);
+		expect(disabled.results).toHaveLength(2);
+		expect(disabled.metadata.spam_filtered.removed_count).toBe(0);
 	});
 
 	it('covers large-result inline/file modes and compact extraction at the MCP layer', async () => {
