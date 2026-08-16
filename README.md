@@ -72,6 +72,19 @@ working.
 
 ## Tools
 
+### `get_provider_info`
+
+List registered providers and non-secret runtime metadata. Available
+even when only a subset of API keys is configured. Returns `id`,
+`tools`, `timeout`, `enabled`, `cooldown`, and `last_error_type`.
+Never returns keys, tokens, or secrets.
+
+```json
+{
+	"provider": "brave"
+}
+```
+
 ### `web_search`
 
 Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.

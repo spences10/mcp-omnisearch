@@ -3,6 +3,7 @@ import {
 	handle_large_result,
 	type LargeResultMode,
 } from '../../common/results.js';
+import { record_provider_error } from '../provider-runtime.js';
 
 export const create_json_tool_response = (payload: unknown) => ({
 	content: [
@@ -34,6 +35,7 @@ export const handle_tool_result = async <T>(
 			}),
 		);
 	} catch (error) {
+		record_provider_error(error);
 		return create_error_tool_response(error as Error);
 	}
 };

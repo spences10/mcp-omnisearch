@@ -83,10 +83,12 @@ afterEach(() => {
 });
 
 describe('MCP tool contract', () => {
-	it('registers no public tools when no providers are configured', async () => {
+	it('registers only get_provider_info when no providers are configured', async () => {
 		const { tools, tools_module } = await load_contract({});
 
-		expect(tools).toEqual([]);
+		expect(tools.map((tool) => tool.definition.name)).toEqual([
+			'get_provider_info',
+		]);
 		expect(tools_module.provider_status_entries).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
@@ -96,7 +98,7 @@ describe('MCP tool contract', () => {
 				}),
 			]),
 		);
-	});
+	}, 15_000);
 
 	it('registers tools from the configured provider set', async () => {
 		const { tools } = await load_contract({
@@ -107,6 +109,7 @@ describe('MCP tool contract', () => {
 		});
 
 		expect(tools.map((tool) => tool.definition.name)).toEqual([
+			'get_provider_info',
 			'web_search',
 			'github_search',
 			'ai_search',

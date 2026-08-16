@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { ErrorType, ProviderError } from '../../common/types.js';
 import {
+	clear_provider_runtime,
+	get_provider_runtime,
+} from '../provider-runtime.js';
+import {
 	create_error_tool_response,
 	create_json_tool_response,
 	handle_tool_result,
@@ -16,6 +20,7 @@ afterEach(() => {
 		process.env.OMNISEARCH_LARGE_RESULT_MODE =
 			original_large_result_mode;
 	}
+	clear_provider_runtime();
 });
 
 describe('tool responses', () => {
@@ -93,6 +98,24 @@ describe('tool responses', () => {
 				},
 			],
 		});
+	});
+
+	it('records last provider error type without the message', async () => {
+		await handle_tool_result('web_search', async () => {
+			throw new ProviderError(
+				ErrorType.RATE_LIMIT,
+				'Rate limit exceeded for brave using sk-secret',
+				'brave',
+				{ retryable: true },
+			);
+		});
+
+		const runtime = get_provider_runtime('brave');
+		expect(runtime).toEqual({
+			last_error_type: ErrorType.RATE_LIMIT,
+			cooldown: true,
+		});
+		expect(JSON.stringify(runtime)).not.toContain('sk-secret');
 	});
 
 	it('wraps thrown errors as MCP error responses', async () => {

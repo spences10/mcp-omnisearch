@@ -1,6 +1,7 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import type { ProviderStatus } from '../provider-registry.js';
+import { clear_provider_runtime } from '../provider-runtime.js';
 import {
 	get_provider_status_entries as get_ai_provider_status_entries,
 	get_available_providers as get_ai_providers,
@@ -13,6 +14,7 @@ import {
 	initialize_github_search,
 	register_github_search,
 } from './github-search.js';
+import { register_provider_info } from './provider-info.js';
 import {
 	get_provider_status_entries as get_extract_provider_status_entries,
 	get_available_providers as get_extract_providers,
@@ -44,6 +46,7 @@ const reset_provider_tracking = () => {
 
 export const initialize_providers = () => {
 	reset_provider_tracking();
+	clear_provider_runtime();
 
 	if (initialize_web_search()) {
 		for (const p of get_search_providers())
@@ -103,6 +106,7 @@ export const initialize_providers = () => {
 };
 
 export const register_tools = (server: McpServer<GenericSchema>) => {
+	register_provider_info(server, () => provider_status_entries);
 	register_web_search(server);
 	register_github_search(server);
 	register_ai_search(server);
