@@ -81,6 +81,9 @@ export class ExaSearchProvider implements SearchProvider {
 				) {
 					request_body.excludeDomains = params.exclude_domains;
 				}
+				if (params.search_type === 'news') {
+					request_body.category = 'news';
+				}
 
 				const raw_data = await http_json(
 					this.name,

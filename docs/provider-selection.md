@@ -53,3 +53,6 @@ search only. See
   `kagi_fastgpt`, `exa_answer`, or `linkup`.
 - Need to crawl/scrape/map a site? Use `web_extract` with `firecrawl`.
 - Need public code/repository/user discovery? Use `github_search`.
+- Need a news vertical? Set `search_type: "news"` on `web_search`.
+  Brave, Tavily, Exa, and Kagi Enrichment use a native news path; Kagi
+  runs general search and sets `search_type.applied=false`.

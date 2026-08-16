@@ -7,6 +7,7 @@ import {
 	large_result_mode_schema,
 	limit_schema,
 	query_schema,
+	search_type_schema,
 	url_or_urls_schema,
 } from './schemas.js';
 
@@ -15,6 +16,20 @@ describe('tool schemas', () => {
 		expect(v.parse(query_schema, 'sveltekit')).toBe('sveltekit');
 		expect(v.safeParse(query_schema, '').success).toBe(false);
 		expect(v.safeParse(query_schema, '   ').success).toBe(false);
+	});
+
+	it('accepts search and news verticals and rejects unknown values', () => {
+		expect(v.safeParse(search_type_schema, undefined).success).toBe(
+			true,
+		);
+		expect(v.parse(search_type_schema, 'search')).toBe('search');
+		expect(v.parse(search_type_schema, 'news')).toBe('news');
+		expect(v.safeParse(search_type_schema, 'stories').success).toBe(
+			false,
+		);
+		expect(v.safeParse(search_type_schema, 'NEWS').success).toBe(
+			false,
+		);
 	});
 
 	it('bounds result limits', () => {

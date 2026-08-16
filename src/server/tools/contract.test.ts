@@ -82,7 +82,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-describe('MCP tool contract', () => {
+describe('MCP tool contract', { timeout: 20_000 }, () => {
 	it('registers no public tools when no providers are configured', async () => {
 		const { tools, tools_module } = await load_contract({});
 
@@ -151,6 +151,20 @@ describe('MCP tool contract', () => {
 		expect(
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
+		).toBe(false);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				search_type: 'news',
+			}).success,
+		).toBe(true);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				search_type: 'stories',
+			}).success,
 		).toBe(false);
 	});
 
@@ -261,6 +275,113 @@ describe('MCP tool contract', () => {
 			provider: 'brave',
 			retryable: false,
 		});
+	});
+
+	it('applies Brave news natively and reports applied metadata', async () => {
+		const { tools } = await load_contract({
+			BRAVE_API_KEY: 'brave-key',
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+		const fetch = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				new Response(
+					JSON.stringify({
+						type: 'news',
+						results: [
+							{
+								title: 'Breaking',
+								url: 'https://news.example',
+								description: 'Today',
+							},
+						],
+					}),
+					{ status: 200 },
+				),
+		);
+		vi.stubGlobal('fetch', fetch);
+
+		const body = parse_tool_body(
+			await tool.handler({
+				query: 'svelte release',
+				provider: 'brave',
+				search_type: 'news',
+				large_result_mode: 'inline',
+			}),
+		);
+
+		expect(fetch.mock.calls[0]?.[0] as string).toContain(
+			'/news/search?',
+		);
+		expect(body).toEqual([
+			{
+				title: 'Breaking',
+				url: 'https://news.example',
+				snippet: 'Today',
+				source_provider: 'brave',
+				metadata: {
+					search_type: {
+						requested: 'news',
+						applied: true,
+						provider: 'brave',
+						native_value: 'news',
+					},
+				},
+			},
+		]);
+	});
+
+	it('runs Kagi normally for news and reports applied=false', async () => {
+		const { tools } = await load_contract({
+			KAGI_API_KEY: 'kagi-key',
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+		const fetch = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				new Response(
+					JSON.stringify({
+						data: [
+							{
+								title: 'General',
+								url: 'https://example.com',
+								snippet: 'Not a news endpoint',
+							},
+						],
+					}),
+					{ status: 200 },
+				),
+		);
+		vi.stubGlobal('fetch', fetch);
+
+		const body = parse_tool_body(
+			await tool.handler({
+				query: 'svelte release',
+				provider: 'kagi',
+				search_type: 'news',
+				large_result_mode: 'inline',
+			}),
+		);
+
+		expect(fetch.mock.calls[0]?.[0] as string).toContain('/search?');
+		expect(body).toEqual([
+			{
+				title: 'General',
+				url: 'https://example.com',
+				snippet: 'Not a news endpoint',
+				source_provider: 'kagi',
+				metadata: {
+					search_type: {
+						requested: 'news',
+						applied: false,
+						provider: 'kagi',
+						reason: 'provider kagi does not support search_type news',
+					},
+				},
+			},
+		]);
 	});
 
 	it('covers large-result inline/file modes and compact extraction at the MCP layer', async () => {

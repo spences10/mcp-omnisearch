@@ -11,11 +11,14 @@ export interface SearchResult {
 	metadata?: ProviderMetadata;
 }
 
+export type SearchType = 'search' | 'news';
+
 export interface BaseSearchParams {
 	query: string;
 	limit?: number;
 	include_domains?: string[];
 	exclude_domains?: string[];
+	search_type?: SearchType;
 }
 
 export interface ProcessingResult {

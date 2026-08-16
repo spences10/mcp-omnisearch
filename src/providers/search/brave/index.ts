@@ -30,6 +30,20 @@ const brave_search_response_schema = v.object({
 	),
 });
 
+const brave_news_search_response_schema = v.object({
+	results: v.optional(
+		v.array(
+			v.object({
+				title: v.string(),
+				url: v.string(),
+				description: v.optional(v.string()),
+				age: v.optional(v.string()),
+				page_age: v.optional(v.string()),
+			}),
+		),
+	),
+});
+
 export class BraveSearchProvider implements SearchProvider {
 	name = 'brave';
 	description =
@@ -59,9 +73,12 @@ export class BraveSearchProvider implements SearchProvider {
 					count: (params.limit ?? 10).toString(),
 				});
 
+				const is_news = params.search_type === 'news';
+				const endpoint = is_news ? 'news/search' : 'web/search';
+
 				const raw_data = await http_json(
 					this.name,
-					`${config.search.brave.base_url}/web/search?${query_params}`,
+					`${config.search.brave.base_url}/${endpoint}?${query_params}`,
 					{
 						method: 'GET',
 						headers: {
@@ -71,6 +88,33 @@ export class BraveSearchProvider implements SearchProvider {
 						signal: AbortSignal.timeout(config.search.brave.timeout),
 					},
 				);
+
+				if (is_news) {
+					const data = parse_provider_response(
+						this.name,
+						brave_news_search_response_schema,
+						raw_data,
+					);
+
+					return (data.results ?? []).map((result) => {
+						const metadata = {
+							...(result.age ? { age: result.age } : {}),
+							...(result.page_age
+								? { page_age: result.page_age }
+								: {}),
+						};
+
+						return {
+							title: result.title,
+							url: result.url,
+							snippet: result.description ?? '',
+							source_provider: this.name,
+							...(Object.keys(metadata).length > 0
+								? { metadata }
+								: {}),
+						};
+					});
+				}
 
 				const data = parse_provider_response(
 					this.name,

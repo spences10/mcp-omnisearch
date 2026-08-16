@@ -67,5 +67,41 @@ describe('ExaSearchProvider', () => {
 			includeDomains: ['example.com'],
 			excludeDomains: ['bad.example'],
 		});
+		expect(
+			JSON.parse(request_init?.body as string).category,
+		).toBeUndefined();
+	});
+
+	it('sends category news when search_type is news', async () => {
+		const fetch = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				json_response({
+					requestId: 'req-news',
+					results: [
+						{
+							id: 'id-news',
+							title: 'News',
+							url: 'https://news.example',
+							text: 'Today',
+						},
+					],
+				}),
+		);
+		vi.stubGlobal('fetch', fetch);
+		const { ExaSearchProvider } = await import('./index.js');
+
+		await new ExaSearchProvider().search({
+			query: 'svelte release',
+			search_type: 'news',
+		});
+
+		expect(
+			JSON.parse(fetch.mock.calls[0]?.[1]?.body as string),
+		).toEqual(
+			expect.objectContaining({
+				query: 'svelte release',
+				category: 'news',
+			}),
+		);
 	});
 });

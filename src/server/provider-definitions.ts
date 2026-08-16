@@ -71,6 +71,7 @@ export const web_search_provider_definitions = [
 		tools: ['web_search'],
 		capabilities: [
 			'web_search',
+			'news_search',
 			'domain_filters',
 			'operator_translation',
 		],
@@ -85,6 +86,7 @@ export const web_search_provider_definitions = [
 		tools: ['web_search'],
 		capabilities: [
 			'web_search',
+			'news_search',
 			'domain_filters',
 			'operator_passthrough',
 		],
@@ -111,7 +113,12 @@ export const web_search_provider_definitions = [
 		category: 'search',
 		api_key_name: 'EXA_API_KEY',
 		tools: ['web_search'],
-		capabilities: ['web_search', 'domain_filters', 'semantic_search'],
+		capabilities: [
+			'web_search',
+			'news_search',
+			'domain_filters',
+			'semantic_search',
+		],
 		api_key: config.search.exa.api_key,
 		create: () => new ExaSearchProvider(),
 	},
@@ -121,7 +128,11 @@ export const web_search_provider_definitions = [
 		category: 'search',
 		api_key_name: 'KAGI_API_KEY',
 		tools: ['web_search'],
-		capabilities: ['specialized_indexes', 'web_enrichment'],
+		capabilities: [
+			'specialized_indexes',
+			'web_enrichment',
+			'news_search',
+		],
 		api_key: config.enhancement.kagi_enrichment.api_key,
 		create: () => new KagiEnrichmentSearchProvider(),
 	},

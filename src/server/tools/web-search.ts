@@ -1,6 +1,7 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
+import { with_search_type_metadata } from '../../common/search-type.js';
 import { SearchProvider } from '../../common/types.js';
 import {
 	web_search_provider_definitions,
@@ -14,6 +15,7 @@ import {
 	large_result_mode_schema,
 	limit_schema,
 	query_schema,
+	search_type_schema,
 } from './schemas.js';
 
 const providers = new ProviderRegistry<SearchProvider>();
@@ -41,7 +43,7 @@ export const register_web_search = (
 		{
 			name: 'web_search',
 			description:
-				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Brave/Kagi support query operators like site:, filetype:, lang:, before:, after:.',
+				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Brave/Kagi support query operators like site:, filetype:, lang:, before:, after:. Set search_type=news for a native news vertical where the provider has one; unsupported providers run normal search and report search_type.applied=false.',
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -57,6 +59,7 @@ export const register_web_search = (
 				limit: limit_schema,
 				include_domains: include_domains_schema,
 				exclude_domains: exclude_domains_schema,
+				search_type: search_type_schema,
 				large_result_mode: large_result_mode_schema,
 			}),
 		},
@@ -66,6 +69,7 @@ export const register_web_search = (
 			limit,
 			include_domains,
 			exclude_domains,
+			search_type,
 			large_result_mode,
 		}) =>
 			handle_tool_result(
@@ -73,12 +77,17 @@ export const register_web_search = (
 				async () => {
 					const selected = providers.require(provider, 'web_search');
 
-					return selected.search({
-						query,
-						limit,
-						include_domains,
-						exclude_domains,
-					});
+					return with_search_type_metadata(
+						await selected.search({
+							query,
+							limit,
+							include_domains,
+							exclude_domains,
+							search_type,
+						}),
+						provider,
+						search_type,
+					);
 				},
 				{ large_result_mode },
 			),

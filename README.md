@@ -84,6 +84,20 @@ Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
 }
 ```
 
+Optional `search_type` is `search` (default) or `news`. News uses a
+native news path for Brave (`/news/search`), Tavily (`topic=news`),
+Exa (`category=news`), and Kagi Enrichment (`/enrich/news`). Kagi
+general search stays on `/search` and reports
+`search_type.applied=false` in result metadata.
+
+```json
+{
+	"query": "what happened today in svelte",
+	"provider": "brave",
+	"search_type": "news"
+}
+```
+
 ### `ai_search`
 
 Get sourced AI answers with Kagi FastGPT, Exa Answer, or Linkup.

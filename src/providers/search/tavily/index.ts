@@ -24,7 +24,7 @@ interface TavilySearchRequest {
 	include_domains: string[];
 	exclude_domains: string[];
 	search_depth: 'basic';
-	topic: 'general';
+	topic: 'general' | 'news';
 	start_date?: string;
 	end_date?: string;
 	exact_match?: boolean;
@@ -93,7 +93,7 @@ export class TavilySearchProvider implements SearchProvider {
 					exclude_domains:
 						exclude_domains.length > 0 ? exclude_domains : [],
 					search_depth: 'basic',
-					topic: 'general',
+					topic: params.search_type === 'news' ? 'news' : 'general',
 				};
 
 				// Map date operators to Tavily's start_date/end_date

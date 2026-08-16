@@ -55,6 +55,44 @@ describe('BraveSearchProvider', () => {
 		]);
 	});
 
+	it('uses the native news endpoint when search_type is news', async () => {
+		const fetch = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				json_response({
+					type: 'news',
+					results: [
+						{
+							title: 'Breaking',
+							url: 'https://news.example',
+							description: 'Today',
+							age: '2 hours ago',
+						},
+					],
+				}),
+		);
+		vi.stubGlobal('fetch', fetch);
+		const { BraveSearchProvider } = await import('./index.js');
+
+		await expect(
+			new BraveSearchProvider().search({
+				query: 'svelte release',
+				limit: 3,
+				search_type: 'news',
+			}),
+		).resolves.toEqual([
+			{
+				title: 'Breaking',
+				url: 'https://news.example',
+				snippet: 'Today',
+				source_provider: 'brave',
+				metadata: { age: '2 hours ago' },
+			},
+		]);
+		const called_url = fetch.mock.calls[0]?.[0] as string;
+		expect(called_url).toContain('/news/search?');
+		expect(called_url).toContain('count=3');
+	});
+
 	it('returns no results when the web block is omitted', async () => {
 		vi.stubGlobal(
 			'fetch',

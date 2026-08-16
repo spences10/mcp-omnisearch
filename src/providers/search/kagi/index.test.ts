@@ -80,4 +80,24 @@ describe('KagiSearchProvider', () => {
 			},
 		]);
 	});
+
+	it('keeps the general search endpoint when search_type is news', async () => {
+		const fetch = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				json_response({
+					data: [{ title: 'General', url: 'https://example.com' }],
+				}),
+		);
+		vi.stubGlobal('fetch', fetch);
+		const { KagiSearchProvider } = await import('./index.js');
+
+		await new KagiSearchProvider().search({
+			query: 'svelte release',
+			search_type: 'news',
+		});
+
+		const called_url = fetch.mock.calls[0]?.[0] as string;
+		expect(called_url).toContain('/search?');
+		expect(called_url).not.toContain('/news');
+	});
 });

@@ -10,6 +10,15 @@ export const query_schema = v.pipe(
 	v.description('Search query'),
 );
 
+export const search_type_schema = v.optional(
+	v.pipe(
+		v.picklist(['search', 'news']),
+		v.description(
+			'Result vertical. news uses a native news endpoint where the provider has one; otherwise the normal search runs and search_type.applied is false. Defaults to search.',
+		),
+	),
+);
+
 export const limit_schema = v.optional(
 	v.pipe(
 		v.number(),

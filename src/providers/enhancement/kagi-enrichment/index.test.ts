@@ -76,4 +76,43 @@ describe('KagiEnrichmentSearchProvider', () => {
 			},
 		]);
 	});
+
+	it('uses only the news enrichment endpoint when search_type is news', async () => {
+		const fetch = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				json_response({
+					data: [
+						{
+							title: 'News',
+							url: 'https://news.test',
+							snippet: 'Today',
+							rank: 1,
+						},
+					],
+				}),
+		);
+		vi.stubGlobal('fetch', fetch);
+		const { KagiEnrichmentSearchProvider } =
+			await import('./index.js');
+
+		await expect(
+			new KagiEnrichmentSearchProvider().search({
+				query: 'svelte release',
+				limit: 2,
+				search_type: 'news',
+			}),
+		).resolves.toEqual([
+			{
+				title: 'News',
+				url: 'https://news.test',
+				snippet: 'Today',
+				score: 1,
+				source_provider: 'kagi_enrichment',
+			},
+		]);
+		expect(fetch).toHaveBeenCalledTimes(1);
+		const called_url = fetch.mock.calls[0]?.[0] as string;
+		expect(called_url).toContain('/enrich/news?');
+		expect(called_url).toContain('limit=2');
+	});
 });

@@ -62,6 +62,41 @@ describe('TavilySearchProvider', () => {
 		]);
 	});
 
+	it('sends topic news when search_type is news', async () => {
+		const fetch = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				json_response({
+					results: [
+						{
+							title: 'News',
+							url: 'https://news.example',
+							content: 'Today',
+							score: 0.9,
+						},
+					],
+					response_time: 0.2,
+				}),
+		);
+		vi.stubGlobal('fetch', fetch);
+		const { TavilySearchProvider } = await import('./index.js');
+
+		await new TavilySearchProvider().search({
+			query: 'svelte release',
+			limit: 1,
+			search_type: 'news',
+		});
+
+		const request_bodies = fetch.mock.calls.map((call) =>
+			JSON.parse((call[1]?.body as string) ?? '{}'),
+		);
+		expect(request_bodies).toContainEqual(
+			expect.objectContaining({
+				topic: 'news',
+				query: 'svelte release',
+			}),
+		);
+	});
+
 	it('normalizes date and country operators for Tavily API fields', async () => {
 		const fetch = vi.fn(
 			async (_input: RequestInfo | URL, _init?: RequestInit) =>
