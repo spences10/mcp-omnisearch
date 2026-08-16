@@ -6,11 +6,17 @@ import {
 	github_provider_definitions,
 	make_processing_provider_key,
 	web_extract_provider_definitions,
+	WEB_SEARCH_PROVIDER_NAMES,
 	web_search_provider_definitions,
 } from './provider-definitions.js';
 
 describe('provider definitions', () => {
 	it('declare provider metadata for every tool category', () => {
+		expect(
+			web_search_provider_definitions.map(
+				(definition) => definition.id,
+			),
+		).toEqual([...WEB_SEARCH_PROVIDER_NAMES]);
 		expect(
 			web_search_provider_definitions.map((definition) => ({
 				id: definition.id,

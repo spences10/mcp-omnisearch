@@ -40,6 +40,9 @@ export const config = {
 			base_url: 'https://api.exa.ai',
 			timeout: 30000, // 30 seconds
 		},
+		fanout: {
+			timeout: 30000, // one deadline for optional concurrent web_search
+		},
 	},
 	ai_response: {
 		kagi_fastgpt: {

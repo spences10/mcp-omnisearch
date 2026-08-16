@@ -42,6 +42,26 @@ search only. See
 | `firecrawl` | `FIRECRAWL_API_KEY` | `scrape`, `crawl`, `map`, `extract`, `actions` | Scraping, crawling, site maps, structured extraction, and browser actions. |
 | `exa`       | `EXA_API_KEY`       | `contents`, `similar`                          | Page content retrieval and semantically similar URLs.                      |
 
+## Optional concurrent `web_search`
+
+`web_search` stays single-path when you pass `provider`. Passing
+`providers` is an opt-in fan-out: only the named engines that are
+configured run, they start concurrently under one timeout, and missing
+API keys are skipped instead of failing the whole call. Do not send
+both fields. There is no implicit “search everything” mode.
+
+```json
+{
+	"query": "mcp provider routing",
+	"providers": ["exa", "tavily", "brave"]
+}
+```
+
+If none of the requested providers have keys, the tool returns
+`INVALID_INPUT`. If at least one configured provider returns results,
+those results are merged (first URL wins) and other failures are
+omitted.
+
 ## Provider choice cheatsheet
 
 - Need native operators like `filetype:pdf`, `intitle:`, or `before:`?

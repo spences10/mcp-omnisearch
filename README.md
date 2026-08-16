@@ -84,6 +84,19 @@ Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
 }
 ```
 
+Single-provider calls stay on one engine. To fan out selected
+configured providers concurrently under one timeout, pass `providers`
+instead. Missing API keys are skipped; this is opt-in and does not
+query every configured engine.
+
+```json
+{
+	"query": "sveltekit remote functions",
+	"providers": ["exa", "tavily"],
+	"limit": 10
+}
+```
+
 ### `ai_search`
 
 Get sourced AI answers with Kagi FastGPT, Exa Answer, or Linkup.

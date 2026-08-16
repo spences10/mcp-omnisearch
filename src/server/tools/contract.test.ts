@@ -55,6 +55,12 @@ const parse_tool_body = (response: {
 	content: Array<{ text: string }>;
 }) => JSON.parse(response.content[0].text);
 
+const request_url = (input: RequestInfo | URL) => {
+	if (typeof input === 'string') return input;
+	if (input instanceof URL) return input.href;
+	return input.url;
+};
+
 const mock_tavily_extract_response = (content: string) => {
 	vi.stubGlobal(
 		'fetch',
@@ -151,6 +157,19 @@ describe('MCP tool contract', () => {
 		expect(
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
+		).toBe(false);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				providers: ['exa', 'tavily'],
+			}).success,
+		).toBe(true);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				providers: ['tavily'],
+			}).success,
 		).toBe(false);
 	});
 
@@ -261,6 +280,181 @@ describe('MCP tool contract', () => {
 			provider: 'brave',
 			retryable: false,
 		});
+	});
+
+	it('fans out web_search across selected configured providers and skips missing keys', async () => {
+		const { tools } = await load_contract({
+			EXA_API_KEY: 'exa-key',
+			TAVILY_API_KEY: 'tavily-key',
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+		const fetch = vi.fn(async (input: RequestInfo | URL) => {
+			const url = request_url(input);
+			if (url.includes('api.exa.ai')) {
+				return new Response(
+					JSON.stringify({
+						requestId: 'req-1',
+						results: [
+							{
+								id: 'id-1',
+								title: 'Exa result',
+								url: 'https://exa.example',
+								text: 'From Exa',
+								score: 0.8,
+							},
+						],
+					}),
+					{ status: 200 },
+				);
+			}
+			if (url.includes('api.tavily.com')) {
+				return new Response(
+					JSON.stringify({
+						results: [
+							{
+								title: 'Tavily result',
+								url: 'https://tavily.example',
+								content: 'From Tavily',
+								score: 0.7,
+							},
+						],
+					}),
+					{ status: 200 },
+				);
+			}
+			return new Response('unexpected', { status: 404 });
+		});
+		vi.stubGlobal('fetch', fetch);
+
+		const body = parse_tool_body(
+			await tool.handler({
+				query: 'sveltekit',
+				providers: ['exa', 'tavily'],
+				large_result_mode: 'inline',
+			}),
+		);
+
+		expect(fetch).toHaveBeenCalledTimes(2);
+		expect(body).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					title: 'Exa result',
+					url: 'https://exa.example',
+					source_provider: 'exa',
+				}),
+				expect.objectContaining({
+					title: 'Tavily result',
+					url: 'https://tavily.example',
+					source_provider: 'tavily',
+				}),
+			]),
+		);
+	});
+
+	it('keeps single-provider web_search on one path and skips unconfigured fan-out names', async () => {
+		const { tools } = await load_contract({
+			EXA_API_KEY: 'exa-key',
+			TAVILY_API_KEY: 'tavily-key',
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+		const fetch = vi.fn(async (input: RequestInfo | URL) => {
+			const url = request_url(input);
+			if (url.includes('api.exa.ai')) {
+				return new Response(
+					JSON.stringify({
+						requestId: 'req-1',
+						results: [
+							{
+								id: 'id-1',
+								title: 'Exa only',
+								url: 'https://exa.example',
+								text: 'Single path',
+							},
+						],
+					}),
+					{ status: 200 },
+				);
+			}
+			return new Response('unexpected', { status: 404 });
+		});
+		vi.stubGlobal('fetch', fetch);
+
+		const single = parse_tool_body(
+			await tool.handler({
+				query: 'sveltekit',
+				provider: 'exa',
+				large_result_mode: 'inline',
+			}),
+		);
+
+		expect(fetch).toHaveBeenCalledTimes(1);
+		expect(
+			request_url(fetch.mock.calls[0]?.[0] as RequestInfo | URL),
+		).toContain('api.exa.ai');
+		expect(single).toEqual([
+			expect.objectContaining({
+				title: 'Exa only',
+				source_provider: 'exa',
+			}),
+		]);
+
+		const { tools: exa_only_tools } = await load_contract({
+			EXA_API_KEY: 'exa-key',
+		});
+		const exa_only = exa_only_tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+		const skipped_fetch = vi.fn(async () => {
+			return new Response(
+				JSON.stringify({
+					requestId: 'req-2',
+					results: [
+						{
+							id: 'id-2',
+							title: 'Exa after skip',
+							url: 'https://exa.example/skip',
+							text: 'Skipped tavily',
+						},
+					],
+				}),
+				{ status: 200 },
+			);
+		});
+		vi.stubGlobal('fetch', skipped_fetch);
+
+		const skipped = parse_tool_body(
+			await exa_only.handler({
+				query: 'sveltekit',
+				providers: ['exa', 'tavily'],
+				large_result_mode: 'inline',
+			}),
+		);
+
+		expect(skipped_fetch).toHaveBeenCalledTimes(1);
+		expect(skipped).toEqual([
+			expect.objectContaining({
+				title: 'Exa after skip',
+				source_provider: 'exa',
+			}),
+		]);
+
+		const missing = parse_tool_body(
+			await exa_only.handler({
+				query: 'sveltekit',
+				providers: ['tavily', 'brave'],
+			}),
+		);
+		expect(missing).toEqual(
+			expect.objectContaining({
+				type: 'INVALID_INPUT',
+				provider: 'web_search',
+				retryable: false,
+			}),
+		);
 	});
 
 	it('covers large-result inline/file modes and compact extraction at the MCP layer', async () => {

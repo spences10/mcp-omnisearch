@@ -23,12 +23,16 @@ import { KagiSearchProvider } from '../providers/search/kagi/index.js';
 import { TavilySearchProvider } from '../providers/search/tavily/index.js';
 import type { ProviderDefinition } from './provider-registry.js';
 
+export const WEB_SEARCH_PROVIDER_NAMES = [
+	'tavily',
+	'brave',
+	'kagi',
+	'exa',
+	'kagi_enrichment',
+] as const;
+
 export type WebSearchProviderName =
-	| 'tavily'
-	| 'brave'
-	| 'kagi'
-	| 'exa'
-	| 'kagi_enrichment';
+	(typeof WEB_SEARCH_PROVIDER_NAMES)[number];
 
 export type AISearchProviderName =
 	| 'kagi_fastgpt'
