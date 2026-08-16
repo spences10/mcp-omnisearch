@@ -21,6 +21,7 @@ import { ExaSearchProvider } from '../providers/search/exa/index.js';
 import { GitHubSearchProvider } from '../providers/search/github/index.js';
 import { KagiSearchProvider } from '../providers/search/kagi/index.js';
 import { TavilySearchProvider } from '../providers/search/tavily/index.js';
+import { TinyFishSearchProvider } from '../providers/search/tinyfish/index.js';
 import type { ProviderDefinition } from './provider-registry.js';
 
 export type WebSearchProviderName =
@@ -28,7 +29,8 @@ export type WebSearchProviderName =
 	| 'brave'
 	| 'kagi'
 	| 'exa'
-	| 'kagi_enrichment';
+	| 'kagi_enrichment'
+	| 'tinyfish';
 
 export type AISearchProviderName =
 	| 'kagi_fastgpt'
@@ -124,6 +126,16 @@ export const web_search_provider_definitions = [
 		capabilities: ['specialized_indexes', 'web_enrichment'],
 		api_key: config.enhancement.kagi_enrichment.api_key,
 		create: () => new KagiEnrichmentSearchProvider(),
+	},
+	{
+		id: 'tinyfish',
+		name: 'tinyfish',
+		category: 'search',
+		api_key_name: 'TINYFISH_API_KEY',
+		tools: ['web_search'],
+		capabilities: ['web_search', 'domain_filters'],
+		api_key: config.search.tinyfish.api_key,
+		create: () => new TinyFishSearchProvider(),
 	},
 ] satisfies readonly ProviderDefinition<SearchProvider>[];
 

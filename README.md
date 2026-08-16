@@ -4,8 +4,8 @@
 [![tested with vitest](https://img.shields.io/badge/tested%20with-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev)
 
 A Model Context Protocol (MCP) server that provides unified access to
-Tavily, Brave, Kagi, Exa AI, GitHub, Linkup, and Firecrawl through
-four consolidated tools.
+Tavily, Brave, Kagi, Exa AI, GitHub, Linkup, Firecrawl, and TinyFish
+through four consolidated tools.
 
 <a href="https://glama.ai/mcp/servers/gz5wgmptd8">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/gz5wgmptd8/badge" alt="Glama badge" />
@@ -63,7 +63,8 @@ working.
 				"GITHUB_API_KEY": "your-github-token",
 				"EXA_API_KEY": "your-exa-key",
 				"LINKUP_API_KEY": "your-linkup-key",
-				"FIRECRAWL_API_KEY": "your-firecrawl-key"
+				"FIRECRAWL_API_KEY": "your-firecrawl-key",
+				"TINYFISH_API_KEY": "your-tinyfish-key"
 			}
 		}
 	}
@@ -74,7 +75,8 @@ working.
 
 ### `web_search`
 
-Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
+Search the web with Tavily, Brave, Kagi, Exa, Kagi Enrichment, or
+TinyFish.
 
 ```json
 {
@@ -142,6 +144,7 @@ Tavily, Kagi, Firecrawl, or Exa.
 - `EXA_API_KEY`
 - `LINKUP_API_KEY`
 - `FIRECRAWL_API_KEY`
+- `TINYFISH_API_KEY`
 - `FIRECRAWL_BASE_URL` optional, for self-hosted Firecrawl
 - `OMNISEARCH_LARGE_RESULT_MODE` optional, `file` default or `inline`
 
@@ -165,4 +168,5 @@ Built on
 [Model Context Protocol](https://github.com/modelcontextprotocol),
 [Tavily](https://tavily.com), [Kagi](https://kagi.com),
 [Brave Search](https://search.brave.com), [Exa AI](https://exa.ai),
-[Linkup](https://linkup.so), and [Firecrawl](https://firecrawl.dev).
+[Linkup](https://linkup.so), [Firecrawl](https://firecrawl.dev), and
+[TinyFish](https://tinyfish.ai).

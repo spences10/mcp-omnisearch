@@ -11,6 +11,7 @@ Each provider requires its own key:
 - Exa: `EXA_API_KEY`
 - Linkup: `LINKUP_API_KEY`
 - Firecrawl: `FIRECRAWL_API_KEY`
+- TinyFish: `TINYFISH_API_KEY`
 
 Missing keys do not stop the server. The matching provider is skipped
 and configured providers remain available.

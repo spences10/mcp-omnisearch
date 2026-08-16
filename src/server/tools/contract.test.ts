@@ -17,6 +17,7 @@ const API_KEY_NAMES = [
 	'EXA_API_KEY',
 	'LINKUP_API_KEY',
 	'FIRECRAWL_API_KEY',
+	'TINYFISH_API_KEY',
 ];
 
 const create_mock_server = () => {
@@ -152,6 +153,29 @@ describe('MCP tool contract', () => {
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
 		).toBe(false);
+		expect(
+			v.safeParse(schema, { query: 'test', provider: 'tinyfish' })
+				.success,
+		).toBe(false);
+	});
+
+	it('exposes tinyfish on web_search only when TINYFISH_API_KEY is set', async () => {
+		const { tools } = await load_contract({
+			TINYFISH_API_KEY: 'tinyfish-key',
+		});
+		const search_schema = tools.find(
+			(tool) => tool.definition.name === 'web_search',
+		)!.definition.schema;
+
+		expect(
+			v.safeParse(search_schema, {
+				query: 'example',
+				provider: 'tinyfish',
+			}).success,
+		).toBe(true);
+		expect(tools.map((tool) => tool.definition.name)).toEqual([
+			'web_search',
+		]);
 	});
 
 	it('validates public web_extract payloads and unavailable modes at the MCP layer', async () => {
