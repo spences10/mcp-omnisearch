@@ -80,9 +80,17 @@ Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
 {
 	"query": "sveltekit remote functions site:docs.svelte.dev",
 	"provider": "brave",
-	"limit": 10
+	"limit": 10,
+	"freshness": "week"
 }
 ```
+
+`freshness` accepts `day`, `week`, `month`, or `year`
+(case-insensitive) and is translated to each provider's native recency
+filter. Providers without recency support still run the search and set
+`freshness.applied=false` in result metadata. Existing `after:` /
+`before:` operators and Tavily date fields keep working. See
+[search operators](docs/search-operators.md#unified-freshness).
 
 ### `ai_search`
 

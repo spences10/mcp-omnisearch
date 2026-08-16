@@ -1,5 +1,7 @@
 // Common type definitions for the MCP Omnisearch server
 
+export type FreshnessValue = 'day' | 'week' | 'month' | 'year';
+
 export type ProviderMetadata = Record<string, unknown>;
 
 export interface SearchResult {
@@ -16,6 +18,7 @@ export interface BaseSearchParams {
 	limit?: number;
 	include_domains?: string[];
 	exclude_domains?: string[];
+	freshness?: FreshnessValue;
 }
 
 export interface ProcessingResult {

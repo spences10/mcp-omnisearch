@@ -152,6 +152,20 @@ describe('MCP tool contract', () => {
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
 		).toBe(false);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				freshness: 'WEEK',
+			}).success,
+		).toBe(true);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				freshness: 'yesterday',
+			}).success,
+		).toBe(false);
 	});
 
 	it('validates public web_extract payloads and unavailable modes at the MCP layer', async () => {

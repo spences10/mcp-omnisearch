@@ -4,6 +4,10 @@ import { http_json } from '../../../common/http.js';
 import { parse_provider_response } from '../../../common/provider-response.js';
 import { retry_with_backoff } from '../../../common/retry.js';
 import {
+	attach_freshness_metadata,
+	brave_freshness_param,
+} from '../../../common/freshness.js';
+import {
 	apply_search_operators,
 	build_query_with_operators,
 	parse_search_operators,
@@ -58,6 +62,12 @@ export class BraveSearchProvider implements SearchProvider {
 					q: query,
 					count: (params.limit ?? 10).toString(),
 				});
+				if (params.freshness) {
+					query_params.set(
+						'freshness',
+						brave_freshness_param(params.freshness),
+					);
+				}
 
 				const raw_data = await http_json(
 					this.name,
@@ -78,12 +88,16 @@ export class BraveSearchProvider implements SearchProvider {
 					raw_data,
 				);
 
-				return (data.web?.results ?? []).map((result) => ({
-					title: result.title,
-					url: result.url,
-					snippet: result.description ?? '',
-					source_provider: this.name,
-				}));
+				return attach_freshness_metadata(
+					(data.web?.results ?? []).map((result) => ({
+						title: result.title,
+						url: result.url,
+						snippet: result.description ?? '',
+						source_provider: this.name,
+					})),
+					params.freshness,
+					true,
+				);
 			} catch (error) {
 				handle_provider_error(
 					error,

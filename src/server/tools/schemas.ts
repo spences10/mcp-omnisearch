@@ -1,4 +1,8 @@
 import * as v from 'valibot';
+import {
+	is_freshness_value,
+	type FreshnessValue,
+} from '../../common/freshness.js';
 
 const DOMAIN_PATTERN =
 	/^(?:\*\.)?(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/;
@@ -17,6 +21,21 @@ export const limit_schema = v.optional(
 		v.minValue(1, 'Limit must be at least 1'),
 		v.maxValue(50, 'Limit must be at most 50'),
 		v.description('Maximum number of results (default: 10)'),
+	),
+);
+
+export const freshness_schema = v.optional(
+	v.pipe(
+		v.string(),
+		v.transform((value) => value.trim().toLowerCase()),
+		v.check(
+			(value) => is_freshness_value(value),
+			'freshness must be one of: day, week, month, year',
+		),
+		v.transform((value) => value as FreshnessValue),
+		v.description(
+			'Restrict results to the last day, week, month, or year. Mapped to each provider native recency filter. Unsupported providers still search and set freshness.applied=false.',
+		),
 	),
 );
 

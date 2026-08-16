@@ -4,6 +4,10 @@ import { http_json } from '../../../common/http.js';
 import { parse_provider_response } from '../../../common/provider-response.js';
 import { retry_with_backoff } from '../../../common/retry.js';
 import {
+	attach_freshness_metadata,
+	freshness_start_date,
+} from '../../../common/freshness.js';
+import {
 	apply_search_operators,
 	build_query_with_operators,
 	parse_search_operators,
@@ -82,10 +86,16 @@ export class KagiSearchProvider implements SearchProvider {
 				}
 
 				// Add time range as query parameter (Kagi-specific)
-				if (search_params.date_before || search_params.date_after) {
+				const after_dates = [
+					params.freshness
+						? freshness_start_date(params.freshness)
+						: undefined,
+					search_params.date_after,
+				].filter((value): value is string => Boolean(value));
+				if (after_dates.length > 0 || search_params.date_before) {
 					const time_range: string[] = [];
-					if (search_params.date_after) {
-						time_range.push(`after:${search_params.date_after}`);
+					if (after_dates.length > 0) {
+						time_range.push(`after:${after_dates.sort().at(-1)}`);
 					}
 					if (search_params.date_before) {
 						time_range.push(`before:${search_params.date_before}`);
@@ -112,15 +122,17 @@ export class KagiSearchProvider implements SearchProvider {
 					raw_data,
 				);
 
-				return data.data
-					.filter(is_kagi_search_result)
-					.map((result) => ({
+				return attach_freshness_metadata(
+					data.data.filter(is_kagi_search_result).map((result) => ({
 						title: result.title,
 						url: result.url,
 						snippet: result.snippet ?? '',
 						score: result.rank,
 						source_provider: this.name,
-					}));
+					})),
+					params.freshness,
+					true,
+				);
 			} catch (error) {
 				handle_provider_error(
 					error,

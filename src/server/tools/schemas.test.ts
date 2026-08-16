@@ -2,6 +2,7 @@ import * as v from 'valibot';
 import { describe, expect, it } from 'vitest';
 import {
 	domain_schema,
+	freshness_schema,
 	http_url_schema,
 	include_raw_contents_schema,
 	large_result_mode_schema,
@@ -24,6 +25,18 @@ describe('tool schemas', () => {
 		expect(v.safeParse(limit_schema, 0).success).toBe(false);
 		expect(v.safeParse(limit_schema, 51).success).toBe(false);
 		expect(v.safeParse(limit_schema, 1.5).success).toBe(false);
+	});
+
+	it('accepts case-insensitive freshness and rejects invalid values', () => {
+		expect(v.parse(freshness_schema, undefined)).toBeUndefined();
+		expect(v.parse(freshness_schema, 'week')).toBe('week');
+		expect(v.parse(freshness_schema, 'WEEK')).toBe('week');
+		expect(v.parse(freshness_schema, ' Day ')).toBe('day');
+		const invalid = v.safeParse(freshness_schema, 'yesterday');
+		expect(invalid.success).toBe(false);
+		expect(JSON.stringify(invalid.issues)).toMatch(
+			/day, week, month, year/i,
+		);
 	});
 
 	it('validates large-result and extraction payload controls', () => {

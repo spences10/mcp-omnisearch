@@ -55,6 +55,41 @@ describe('BraveSearchProvider', () => {
 		]);
 	});
 
+	it('maps freshness to the Brave query param and keeps after: operators', async () => {
+		const fetch = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				json_response({
+					web: {
+						results: [
+							{
+								title: 'Result',
+								url: 'https://example.com',
+								description: 'Summary',
+							},
+						],
+					},
+				}),
+		);
+		vi.stubGlobal('fetch', fetch);
+		const { BraveSearchProvider } = await import('./index.js');
+
+		const results = await new BraveSearchProvider().search({
+			query: 'result after:2023',
+			freshness: 'week',
+			limit: 1,
+		});
+		const request_url = fetch.mock.calls[0]?.[0];
+		expect(typeof request_url).toBe('string');
+		const url = new URL(request_url as string);
+
+		expect(url.searchParams.get('freshness')).toBe('pw');
+		expect(url.searchParams.get('q')).toContain('after:2023');
+		expect(results[0]?.metadata?.freshness).toEqual({
+			requested: 'week',
+			applied: true,
+		});
+	});
+
 	it('returns no results when the web block is omitted', async () => {
 		vi.stubGlobal(
 			'fetch',

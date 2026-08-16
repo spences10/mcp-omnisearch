@@ -17,6 +17,7 @@ describe('ExaSearchProvider', () => {
 	});
 
 	afterEach(() => {
+		vi.useRealTimers();
 		vi.unstubAllEnvs();
 		vi.restoreAllMocks();
 	});
@@ -66,6 +67,41 @@ describe('ExaSearchProvider', () => {
 			numResults: 1,
 			includeDomains: ['example.com'],
 			excludeDomains: ['bad.example'],
+		});
+	});
+
+	it('maps freshness to Exa startPublishedDate', async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date('2026-08-16T12:00:00.000Z'));
+		const fetch = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				json_response({
+					requestId: 'req-1',
+					results: [
+						{
+							id: 'id-1',
+							title: 'Exa result',
+							url: 'https://example.com',
+							text: 'Body text',
+						},
+					],
+				}),
+		);
+		vi.stubGlobal('fetch', fetch);
+		const { ExaSearchProvider } = await import('./index.js');
+
+		const results = await new ExaSearchProvider().search({
+			query: 'exa search',
+			freshness: 'week',
+			limit: 1,
+		});
+		const request_init = fetch.mock.calls[0]?.[1];
+		expect(JSON.parse(request_init?.body as string)).toMatchObject({
+			startPublishedDate: '2026-08-09T12:00:00.000Z',
+		});
+		expect(results[0]?.metadata?.freshness).toEqual({
+			requested: 'week',
+			applied: true,
 		});
 	});
 });

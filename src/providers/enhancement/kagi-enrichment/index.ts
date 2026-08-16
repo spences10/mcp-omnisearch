@@ -4,7 +4,9 @@ import {
 } from '../../../common/errors.js';
 import { http_json } from '../../../common/http.js';
 import { retry_with_backoff } from '../../../common/retry.js';
+import { attach_freshness_metadata } from '../../../common/freshness.js';
 import {
+	BaseSearchParams,
 	ErrorType,
 	ProviderError,
 	SearchProvider,
@@ -31,10 +33,7 @@ export class KagiEnrichmentSearchProvider implements SearchProvider {
 	description =
 		'Search specialized indexes (Teclis for web, TinyGem for news). Ideal for discovering non-mainstream results and supplementary knowledge.';
 
-	async search(params: {
-		query: string;
-		limit?: number;
-	}): Promise<SearchResult[]> {
+	async search(params: BaseSearchParams): Promise<SearchResult[]> {
 		const api_key = validate_api_key(
 			config.enhancement.kagi_enrichment.api_key,
 			this.name,
@@ -96,24 +95,28 @@ export class KagiEnrichmentSearchProvider implements SearchProvider {
 
 				const allData = [...webData.data, ...newsData.data];
 
-				return allData.flatMap((result): SearchResult[] => {
-					if (!result.title || !result.url) return [];
+				return attach_freshness_metadata(
+					allData.flatMap((result): SearchResult[] => {
+						if (!result.title || !result.url) return [];
 
-					return [
-						{
-							title: result.title,
-							url: result.url,
-							snippet: (result.snippet ?? '')
-								.replace(/&#39;/g, "'")
-								.replace(/&quot;/g, '"')
-								.replace(/&amp;/g, '&')
-								.replace(/&lt;/g, '<')
-								.replace(/&gt;/g, '>'),
-							score: result.rank ? 1 / result.rank : undefined,
-							source_provider: this.name,
-						},
-					];
-				});
+						return [
+							{
+								title: result.title,
+								url: result.url,
+								snippet: (result.snippet ?? '')
+									.replace(/&#39;/g, "'")
+									.replace(/&quot;/g, '"')
+									.replace(/&amp;/g, '&')
+									.replace(/&lt;/g, '<')
+									.replace(/&gt;/g, '>'),
+								score: result.rank ? 1 / result.rank : undefined,
+								source_provider: this.name,
+							},
+						];
+					}),
+					params.freshness,
+					false,
+				);
 			} catch (error) {
 				handle_provider_error(error, this.name, 'enrich content');
 			}

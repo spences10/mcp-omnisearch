@@ -7,6 +7,10 @@ import { http_json } from '../../../common/http.js';
 import { parse_provider_response } from '../../../common/provider-response.js';
 import { retry_with_backoff } from '../../../common/retry.js';
 import {
+	attach_freshness_metadata,
+	tavily_time_range,
+} from '../../../common/freshness.js';
+import {
 	apply_search_operators,
 	parse_search_operators,
 } from '../../../common/search-operators.js';
@@ -25,6 +29,7 @@ interface TavilySearchRequest {
 	exclude_domains: string[];
 	search_depth: 'basic';
 	topic: 'general';
+	time_range?: 'day' | 'week' | 'month' | 'year';
 	start_date?: string;
 	end_date?: string;
 	exact_match?: boolean;
@@ -96,6 +101,12 @@ export class TavilySearchProvider implements SearchProvider {
 					topic: 'general',
 				};
 
+				if (params.freshness) {
+					request_body.time_range = tavily_time_range(
+						params.freshness,
+					);
+				}
+
 				// Map date operators to Tavily's start_date/end_date
 				if (search_params.date_after) {
 					request_body.start_date = normalize_tavily_date(
@@ -147,13 +158,17 @@ export class TavilySearchProvider implements SearchProvider {
 					raw_data,
 				);
 
-				return data.results.map((result) => ({
-					title: result.title,
-					url: result.url,
-					snippet: result.content,
-					score: result.score,
-					source_provider: this.name,
-				}));
+				return attach_freshness_metadata(
+					data.results.map((result) => ({
+						title: result.title,
+						url: result.url,
+						snippet: result.content,
+						score: result.score,
+						source_provider: this.name,
+					})),
+					params.freshness,
+					true,
+				);
 			} catch (error) {
 				handle_provider_error(
 					error,

@@ -76,4 +76,40 @@ describe('KagiEnrichmentSearchProvider', () => {
 			},
 		]);
 	});
+
+	it('still searches when freshness is set and reports applied=false', async () => {
+		const fetch = vi
+			.fn()
+			.mockResolvedValueOnce(
+				json_response({
+					data: [
+						{
+							title: 'Web',
+							url: 'https://web.test',
+							snippet: 'Hello',
+						},
+					],
+				}),
+			)
+			.mockResolvedValueOnce(
+				json_response({
+					data: [],
+				}),
+			);
+		vi.stubGlobal('fetch', fetch);
+		const { KagiEnrichmentSearchProvider } =
+			await import('./index.js');
+
+		const results = await new KagiEnrichmentSearchProvider().search({
+			query: 'kagi',
+			freshness: 'week',
+			limit: 1,
+		});
+
+		expect(fetch).toHaveBeenCalled();
+		expect(results[0]?.metadata?.freshness).toEqual({
+			requested: 'week',
+			applied: false,
+		});
+	});
 });

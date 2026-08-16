@@ -19,6 +19,7 @@ and GitHub uses GitHub search qualifiers.
 | `lang:en`                             | Native query passthrough                | Query passthrough                      | Left in sanitized query                        | Not a primary operator           | `language:typescript` for GitHub        |
 | `loc:us` / `location:us`              | Native query passthrough                | Query passthrough                      | `country` parameter                            | Not a primary operator           | Not applicable                          |
 | `before:` / `after:`                  | Native query passthrough                | Kagi `time_range` parameter            | `end_date` / `start_date`                      | Not a primary operator           | GitHub supports its own date qualifiers |
+| `freshness`                           | Brave `freshness` (`pd`/`pw`/`pm`/`py`) | Kagi `time_range=after:YYYY-MM-DD`     | Tavily `time_range`                            | Exa `startPublishedDate`         | Not applicable                          |
 | `"exact phrase"`                      | Native query passthrough                | Query passthrough                      | Enables `exact_match`                          | Semantic matching                | Quote strings in GitHub query           |
 | `+required` / `-excluded`             | Native query passthrough                | Query passthrough                      | Left in sanitized query where unsupported      | Not a primary operator           | GitHub query syntax                     |
 | `AND` / `OR` / `NOT`                  | Native query passthrough                | Query passthrough                      | Left in sanitized query where unsupported      | Not a primary operator           | GitHub query syntax varies by endpoint  |
@@ -26,6 +27,25 @@ and GitHub uses GitHub search qualifiers.
 
 Unsupported provider-specific operators remain in the sanitized query
 where possible rather than being flattened globally.
+
+## Unified freshness
+
+`web_search` accepts an optional `freshness` argument: `day`, `week`,
+`month`, or `year` (case-insensitive). Invalid values are rejected
+before the provider is called.
+
+| Provider          | Native mapping                                    | `freshness.applied` |
+| ----------------- | ------------------------------------------------- | ------------------- |
+| `brave`           | Query param `freshness=pd` / `pw` / `pm` / `py`   | `true`              |
+| `tavily`          | Request field `time_range`                        | `true`              |
+| `kagi`            | Query param `time_range=after:YYYY-MM-DD`         | `true`              |
+| `exa`             | Request field `startPublishedDate` (UTC ISO-8601) | `true`              |
+| `kagi_enrichment` | No recency filter; search still runs              | `false`             |
+
+Operator strings such as `after:` / `before:` and Tavily `start_date`
+/ `end_date` keep working alongside `freshness`. When both a freshness
+window and a Kagi `after:` operator are present, the later start date
+is sent so the more restrictive bound wins.
 
 ## Tested examples
 

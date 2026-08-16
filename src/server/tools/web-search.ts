@@ -1,7 +1,10 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
-import { SearchProvider } from '../../common/types.js';
+import {
+	SearchProvider,
+	type FreshnessValue,
+} from '../../common/types.js';
 import {
 	web_search_provider_definitions,
 	type WebSearchProviderName,
@@ -10,6 +13,7 @@ import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
 import {
 	exclude_domains_schema,
+	freshness_schema,
 	include_domains_schema,
 	large_result_mode_schema,
 	limit_schema,
@@ -41,7 +45,7 @@ export const register_web_search = (
 		{
 			name: 'web_search',
 			description:
-				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Brave/Kagi support query operators like site:, filetype:, lang:, before:, after:.',
+				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Optional freshness (day|week|month|year) maps to each provider native recency filter; unsupported providers still search and set freshness.applied=false. Brave/Kagi support query operators like site:, filetype:, lang:, before:, after:.',
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -57,6 +61,7 @@ export const register_web_search = (
 				limit: limit_schema,
 				include_domains: include_domains_schema,
 				exclude_domains: exclude_domains_schema,
+				freshness: freshness_schema,
 				large_result_mode: large_result_mode_schema,
 			}),
 		},
@@ -66,6 +71,7 @@ export const register_web_search = (
 			limit,
 			include_domains,
 			exclude_domains,
+			freshness,
 			large_result_mode,
 		}) =>
 			handle_tool_result(
@@ -78,6 +84,7 @@ export const register_web_search = (
 						limit,
 						include_domains,
 						exclude_domains,
+						freshness: freshness as FreshnessValue | undefined,
 					});
 				},
 				{ large_result_mode },

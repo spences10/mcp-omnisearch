@@ -3,6 +3,10 @@ import {
 	handle_provider_error,
 	sanitize_query,
 } from '../../../common/errors.js';
+import {
+	attach_freshness_metadata,
+	exa_start_published_date,
+} from '../../../common/freshness.js';
 import { http_json } from '../../../common/http.js';
 import { parse_provider_response } from '../../../common/provider-response.js';
 import { retry_with_backoff } from '../../../common/retry.js';
@@ -24,6 +28,7 @@ interface ExaSearchRequest {
 		text?: { maxCharacters?: number };
 	};
 	category?: string;
+	startPublishedDate?: string;
 }
 
 const exa_search_response_schema = v.object({
@@ -81,6 +86,11 @@ export class ExaSearchProvider implements SearchProvider {
 				) {
 					request_body.excludeDomains = params.exclude_domains;
 				}
+				if (params.freshness) {
+					request_body.startPublishedDate = exa_start_published_date(
+						params.freshness,
+					);
+				}
 
 				const raw_data = await http_json(
 					this.name,
@@ -103,23 +113,27 @@ export class ExaSearchProvider implements SearchProvider {
 					raw_data,
 				);
 
-				return data.results.map((result) => ({
-					title: result.title,
-					url: result.url,
-					snippet:
-						result.text || result.summary || 'No content available',
-					score: result.score || 0,
-					source_provider: this.name,
-					metadata: {
-						id: result.id,
-						author: result.author,
-						publishedDate: result.publishedDate,
-						highlights: result.highlights,
-						autopromptString: data.autopromptString,
-						resolvedSearchType:
-							data.resolvedSearchType ?? data.searchType,
-					},
-				}));
+				return attach_freshness_metadata(
+					data.results.map((result) => ({
+						title: result.title,
+						url: result.url,
+						snippet:
+							result.text || result.summary || 'No content available',
+						score: result.score || 0,
+						source_provider: this.name,
+						metadata: {
+							id: result.id,
+							author: result.author,
+							publishedDate: result.publishedDate,
+							highlights: result.highlights,
+							autopromptString: data.autopromptString,
+							resolvedSearchType:
+								data.resolvedSearchType ?? data.searchType,
+						},
+					})),
+					params.freshness,
+					true,
+				);
 			} catch (error) {
 				handle_provider_error(
 					error,
