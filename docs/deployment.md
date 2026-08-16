@@ -95,7 +95,9 @@ a shell script inside WSL that exports the needed keys and then runs
 ## Docker
 
 MCP Omnisearch supports containerized deployment using Docker with
-MCPO integration for HTTP/OpenAPI access.
+MCPO integration for HTTP/OpenAPI access. The project does not publish
+a prebuilt container image; the Docker configuration is provided for
+users who want to build and maintain their own image.
 
 ### Docker Compose
 
