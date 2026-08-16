@@ -17,13 +17,13 @@ and configured providers remain available.
 
 ## Common failure modes
 
-| Symptom                                   | Likely cause                                              | Fix                                                                                                                              |
-| ----------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Provider is unavailable                   | Missing API key                                           | Set the provider key and restart the MCP server. Check `omnisearch://providers/status`.                                          |
-| Request fails with unauthorized/forbidden | Invalid key or plan mismatch                              | Verify the key belongs to the provider and has access to the endpoint or plan tier.                                              |
-| Query rejected before provider call       | Invalid input                                             | Check for empty queries, unsupported modes, malformed domains, or unsupported URL protocols.                                     |
-| Repeated transient errors                 | Rate limits, timeout, network failure, or provider 5xx    | Retry later or lower request volume. Retryable failures are handled separately from invalid credentials and validation failures. |
-| Returned file path cannot be read         | Server wrote a temp file on a remote/container filesystem | Retry with `large_result_mode: "inline"` or set `OMNISEARCH_LARGE_RESULT_MODE=inline`.                                           |
+| Symptom                                   | Likely cause                                              | Fix                                                                                                                                                                           |
+| ----------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Provider is unavailable                   | Missing API key                                           | Set the provider key and restart the MCP server. Check `omnisearch://providers/status`.                                                                                       |
+| Request fails with unauthorized/forbidden | Invalid key or plan mismatch                              | Verify the key belongs to the provider and has access to the endpoint or plan tier.                                                                                           |
+| Query rejected before provider call       | Invalid input                                             | Check for empty queries, unsupported modes, malformed domains, or unsupported URL protocols.                                                                                  |
+| Repeated transient errors                 | Rate limits, timeout, network failure, or provider 5xx    | Omit `provider` so auto-route can fail over after `retry_with_backoff`. A dead provider is cooled down locally (1m / 5m / 25m / 1h). An explicit `provider` still fails hard. |
+| Returned file path cannot be read         | Server wrote a temp file on a remote/container filesystem | Retry with `large_result_mode: "inline"` or set `OMNISEARCH_LARGE_RESULT_MODE=inline`.                                                                                        |
 
 ## GitHub token setup
 
@@ -54,6 +54,13 @@ Each provider has its own limits. MCP Omnisearch formats provider
 rate-limit errors and retries only retryable classes such as 429,
 timeouts, network failures, and 5xx responses. Invalid credentials and
 validation failures are not retried.
+
+When `provider` is omitted, a provider that still fails after
+`retry_with_backoff` is skipped and the next configured search
+provider is tried. Skip reasons appear in response metadata as
+`cooldown`, `quota`, or `timeout`. If every provider fails, the tool
+returns an error and does not invent results. An explicit `provider`
+does not fail over.
 
 ## Large result paths
 

@@ -78,11 +78,12 @@ const mock_tavily_extract_response = (content: string) => {
 
 afterEach(() => {
 	for (const key of API_KEY_NAMES) delete process.env[key];
+	vi.useRealTimers();
 	vi.unstubAllGlobals();
 	vi.restoreAllMocks();
 });
 
-describe('MCP tool contract', () => {
+describe('MCP tool contract', { timeout: 15_000 }, () => {
 	it('registers no public tools when no providers are configured', async () => {
 		const { tools, tools_module } = await load_contract({});
 
@@ -152,6 +153,7 @@ describe('MCP tool contract', () => {
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
 		).toBe(false);
+		expect(v.safeParse(schema, { query: 'test' }).success).toBe(true);
 	});
 
 	it('validates public web_extract payloads and unavailable modes at the MCP layer', async () => {
@@ -261,6 +263,119 @@ describe('MCP tool contract', () => {
 			provider: 'brave',
 			retryable: false,
 		});
+	});
+
+	it('auto-routes web_search after a 429 and keeps explicit providers fail-hard', async () => {
+		vi.useFakeTimers();
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		const { tools } = await load_contract({
+			TAVILY_API_KEY: 'tavily-key',
+			EXA_API_KEY: 'exa-key',
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+		const exa_body = {
+			requestId: 'req-1',
+			results: [
+				{
+					id: 'id-1',
+					title: 'Exa result',
+					url: 'https://example.com',
+					text: 'Body text',
+					score: 0.7,
+				},
+			],
+		};
+
+		vi.stubGlobal(
+			'fetch',
+			vi.fn(async (input: RequestInfo | URL) => {
+				const url =
+					typeof input === 'string'
+						? input
+						: input instanceof URL
+							? input.href
+							: input.url;
+				if (url.includes('api.tavily.com')) {
+					return new Response('rate limited', { status: 429 });
+				}
+				return new Response(JSON.stringify(exa_body), {
+					status: 200,
+				});
+			}),
+		);
+
+		const auto_route = tool.handler({
+			query: 'example',
+			large_result_mode: 'inline',
+		});
+		await vi.runAllTimersAsync();
+		const auto_body = parse_tool_body(await auto_route);
+
+		expect(auto_body).toEqual({
+			results: [
+				expect.objectContaining({
+					title: 'Exa result',
+					source_provider: 'exa',
+				}),
+			],
+			metadata: {
+				used_provider: 'exa',
+				skipped_providers: [{ provider: 'tavily', reason: 'quota' }],
+			},
+		});
+
+		const explicit = tool.handler({
+			query: 'example',
+			provider: 'tavily',
+			large_result_mode: 'inline',
+		});
+		await vi.runAllTimersAsync();
+		const explicit_response = await explicit;
+		const explicit_body = parse_tool_body(explicit_response);
+
+		expect(explicit_response.isError).toBe(true);
+		expect(explicit_body).toEqual(
+			expect.objectContaining({
+				type: 'RATE_LIMIT',
+				provider: 'tavily',
+				retryable: true,
+			}),
+		);
+		expect(explicit_body.results).toBeUndefined();
+	});
+
+	it('returns a typed error instead of invented results when every auto-routed provider fails', async () => {
+		vi.useFakeTimers();
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		const { tools } = await load_contract({
+			TAVILY_API_KEY: 'tavily-key',
+			EXA_API_KEY: 'exa-key',
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+
+		vi.stubGlobal(
+			'fetch',
+			vi.fn(async () => new Response('down', { status: 503 })),
+		);
+
+		const pending = tool.handler({
+			query: 'example',
+			large_result_mode: 'inline',
+		});
+		await vi.runAllTimersAsync();
+		const response = await pending;
+		const body = parse_tool_body(response);
+
+		expect(response.isError).toBe(true);
+		expect(body.error).toContain('No results invented');
+		expect(body.skipped_providers).toEqual([
+			{ provider: 'tavily', reason: 'cooldown' },
+			{ provider: 'exa', reason: 'cooldown' },
+		]);
 	});
 
 	it('covers large-result inline/file modes and compact extraction at the MCP layer', async () => {

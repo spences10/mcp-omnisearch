@@ -33,6 +33,26 @@ Use a GitHub personal access token with no scopes selected for public
 search only. See
 [troubleshooting](troubleshooting.md#github-token-setup).
 
+## Auto-route and failover
+
+`web_search` and `ai_search` accept an optional `provider`.
+
+- **Omit `provider`** to auto-route across configured providers in
+  registration order. On transient 429, 503, timeout, or billing
+  suspension, the server retries that provider with
+  `retry_with_backoff`, then fails over to the next eligible provider.
+  Repeated failures cool the failing provider down locally for 1m,
+  then 5m, 25m, and 1h. Auto-route responses use
+  `{ results, metadata }` so skip reasons (`cooldown`, `quota`,
+  `timeout`) are visible. The server never invents results if every
+  provider fails.
+- **Set `provider`** to force that engine. Explicit providers fail
+  hard: no failover to another engine. A forced call still records
+  cooldown so later auto-routed calls can skip the unhealthy provider.
+
+Cooldown is process-local in-memory state. It resets when the MCP
+server restarts.
+
 ## Processing providers
 
 | Provider    | API key             | Modes                                          | Best for                                                                   |

@@ -1,3 +1,4 @@
+import type { ProviderSkipReason } from '../common/provider-health.js';
 import { ErrorType, ProviderError } from '../common/types.js';
 import { is_api_key_valid } from '../common/validation.js';
 
@@ -30,6 +31,8 @@ export interface ProviderStatus {
 	modes: readonly string[];
 	capabilities: readonly string[];
 	unavailable_reason?: 'missing_api_key';
+	skip_reason?: ProviderSkipReason;
+	cooldown_until?: string;
 }
 
 export interface RegisteredProvider<T> {

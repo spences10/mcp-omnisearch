@@ -78,6 +78,26 @@ describe('create_error_response', () => {
 		});
 	});
 
+	it('includes skipped provider metadata when present', () => {
+		const error = new ProviderError(
+			ErrorType.RATE_LIMIT,
+			'All search providers failed. Skipped: tavily (quota). No results invented.',
+			'web_search',
+			{
+				retryable: false,
+				skipped_providers: [{ provider: 'tavily', reason: 'quota' }],
+			},
+		);
+
+		expect(create_error_response(error)).toEqual({
+			error: error.message,
+			type: ErrorType.RATE_LIMIT,
+			provider: 'web_search',
+			retryable: false,
+			skipped_providers: [{ provider: 'tavily', reason: 'quota' }],
+		});
+	});
+
 	it('formats generic errors as unexpected errors', () => {
 		expect(create_error_response(new Error('unexpected'))).toEqual({
 			error: 'Unexpected error: unexpected',

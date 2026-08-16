@@ -104,11 +104,15 @@ export const sanitize_query = (query: string): string => {
 
 export const create_error_response = (error: Error) => {
 	if (error instanceof ProviderError) {
+		const skipped_providers = error.details?.skipped_providers;
 		return {
 			error: error.message,
 			type: error.type,
 			provider: error.provider,
 			retryable: error.details?.retryable ?? false,
+			...(Array.isArray(skipped_providers)
+				? { skipped_providers }
+				: {}),
 		};
 	}
 	return {

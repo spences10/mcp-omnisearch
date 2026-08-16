@@ -74,7 +74,9 @@ working.
 
 ### `web_search`
 
-Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
+Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment. Omit
+`provider` to auto-route with retry-then-failover. An explicit
+`provider` is forced and fails hard if that engine is down.
 
 ```json
 {
@@ -87,6 +89,8 @@ Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
 ### `ai_search`
 
 Get sourced AI answers with Kagi FastGPT, Exa Answer, or Linkup.
+`provider` is optional; omitting it auto-routes with the same
+fail-hard rule for an explicit provider.
 
 ```json
 {
