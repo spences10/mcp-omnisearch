@@ -4,10 +4,15 @@ import * as v from 'valibot';
 import { GitHubSearchProvider } from '../../providers/search/github/index.js';
 import { github_provider_definitions } from '../provider-definitions.js';
 import { ProviderRegistry } from '../provider-registry.js';
+import {
+	maybe_quality_report,
+	skipped_from_status,
+} from './quality-report.js';
 import { handle_tool_result } from './responses.js';
 import {
 	large_result_mode_schema,
 	limit_schema,
+	quality_report_schema,
 	query_schema,
 } from './schemas.js';
 
@@ -51,6 +56,7 @@ export const register_github_search = (
 				),
 				limit: limit_schema,
 				large_result_mode: large_result_mode_schema,
+				quality_report: quality_report_schema,
 				sort: v.optional(
 					v.pipe(
 						v.picklist(['stars', 'forks', 'updated']),
@@ -64,6 +70,7 @@ export const register_github_search = (
 			search_type = 'code',
 			limit,
 			large_result_mode,
+			quality_report,
 			sort,
 		}) =>
 			handle_tool_result(
@@ -93,7 +100,17 @@ export const register_github_search = (
 							});
 					}
 				},
-				{ large_result_mode },
+				{
+					large_result_mode,
+					quality_report: maybe_quality_report(quality_report, {
+						selected_provider: 'github',
+						selection_reason: 'implicit',
+						skipped: skipped_from_status(
+							providers.status_entries(),
+							'github',
+						),
+					}),
+				},
 			),
 	);
 };

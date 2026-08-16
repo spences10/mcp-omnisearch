@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { ErrorType, ProviderError } from '../../common/types.js';
+import { build_quality_report } from './quality-report.js';
 import {
 	create_error_tool_response,
 	create_json_tool_response,
@@ -93,6 +94,80 @@ describe('tool responses', () => {
 				},
 			],
 		});
+	});
+
+	it('attaches an opt-in quality report after large-result handling', async () => {
+		const results = [
+			{
+				title: 'ok',
+				url: 'https://example.com',
+				snippet: 'short',
+			},
+		];
+		const report = build_quality_report({
+			selected_provider: 'brave',
+			selection_reason: 'explicit',
+			results,
+		});
+
+		await expect(
+			handle_tool_result('web_search', async () => results, {
+				quality_report: (raw) =>
+					build_quality_report({
+						selected_provider: 'brave',
+						selection_reason: 'explicit',
+						results: raw,
+					}),
+			}),
+		).resolves.toEqual({
+			content: [
+				{
+					type: 'text',
+					text: JSON.stringify(
+						{ results, quality_report: report },
+						null,
+						2,
+					),
+				},
+			],
+		});
+	});
+
+	it('attaches a sanitized quality report on errors when requested', async () => {
+		const report = build_quality_report({
+			selected_provider: 'brave',
+			selection_reason: 'explicit',
+		});
+		await expect(
+			handle_tool_result(
+				'web_search',
+				async () => {
+					throw new Error('vendor body {"secret":"nope"}');
+				},
+				{
+					quality_report: () => report,
+				},
+			),
+		).resolves.toEqual({
+			content: [
+				{
+					type: 'text',
+					text: JSON.stringify(
+						{
+							error:
+								'Unexpected error: vendor body {"secret":"nope"}',
+							type: ErrorType.API_ERROR,
+							retryable: false,
+							quality_report: report,
+						},
+						null,
+						2,
+					),
+				},
+			],
+			isError: true,
+		});
+		expect(JSON.stringify(report)).not.toContain('nope');
 	});
 
 	it('wraps thrown errors as MCP error responses', async () => {

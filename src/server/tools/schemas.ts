@@ -38,6 +38,15 @@ export const include_raw_contents_schema = v.optional(
 	),
 );
 
+export const quality_report_schema = v.optional(
+	v.pipe(
+		v.boolean(),
+		v.description(
+			'When true, attach a structured routing/quality report: selected provider and reason, scores if any, skipped/cooldown/auto-excluded providers, result counts, duplicate-URL rate, and an extract-recommended hint. Default false. Never includes API keys or raw vendor bodies.',
+		),
+	),
+);
+
 export const domain_schema = v.pipe(
 	v.string(),
 	v.regex(DOMAIN_PATTERN, 'Domain must be a hostname, not a URL'),

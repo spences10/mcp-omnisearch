@@ -152,6 +152,20 @@ describe('MCP tool contract', () => {
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
 		).toBe(false);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				quality_report: true,
+			}).success,
+		).toBe(true);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				quality_report: 'yes',
+			}).success,
+		).toBe(false);
 	});
 
 	it('validates public web_extract payloads and unavailable modes at the MCP layer', async () => {
@@ -261,6 +275,81 @@ describe('MCP tool contract', () => {
 			provider: 'brave',
 			retryable: false,
 		});
+
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValueOnce(
+				new Response(
+					JSON.stringify({
+						web: {
+							results: [
+								{
+									title: 'Example',
+									url: 'https://example.com',
+									description: 'Example result',
+								},
+							],
+						},
+					}),
+					{ status: 200 },
+				),
+			),
+		);
+		const reported = await tool.handler({
+			query: 'example',
+			provider: 'brave',
+			large_result_mode: 'inline',
+			quality_report: true,
+		});
+		const reported_body = parse_tool_body(reported);
+		expect(reported_body.results).toEqual([
+			{
+				title: 'Example',
+				url: 'https://example.com',
+				snippet: 'Example result',
+				source_provider: 'brave',
+			},
+		]);
+		expect(reported_body.quality_report).toEqual(
+			expect.objectContaining({
+				selected: { provider: 'brave', reason: 'explicit' },
+				scores: [],
+				result_count: 1,
+				unique_url_count: 1,
+				duplicate_url_rate: 0,
+				extract_recommended: true,
+			}),
+		);
+		expect(reported_body.quality_report.skipped).toEqual(
+			expect.arrayContaining([
+				{ provider: 'tavily', reason: 'missing_api_key' },
+			]),
+		);
+		expect(JSON.stringify(reported_body.quality_report)).not.toMatch(
+			/TAVILY_API_KEY|BRAVE_API_KEY|brave-key|nope/,
+		);
+
+		vi.stubGlobal(
+			'fetch',
+			vi
+				.fn()
+				.mockResolvedValue(new Response('nope', { status: 401 })),
+		);
+		const reported_failure = await tool.handler({
+			query: 'example',
+			provider: 'brave',
+			quality_report: true,
+		});
+		const reported_error = parse_tool_body(reported_failure);
+		expect(reported_failure.isError).toBe(true);
+		expect(reported_error.error).toBe('Invalid API key');
+		expect(reported_error.quality_report.selected).toEqual({
+			provider: 'brave',
+			reason: 'explicit',
+		});
+		expect(
+			JSON.stringify(reported_error.quality_report),
+		).not.toContain('nope');
 	});
 
 	it('covers large-result inline/file modes and compact extraction at the MCP layer', async () => {

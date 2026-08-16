@@ -55,6 +55,15 @@ rate-limit errors and retries only retryable classes such as 429,
 timeouts, network failures, and 5xx responses. Invalid credentials and
 validation failures are not retried.
 
+## Routing and quality diagnostics
+
+If a provider choice, skip, or empty result set is surprising, retry
+the same call with `quality_report: true`. The extra `quality_report`
+object is structured JSON: selected provider and reason, scores if
+any, skipped / cooldown / auto-excluded providers, result counts,
+duplicate-URL rate, and an extract-recommended hint. It does not
+include API keys or raw vendor error bodies.
+
 ## Large result paths
 
 If a tool response points to a temp file, that file exists on the MCP

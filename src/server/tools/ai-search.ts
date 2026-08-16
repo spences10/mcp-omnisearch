@@ -7,10 +7,15 @@ import {
 	type AISearchProviderName,
 } from '../provider-definitions.js';
 import { ProviderRegistry } from '../provider-registry.js';
+import {
+	maybe_quality_report,
+	skipped_from_status,
+} from './quality-report.js';
 import { handle_tool_result } from './responses.js';
 import {
 	large_result_mode_schema,
 	limit_schema,
+	quality_report_schema,
 	query_schema,
 } from './schemas.js';
 
@@ -54,9 +59,16 @@ export const register_ai_search = (
 				),
 				limit: limit_schema,
 				large_result_mode: large_result_mode_schema,
+				quality_report: quality_report_schema,
 			}),
 		},
-		async ({ query, provider, limit, large_result_mode }) =>
+		async ({
+			query,
+			provider,
+			limit,
+			large_result_mode,
+			quality_report,
+		}) =>
 			handle_tool_result(
 				'ai_search',
 				async () => {
@@ -67,7 +79,17 @@ export const register_ai_search = (
 						limit,
 					});
 				},
-				{ large_result_mode },
+				{
+					large_result_mode,
+					quality_report: maybe_quality_report(quality_report, {
+						selected_provider: provider,
+						selection_reason: 'explicit',
+						skipped: skipped_from_status(
+							providers.status_entries(),
+							provider,
+						),
+					}),
+				},
 			),
 	);
 };

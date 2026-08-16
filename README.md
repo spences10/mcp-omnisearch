@@ -120,6 +120,25 @@ Tavily, Kagi, Firecrawl, or Exa.
 }
 ```
 
+### Quality report
+
+Pass `quality_report: true` on any tool to attach structured routing
+diagnostics. Default is off so normal payloads stay small.
+
+The report includes the selected provider and reason, scores when
+auto-routing supplies them, skipped / cooldown / auto-excluded
+providers, result counts, duplicate-URL rate, and an
+extract-recommended hint. It never includes API keys or raw vendor
+response bodies.
+
+```json
+{
+	"query": "sveltekit remote functions",
+	"provider": "brave",
+	"quality_report": true
+}
+```
+
 ## Documentation
 
 - [Provider selection](docs/provider-selection.md) — choose providers
