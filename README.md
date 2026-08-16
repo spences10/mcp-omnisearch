@@ -144,6 +144,9 @@ Tavily, Kagi, Firecrawl, or Exa.
 - `FIRECRAWL_API_KEY`
 - `FIRECRAWL_BASE_URL` optional, for self-hosted Firecrawl
 - `OMNISEARCH_LARGE_RESULT_MODE` optional, `file` default or `inline`
+- `OMNISEARCH_ADAPTIVE_ROUTING` optional, `on` by default. Set `off`
+  to disable bounded score adjustments from recent provider health.
+  Outcome state is process-local and is never sent to vendors.
 
 ## Development
 

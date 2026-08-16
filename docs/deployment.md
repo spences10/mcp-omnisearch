@@ -127,6 +127,9 @@ Container variables:
 - `LINKUP_API_KEY`
 - `FIRECRAWL_API_KEY`
 - `FIRECRAWL_BASE_URL`
+- `OMNISEARCH_ADAPTIVE_ROUTING` optional, `on` by default. Set `off`
+  to disable adaptive score adjustments. Health samples stay
+  process-local and are never sent to vendors.
 - `PORT`, defaults to `8000`
 
 ## OpenAPI access

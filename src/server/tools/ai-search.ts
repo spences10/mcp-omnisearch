@@ -11,6 +11,7 @@ import { handle_tool_result } from './responses.js';
 import {
 	large_result_mode_schema,
 	limit_schema,
+	quality_report_schema,
 	query_schema,
 } from './schemas.js';
 
@@ -54,9 +55,16 @@ export const register_ai_search = (
 				),
 				limit: limit_schema,
 				large_result_mode: large_result_mode_schema,
+				quality_report: quality_report_schema,
 			}),
 		},
-		async ({ query, provider, limit, large_result_mode }) =>
+		async ({
+			query,
+			provider,
+			limit,
+			large_result_mode,
+			quality_report,
+		}) =>
 			handle_tool_result(
 				'ai_search',
 				async () => {
@@ -67,7 +75,14 @@ export const register_ai_search = (
 						limit,
 					});
 				},
-				{ large_result_mode },
+				{
+					large_result_mode,
+					quality_report,
+					adaptive: {
+						provider,
+						candidates: providers.ids(),
+					},
+				},
 			),
 	);
 };

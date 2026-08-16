@@ -8,6 +8,7 @@ import { handle_tool_result } from './responses.js';
 import {
 	large_result_mode_schema,
 	limit_schema,
+	quality_report_schema,
 	query_schema,
 } from './schemas.js';
 
@@ -57,6 +58,7 @@ export const register_github_search = (
 						v.description('Sort order (repositories only)'),
 					),
 				),
+				quality_report: quality_report_schema,
 			}),
 		},
 		async ({
@@ -65,6 +67,7 @@ export const register_github_search = (
 			limit,
 			large_result_mode,
 			sort,
+			quality_report,
 		}) =>
 			handle_tool_result(
 				'github_search',
@@ -93,7 +96,14 @@ export const register_github_search = (
 							});
 					}
 				},
-				{ large_result_mode },
+				{
+					large_result_mode,
+					quality_report,
+					adaptive: {
+						provider: 'github',
+						candidates: ['github'],
+					},
+				},
 			),
 	);
 };

@@ -134,6 +134,21 @@ const remote_deployment_markers = [
 	'VERCEL',
 ];
 
+const adaptive_routing_disabled = new Set([
+	'0',
+	'false',
+	'off',
+	'no',
+]);
+
+export const is_adaptive_routing_enabled = (
+	env: NodeJS.ProcessEnv = process.env,
+) => {
+	const raw = env.OMNISEARCH_ADAPTIVE_ROUTING?.trim().toLowerCase();
+	if (!raw) return true;
+	return !adaptive_routing_disabled.has(raw);
+};
+
 export const should_warn_for_local_file_offload = (
 	env: NodeJS.ProcessEnv = process.env,
 ) =>

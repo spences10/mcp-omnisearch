@@ -19,6 +19,7 @@ import { handle_tool_result } from './responses.js';
 import {
 	include_raw_contents_schema,
 	large_result_mode_schema,
+	quality_report_schema,
 	url_or_urls_schema,
 } from './schemas.js';
 
@@ -84,6 +85,7 @@ export const register_web_extract = (
 				),
 				large_result_mode: large_result_mode_schema,
 				include_raw_contents: include_raw_contents_schema,
+				quality_report: quality_report_schema,
 			}),
 		},
 		async ({
@@ -93,6 +95,7 @@ export const register_web_extract = (
 			extract_depth,
 			large_result_mode,
 			include_raw_contents = true,
+			quality_report,
 		}) =>
 			handle_tool_result(
 				'web_extract',
@@ -129,7 +132,14 @@ export const register_web_extract = (
 						? result
 						: omit_raw_contents(result);
 				},
-				{ large_result_mode },
+				{
+					large_result_mode,
+					quality_report,
+					adaptive: {
+						provider,
+						candidates: providers.names(),
+					},
+				},
 			),
 	);
 };

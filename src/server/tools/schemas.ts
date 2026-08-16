@@ -20,6 +20,15 @@ export const limit_schema = v.optional(
 	),
 );
 
+export const quality_report_schema = v.optional(
+	v.pipe(
+		v.boolean(),
+		v.description(
+			'When true, include a structured quality report with process-local adaptive routing adjustments. Default false. Never includes API keys or vendor error bodies.',
+		),
+	),
+);
+
 export const large_result_mode_schema = v.optional(
 	v.pipe(
 		v.picklist(['inline', 'file']),

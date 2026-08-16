@@ -152,6 +152,13 @@ describe('MCP tool contract', () => {
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
 		).toBe(false);
+		expect(
+			v.safeParse(schema, {
+				query: 'sveltekit docs',
+				provider: 'brave',
+				quality_report: true,
+			}).success,
+		).toBe(true);
 	});
 
 	it('validates public web_extract payloads and unavailable modes at the MCP layer', async () => {
@@ -242,6 +249,50 @@ describe('MCP tool contract', () => {
 				source_provider: 'brave',
 			},
 		]);
+
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValueOnce(
+				new Response(
+					JSON.stringify({
+						web: {
+							results: [
+								{
+									title: 'Example',
+									url: 'https://example.com',
+									description: 'Example result',
+								},
+							],
+						},
+					}),
+					{ status: 200 },
+				),
+			),
+		);
+		const reported = parse_tool_body(
+			await tool.handler({
+				query: 'example',
+				provider: 'brave',
+				large_result_mode: 'inline',
+				quality_report: true,
+			}),
+		);
+		expect(reported.result).toEqual([
+			{
+				title: 'Example',
+				url: 'https://example.com',
+				snippet: 'Example result',
+				source_provider: 'brave',
+			},
+		]);
+		expect(reported.quality_report.adaptive_routing).toEqual(
+			expect.objectContaining({
+				scope: 'process_local',
+				reason: 'explicit_provider',
+				selected: 'brave',
+			}),
+		);
+		expect(JSON.stringify(reported)).not.toMatch(/api[_-]?key/i);
 
 		vi.stubGlobal(
 			'fetch',

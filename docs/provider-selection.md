@@ -53,3 +53,27 @@ search only. See
   `kagi_fastgpt`, `exa_answer`, or `linkup`.
 - Need to crawl/scrape/map a site? Use `web_extract` with `firecrawl`.
 - Need public code/repository/user discovery? Use `github_search`.
+
+## Adaptive routing from recent provider health
+
+Omnisearch keeps a process-local rolling window of recent provider
+outcomes (latency, empty results, and errors). When auto-routing
+supplies query-class scores, those outcomes become a bounded
+adjustment of at most ±1.0 so a currently healthy provider can win a
+close call.
+
+This does **not** override:
+
+- an explicit `provider` argument
+- a strong query-class lead (margin ≥ 1.0)
+
+State is in-memory only. It is never written to disk, never includes
+API keys, queries, or vendor error bodies, and is never sent to
+providers.
+
+Adaptive scoring is **on by default**. Disable it with
+`OMNISEARCH_ADAPTIVE_ROUTING=off`.
+
+Pass `quality_report: true` on `web_search`, `ai_search`,
+`github_search`, or `web_extract` to see the current adjustments and
+sample counts. Default tool payloads stay unchanged.

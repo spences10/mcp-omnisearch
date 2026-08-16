@@ -13,6 +13,7 @@ import {
 	include_domains_schema,
 	large_result_mode_schema,
 	limit_schema,
+	quality_report_schema,
 	query_schema,
 } from './schemas.js';
 
@@ -58,6 +59,7 @@ export const register_web_search = (
 				include_domains: include_domains_schema,
 				exclude_domains: exclude_domains_schema,
 				large_result_mode: large_result_mode_schema,
+				quality_report: quality_report_schema,
 			}),
 		},
 		async ({
@@ -67,6 +69,7 @@ export const register_web_search = (
 			include_domains,
 			exclude_domains,
 			large_result_mode,
+			quality_report,
 		}) =>
 			handle_tool_result(
 				'web_search',
@@ -80,7 +83,14 @@ export const register_web_search = (
 						exclude_domains,
 					});
 				},
-				{ large_result_mode },
+				{
+					large_result_mode,
+					quality_report,
+					adaptive: {
+						provider,
+						candidates: providers.ids(),
+					},
+				},
 			),
 	);
 };

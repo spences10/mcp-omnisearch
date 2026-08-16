@@ -1,4 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import {
+	get_provider_performance,
+	reset_adaptive_routing_for_tests,
+} from '../../common/adaptive-routing.js';
 import { ErrorType, ProviderError } from '../../common/types.js';
 import {
 	create_error_tool_response,
@@ -10,6 +14,7 @@ const original_large_result_mode =
 	process.env.OMNISEARCH_LARGE_RESULT_MODE;
 
 afterEach(() => {
+	reset_adaptive_routing_for_tests();
 	if (original_large_result_mode === undefined) {
 		delete process.env.OMNISEARCH_LARGE_RESULT_MODE;
 	} else {
@@ -93,6 +98,72 @@ describe('tool responses', () => {
 				},
 			],
 		});
+	});
+
+	it('keeps default payloads unchanged and records health locally', async () => {
+		const response = await handle_tool_result(
+			'web_search',
+			async () => [{ title: 'ok' }],
+			{
+				adaptive: {
+					provider: 'brave',
+					candidates: ['brave', 'tavily'],
+				},
+			},
+		);
+
+		expect(response).toEqual({
+			content: [
+				{
+					type: 'text',
+					text: JSON.stringify([{ title: 'ok' }], null, 2),
+				},
+			],
+		});
+		expect(get_provider_performance('brave').samples).toBe(1);
+	});
+
+	it('attaches a secret-free adaptive quality report when requested', async () => {
+		const response = await handle_tool_result(
+			'web_search',
+			async () => [{ title: 'ok' }],
+			{
+				quality_report: true,
+				adaptive: {
+					provider: 'brave',
+					candidates: ['brave', 'tavily'],
+				},
+			},
+		);
+		const body = JSON.parse(response.content[0].text);
+
+		expect(body.result).toEqual([{ title: 'ok' }]);
+		expect(body.quality_report.adaptive_routing).toEqual(
+			expect.objectContaining({
+				enabled: true,
+				scope: 'process_local',
+				applied: false,
+				reason: 'explicit_provider',
+				selected: 'brave',
+			}),
+		);
+		expect(JSON.stringify(body)).not.toMatch(/api[_-]?key/i);
+	});
+
+	it('does not record invalid input as provider health', async () => {
+		await handle_tool_result(
+			'web_extract',
+			async () => {
+				throw new ProviderError(
+					ErrorType.INVALID_INPUT,
+					'bad mode',
+					'web_extract',
+				);
+			},
+			{ adaptive: { provider: 'tavily' } },
+		);
+
+		expect(get_provider_performance('tavily').samples).toBe(0);
 	});
 
 	it('wraps thrown errors as MCP error responses', async () => {
