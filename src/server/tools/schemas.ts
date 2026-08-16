@@ -3,6 +3,24 @@ import * as v from 'valibot';
 const DOMAIN_PATTERN =
 	/^(?:\*\.)?(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/;
 
+export const provider_selection_schema = (
+	provider_names: string[],
+	description: string,
+) => {
+	const names = provider_names as [string, ...string[]];
+
+	return v.pipe(
+		v.union([
+			v.picklist(names),
+			v.pipe(
+				v.array(v.picklist(names)),
+				v.minLength(1, 'Provide at least one provider'),
+			),
+		]),
+		v.description(description),
+	);
+};
+
 export const query_schema = v.pipe(
 	v.string(),
 	v.minLength(1, 'Query cannot be empty'),

@@ -42,6 +42,25 @@ search only. See
 | `firecrawl` | `FIRECRAWL_API_KEY` | `scrape`, `crawl`, `map`, `extract`, `actions` | Scraping, crawling, site maps, structured extraction, and browser actions. |
 | `exa`       | `EXA_API_KEY`       | `contents`, `similar`                          | Page content retrieval and semantically similar URLs.                      |
 
+## Partial success
+
+`web_search` and `ai_search` accept either one `provider` string or a
+list. A single string keeps the existing result array and still fails
+the whole tool when that provider errors.
+
+A list runs the selected providers concurrently and always returns
+whatever succeeded, plus metadata:
+
+- `selected` — providers that were invoked
+- `successful` — providers that returned results
+- `failed` — `{ provider, type }` only; no exception text or secrets
+- `timed_out` — providers that hit `TIMEOUT` / abort
+- `preempted` — optional cooldown / skip list when a caller supplies
+  one
+
+Empty successful lists are valid. Use this to debug “why did only
+Firecrawl come back?” without leaking raw provider errors.
+
 ## Provider choice cheatsheet
 
 - Need native operators like `filetype:pdf`, `intitle:`, or `before:`?

@@ -84,6 +84,17 @@ Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
 }
 ```
 
+Pass a provider list to keep successful hits when some engines fail.
+The response then includes `results` plus `selected` / `successful` /
+`failed` / `timed_out` metadata (error types only).
+
+```json
+{
+	"query": "sveltekit remote functions",
+	"provider": ["brave", "tavily"]
+}
+```
+
 ### `ai_search`
 
 Get sourced AI answers with Kagi FastGPT, Exa Answer, or Linkup.

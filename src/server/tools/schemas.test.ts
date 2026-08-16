@@ -6,11 +6,26 @@ import {
 	include_raw_contents_schema,
 	large_result_mode_schema,
 	limit_schema,
+	provider_selection_schema,
 	query_schema,
 	url_or_urls_schema,
 } from './schemas.js';
 
 describe('tool schemas', () => {
+	it('accepts a single provider or a non-empty provider list', () => {
+		const schema = provider_selection_schema(
+			['brave', 'tavily'],
+			'Search provider',
+		);
+
+		expect(v.safeParse(schema, 'brave').success).toBe(true);
+		expect(v.safeParse(schema, ['brave', 'tavily']).success).toBe(
+			true,
+		);
+		expect(v.safeParse(schema, []).success).toBe(false);
+		expect(v.safeParse(schema, ['kagi']).success).toBe(false);
+	});
+
 	it('accepts non-empty queries and rejects empty queries', () => {
 		expect(v.parse(query_schema, 'sveltekit')).toBe('sveltekit');
 		expect(v.safeParse(query_schema, '').success).toBe(false);

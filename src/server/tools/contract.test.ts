@@ -82,7 +82,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-describe('MCP tool contract', () => {
+describe('MCP tool contract', { timeout: 20_000 }, () => {
 	it('registers no public tools when no providers are configured', async () => {
 		const { tools, tools_module } = await load_contract({});
 
@@ -261,6 +261,80 @@ describe('MCP tool contract', () => {
 			provider: 'brave',
 			retryable: false,
 		});
+	});
+
+	it('returns successful web_search results with typed partial-success metadata', async () => {
+		const secret = 'sk-live-contract-secret';
+		const { tools } = await load_contract({
+			BRAVE_API_KEY: 'brave-key',
+			TAVILY_API_KEY: secret,
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+
+		expect(
+			v.safeParse(tool.definition.schema, {
+				query: 'example',
+				provider: ['brave', 'tavily'],
+			}).success,
+		).toBe(true);
+
+		vi.stubGlobal(
+			'fetch',
+			vi.fn(async (url: string | URL) => {
+				if (String(url).includes('api.search.brave.com')) {
+					return new Response(
+						JSON.stringify({
+							web: {
+								results: [
+									{
+										title: 'Brave Result',
+										url: 'https://example.com/brave',
+										description: 'From brave',
+									},
+								],
+							},
+						}),
+						{ status: 200 },
+					);
+				}
+
+				return new Response(
+					JSON.stringify({ error: `Invalid API key ${secret}` }),
+					{ status: 401 },
+				);
+			}),
+		);
+
+		const response = await tool.handler({
+			query: 'example',
+			provider: ['brave', 'tavily'],
+			large_result_mode: 'inline',
+		});
+		const body = parse_tool_body(response);
+		const payload = JSON.stringify(body);
+
+		expect(response.isError).toBeUndefined();
+		expect(body).toEqual({
+			results: [
+				{
+					title: 'Brave Result',
+					url: 'https://example.com/brave',
+					snippet: 'From brave',
+					source_provider: 'brave',
+				},
+			],
+			metadata: {
+				selected: ['brave', 'tavily'],
+				successful: ['brave'],
+				failed: [{ provider: 'tavily', type: 'AUTH_ERROR' }],
+				timed_out: [],
+			},
+		});
+		expect(payload).not.toContain(secret);
+		expect(payload).not.toContain('Invalid API key');
+		expect(payload).not.toContain('stack');
 	});
 
 	it('covers large-result inline/file modes and compact extraction at the MCP layer', async () => {

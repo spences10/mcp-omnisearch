@@ -1,6 +1,7 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
+import { run_selected_providers } from '../../common/partial-success.js';
 import { SearchProvider } from '../../common/types.js';
 import {
 	web_search_provider_definitions,
@@ -13,6 +14,7 @@ import {
 	include_domains_schema,
 	large_result_mode_schema,
 	limit_schema,
+	provider_selection_schema,
 	query_schema,
 } from './schemas.js';
 
@@ -50,9 +52,9 @@ export const register_web_search = (
 			},
 			schema: v.object({
 				query: query_schema,
-				provider: v.pipe(
-					v.picklist(provider_names),
-					v.description('Search provider to use'),
+				provider: provider_selection_schema(
+					provider_names,
+					'Search provider to use, or a list to keep successful results when some providers fail',
 				),
 				limit: limit_schema,
 				include_domains: include_domains_schema,
@@ -70,16 +72,17 @@ export const register_web_search = (
 		}) =>
 			handle_tool_result(
 				'web_search',
-				async () => {
-					const selected = providers.require(provider, 'web_search');
+				async () =>
+					run_selected_providers(provider, async (id) => {
+						const selected = providers.require(id, 'web_search');
 
-					return selected.search({
-						query,
-						limit,
-						include_domains,
-						exclude_domains,
-					});
-				},
+						return selected.search({
+							query,
+							limit,
+							include_domains,
+							exclude_domains,
+						});
+					}),
 				{ large_result_mode },
 			),
 	);
