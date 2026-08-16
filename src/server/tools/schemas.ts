@@ -1,7 +1,19 @@
 import * as v from 'valibot';
+import { AUTO_PROVIDER } from '../auto-routing.js';
 
 const DOMAIN_PATTERN =
 	/^(?:\*\.)?(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/;
+
+export const optional_provider_schema = (
+	provider_names: string[],
+	description: string,
+) =>
+	v.optional(
+		v.pipe(
+			v.picklist([...provider_names, AUTO_PROVIDER]),
+			v.description(description),
+		),
+	);
 
 export const query_schema = v.pipe(
 	v.string(),

@@ -7,10 +7,12 @@ import {
 	type AISearchProviderName,
 } from '../provider-definitions.js';
 import { ProviderRegistry } from '../provider-registry.js';
+import { select_provider } from '../auto-routing.js';
 import { handle_tool_result } from './responses.js';
 import {
 	large_result_mode_schema,
 	limit_schema,
+	optional_provider_schema,
 	query_schema,
 } from './schemas.js';
 
@@ -39,7 +41,7 @@ export const register_ai_search = (
 		{
 			name: 'ai_search',
 			description:
-				'Get AI-powered answers with citations and reasoning. Use when you need synthesized answers rather than raw search results. Providers: kagi_fastgpt (fast ~900ms answers), exa_answer (semantic AI), linkup (deep agentic search with sources).',
+				'Get AI-powered answers with citations and reasoning. Use when you need synthesized answers rather than raw search results. Providers: kagi_fastgpt (fast ~900ms answers), exa_answer (semantic AI), linkup (deep agentic search with sources). Omit provider or set auto to pick exactly one configured engine from query signals.',
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -48,9 +50,9 @@ export const register_ai_search = (
 			},
 			schema: v.object({
 				query: query_schema,
-				provider: v.pipe(
-					v.picklist(provider_names),
-					v.description('AI search provider to use'),
+				provider: optional_provider_schema(
+					provider_names,
+					'AI search provider to use. Omit or set to "auto" to pick one configured provider from query signals.',
 				),
 				limit: limit_schema,
 				large_result_mode: large_result_mode_schema,
@@ -60,7 +62,18 @@ export const register_ai_search = (
 			handle_tool_result(
 				'ai_search',
 				async () => {
-					const selected = providers.require(provider, 'ai_search');
+					const decision = select_provider({
+						tool: 'ai_search',
+						provider,
+						query,
+						candidates: providers.names().map((name) => ({
+							name,
+						})),
+					});
+					const selected = providers.require(
+						decision.provider,
+						'ai_search',
+					);
 
 					return selected.search({
 						query,

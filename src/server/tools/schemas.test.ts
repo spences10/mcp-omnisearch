@@ -6,6 +6,7 @@ import {
 	include_raw_contents_schema,
 	large_result_mode_schema,
 	limit_schema,
+	optional_provider_schema,
 	query_schema,
 	url_or_urls_schema,
 } from './schemas.js';
@@ -15,6 +16,18 @@ describe('tool schemas', () => {
 		expect(v.parse(query_schema, 'sveltekit')).toBe('sveltekit');
 		expect(v.safeParse(query_schema, '').success).toBe(false);
 		expect(v.safeParse(query_schema, '   ').success).toBe(false);
+	});
+
+	it('accepts omitted or auto provider and rejects unknown names', () => {
+		const schema = optional_provider_schema(
+			['tavily', 'brave'],
+			'Search provider to use',
+		);
+
+		expect(v.safeParse(schema, undefined).success).toBe(true);
+		expect(v.parse(schema, 'auto')).toBe('auto');
+		expect(v.parse(schema, 'tavily')).toBe('tavily');
+		expect(v.safeParse(schema, 'kagi').success).toBe(false);
 	});
 
 	it('bounds result limits', () => {

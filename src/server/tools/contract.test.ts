@@ -152,6 +152,11 @@ describe('MCP tool contract', () => {
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
 		).toBe(false);
+		expect(v.safeParse(schema, { query: 'test' }).success).toBe(true);
+		expect(
+			v.safeParse(schema, { query: 'test', provider: 'auto' })
+				.success,
+		).toBe(true);
 	});
 
 	it('validates public web_extract payloads and unavailable modes at the MCP layer', async () => {
@@ -211,21 +216,22 @@ describe('MCP tool contract', () => {
 
 		vi.stubGlobal(
 			'fetch',
-			vi.fn().mockResolvedValueOnce(
-				new Response(
-					JSON.stringify({
-						web: {
-							results: [
-								{
-									title: 'Example',
-									url: 'https://example.com',
-									description: 'Example result',
-								},
-							],
-						},
-					}),
-					{ status: 200 },
-				),
+			vi.fn(
+				async () =>
+					new Response(
+						JSON.stringify({
+							web: {
+								results: [
+									{
+										title: 'Example',
+										url: 'https://example.com',
+										description: 'Example result',
+									},
+								],
+							},
+						}),
+						{ status: 200 },
+					),
 			),
 		);
 
@@ -242,6 +248,12 @@ describe('MCP tool contract', () => {
 				source_provider: 'brave',
 			},
 		]);
+
+		const omitted = await tool.handler({
+			query: 'example',
+			large_result_mode: 'inline',
+		});
+		expect(parse_tool_body(omitted)[0].source_provider).toBe('brave');
 
 		vi.stubGlobal(
 			'fetch',
@@ -312,5 +324,92 @@ describe('MCP tool contract', () => {
 				read_hint: expect.stringContaining('Use Read tool'),
 			}),
 		);
+	});
+
+	it('auto-routes omitted web_search to one configured provider', async () => {
+		const { tools } = await load_contract({
+			TAVILY_API_KEY: 'tavily-key',
+			EXA_API_KEY: 'exa-key',
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+		const fetch = vi.fn(async (url: string) => {
+			if (url.includes('api.exa.ai')) {
+				return new Response(
+					JSON.stringify({
+						requestId: 'req-1',
+						results: [
+							{
+								id: 'id-1',
+								title: 'Exa result',
+								url: 'https://example.com',
+								text: 'Body',
+								score: 0.8,
+							},
+						],
+					}),
+					{ status: 200 },
+				);
+			}
+			return new Response(
+				JSON.stringify({
+					results: [
+						{
+							title: 'Tavily result',
+							url: 'https://example.com',
+							content: 'Body',
+							score: 0.9,
+						},
+					],
+				}),
+				{ status: 200 },
+			);
+		});
+		vi.stubGlobal('fetch', fetch);
+
+		const routed = parse_tool_body(
+			await tool.handler({
+				query: 'similar research papers about transformers',
+				large_result_mode: 'inline',
+			}),
+		);
+		expect(routed[0].source_provider).toBe('exa');
+		expect(fetch).toHaveBeenCalledTimes(1);
+		expect(fetch.mock.calls[0]?.[0]).toContain('api.exa.ai');
+
+		const explicit = parse_tool_body(
+			await tool.handler({
+				query: 'similar research papers about transformers',
+				provider: 'tavily',
+				large_result_mode: 'inline',
+			}),
+		);
+		expect(explicit[0].source_provider).toBe('tavily');
+		expect(fetch).toHaveBeenCalledTimes(2);
+		expect(fetch.mock.calls[1]?.[0]).toContain('api.tavily.com');
+	});
+
+	it('fails visibly when auto extract has no eligible provider', async () => {
+		const { tools } = await load_contract({
+			TAVILY_API_KEY: 'tavily-key',
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_extract',
+		)!;
+		const response = await tool.handler({
+			url: 'https://example.com',
+			mode: 'crawl',
+		});
+		const body = parse_tool_body(response);
+
+		expect(response.isError).toBe(true);
+		expect(body).toEqual(
+			expect.objectContaining({
+				type: 'INVALID_INPUT',
+				provider: 'web_extract',
+			}),
+		);
+		expect(body.error).toMatch(/no eligible provider/i);
 	});
 });

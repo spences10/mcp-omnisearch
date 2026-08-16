@@ -74,7 +74,9 @@ working.
 
 ### `web_search`
 
-Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
+Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment. Omit
+`provider` or set it to `auto` to pick one configured engine from
+query signals. An explicit provider always wins.
 
 ```json
 {
@@ -87,6 +89,7 @@ Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
 ### `ai_search`
 
 Get sourced AI answers with Kagi FastGPT, Exa Answer, or Linkup.
+`provider` may be omitted or `auto`.
 
 ```json
 {
@@ -110,7 +113,8 @@ Search GitHub code, repositories, or users.
 ### `web_extract`
 
 Extract, crawl, scrape, summarize, or find similar content with
-Tavily, Kagi, Firecrawl, or Exa.
+Tavily, Kagi, Firecrawl, or Exa. Omit `provider` or set `auto` to pick
+one configured engine from the URL and mode.
 
 ```json
 {

@@ -7,12 +7,14 @@ import {
 	type WebSearchProviderName,
 } from '../provider-definitions.js';
 import { ProviderRegistry } from '../provider-registry.js';
+import { select_provider } from '../auto-routing.js';
 import { handle_tool_result } from './responses.js';
 import {
 	exclude_domains_schema,
 	include_domains_schema,
 	large_result_mode_schema,
 	limit_schema,
+	optional_provider_schema,
 	query_schema,
 } from './schemas.js';
 
@@ -41,7 +43,7 @@ export const register_web_search = (
 		{
 			name: 'web_search',
 			description:
-				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Brave/Kagi support query operators like site:, filetype:, lang:, before:, after:.',
+				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Brave/Kagi support query operators like site:, filetype:, lang:, before:, after:. Omit provider or set auto to pick exactly one configured engine from query signals.',
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -50,9 +52,9 @@ export const register_web_search = (
 			},
 			schema: v.object({
 				query: query_schema,
-				provider: v.pipe(
-					v.picklist(provider_names),
-					v.description('Search provider to use'),
+				provider: optional_provider_schema(
+					provider_names,
+					'Search provider to use. Omit or set to "auto" to pick one configured provider from query signals.',
 				),
 				limit: limit_schema,
 				include_domains: include_domains_schema,
@@ -71,7 +73,20 @@ export const register_web_search = (
 			handle_tool_result(
 				'web_search',
 				async () => {
-					const selected = providers.require(provider, 'web_search');
+					const decision = select_provider({
+						tool: 'web_search',
+						provider,
+						query,
+						include_domains,
+						exclude_domains,
+						candidates: providers.names().map((name) => ({
+							name,
+						})),
+					});
+					const selected = providers.require(
+						decision.provider,
+						'web_search',
+					);
 
 					return selected.search({
 						query,

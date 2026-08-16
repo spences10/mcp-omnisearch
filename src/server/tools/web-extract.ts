@@ -15,10 +15,12 @@ import {
 	type WebExtractProvider,
 } from '../provider-definitions.js';
 import { ProviderRegistry } from '../provider-registry.js';
+import { select_provider } from '../auto-routing.js';
 import { handle_tool_result } from './responses.js';
 import {
 	include_raw_contents_schema,
 	large_result_mode_schema,
+	optional_provider_schema,
 	url_or_urls_schema,
 } from './schemas.js';
 
@@ -55,7 +57,7 @@ export const register_web_extract = (
 		{
 			name: 'web_extract',
 			description:
-				'Extract, process, or summarize web content from URLs. Use when you need to read page content, summarize articles, crawl sites, or extract structured data. Providers: tavily (content extraction), kagi (summarization of pages/videos/podcasts), firecrawl (scraping/crawling/mapping/structured extraction/interactive), exa (content retrieval/similar pages).',
+				'Extract, process, or summarize web content from URLs. Use when you need to read page content, summarize articles, crawl sites, or extract structured data. Providers: tavily (content extraction), kagi (summarization of pages/videos/podcasts), firecrawl (scraping/crawling/mapping/structured extraction/interactive), exa (content retrieval/similar pages). Omit provider or set auto to pick exactly one configured engine from the URL and mode.',
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -64,9 +66,9 @@ export const register_web_extract = (
 			},
 			schema: v.object({
 				url: url_or_urls_schema,
-				provider: v.pipe(
-					v.picklist(available),
-					v.description('Processing provider to use'),
+				provider: optional_provider_schema(
+					available,
+					'Processing provider to use. Omit or set to "auto" to pick one configured provider from the URL and mode.',
 				),
 				mode: v.optional(
 					v.pipe(
@@ -97,7 +99,20 @@ export const register_web_extract = (
 			handle_tool_result(
 				'web_extract',
 				async () => {
-					const provider_name = provider as WebExtractProvider;
+					const decision = select_provider({
+						tool: 'web_extract',
+						provider,
+						url,
+						mode,
+						candidates: providers.names().map((name) => ({
+							name,
+							modes: get_valid_web_extract_modes(
+								name as WebExtractProvider,
+							),
+						})),
+					});
+					const provider_name =
+						decision.provider as WebExtractProvider;
 					const resolved_mode =
 						mode || get_default_web_extract_mode(provider_name);
 					const allowed = get_valid_web_extract_modes(provider_name);
@@ -105,19 +120,19 @@ export const register_web_extract = (
 					if (!resolved_mode || !allowed.includes(resolved_mode)) {
 						throw new ProviderError(
 							ErrorType.INVALID_INPUT,
-							`Mode "${resolved_mode}" is not valid for provider "${provider}". Valid modes: ${allowed.join(', ')}`,
+							`Mode "${resolved_mode}" is not valid for provider "${provider_name}". Valid modes: ${allowed.join(', ')}`,
 							'web_extract',
 						);
 					}
 
 					const key = make_processing_provider_key(
-						provider,
+						provider_name,
 						resolved_mode,
 					);
 					const selected = providers.require(
 						key,
 						'web_extract',
-						`Provider "${provider}" with mode "${resolved_mode}" is not available. Available modes for configured providers: ${allowed.join(', ') || 'none'}.`,
+						`Provider "${provider_name}" with mode "${resolved_mode}" is not available. Available modes for configured providers: ${allowed.join(', ') || 'none'}.`,
 					);
 
 					const result = await selected.process_content(

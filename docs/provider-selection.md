@@ -42,6 +42,47 @@ search only. See
 | `firecrawl` | `FIRECRAWL_API_KEY` | `scrape`, `crawl`, `map`, `extract`, `actions` | Scraping, crawling, site maps, structured extraction, and browser actions. |
 | `exa`       | `EXA_API_KEY`       | `contents`, `similar`                          | Page content retrieval and semantically similar URLs.                      |
 
+## Auto-routing
+
+When `provider` is omitted or set to `auto` on `web_search`,
+`ai_search`, or `web_extract`, Omnisearch scores **configured**
+providers from query (or URL) signals and picks **exactly one**
+winner. This is not multi-provider fan-out.
+
+An explicit `provider` value such as `tavily` always wins.
+
+If no configured provider is eligible — for example `web_extract` with
+`mode: "crawl"` when only Tavily is configured — the tool fails
+visibly instead of inventing results.
+
+### Signals
+
+| Signal                | Examples                        | Prefers             |
+| --------------------- | ------------------------------- | ------------------- |
+| Operators             | `site:`, `filetype:`, `before:` | Brave, Kagi, Tavily |
+| Freshness / news      | `today`, `latest news`          | Tavily, Brave       |
+| Docs / code           | `documentation`, `how to`       | Brave, Kagi, Tavily |
+| Semantic / academic   | `similar`, `arxiv`, papers      | Exa                 |
+| Specialized indexes   | `enrichment`, non-mainstream    | Kagi Enrichment     |
+| Deep AI questions     | `deep`, `comprehensive`         | Linkup              |
+| Semantic AI questions | `similar`, meaning              | Exa Answer          |
+| Default AI answers    | generic questions               | Kagi FastGPT        |
+| Video / podcast URLs  | YouTube, Vimeo                  | Kagi                |
+| Documentation URLs    | `docs.*`, `/docs`               | Firecrawl           |
+| Generic extraction    | other URLs                      | Tavily              |
+
+### Tie-break priority
+
+Equal scores use this documented order:
+
+- `web_search`: tavily > brave > kagi > exa > kagi_enrichment
+- `ai_search`: kagi_fastgpt > exa_answer > linkup
+- `web_extract`: tavily > firecrawl > kagi > exa
+
+The last routing decision (winner, reason, and scores) is available
+from `get_last_routing_decision()` for opt-in diagnostics. Default
+tool payloads stay unchanged.
+
 ## Provider choice cheatsheet
 
 - Need native operators like `filetype:pdf`, `intitle:`, or `before:`?
