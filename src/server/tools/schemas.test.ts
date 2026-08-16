@@ -7,6 +7,10 @@ import {
 	large_result_mode_schema,
 	limit_schema,
 	query_schema,
+	research_extract_count_schema,
+	research_extract_schema,
+	research_time_budget_schema,
+	search_mode_schema,
 	url_or_urls_schema,
 } from './schemas.js';
 
@@ -75,6 +79,51 @@ describe('tool schemas', () => {
 		expect(v.safeParse(http_url_schema, 'not a url').success).toBe(
 			false,
 		);
+	});
+
+	it('validates opt-in research mode controls', () => {
+		expect(v.safeParse(search_mode_schema, undefined).success).toBe(
+			true,
+		);
+		expect(v.safeParse(search_mode_schema, 'normal').success).toBe(
+			true,
+		);
+		expect(v.safeParse(search_mode_schema, 'research').success).toBe(
+			true,
+		);
+		expect(v.safeParse(search_mode_schema, 'deep').success).toBe(
+			false,
+		);
+		expect(
+			v.safeParse(research_time_budget_schema, undefined).success,
+		).toBe(true);
+		expect(v.safeParse(research_time_budget_schema, 55).success).toBe(
+			true,
+		);
+		expect(v.safeParse(research_time_budget_schema, 1).success).toBe(
+			true,
+		);
+		expect(v.safeParse(research_time_budget_schema, 75).success).toBe(
+			true,
+		);
+		expect(v.safeParse(research_time_budget_schema, 0).success).toBe(
+			false,
+		);
+		expect(v.safeParse(research_time_budget_schema, 76).success).toBe(
+			false,
+		);
+		expect(v.safeParse(research_extract_schema, false).success).toBe(
+			true,
+		);
+		expect(
+			v.safeParse(research_extract_count_schema, 3).success,
+		).toBe(true);
+		expect(
+			v.safeParse(research_extract_count_schema, 0).success,
+		).toBe(false);
+		expect(
+			v.safeParse(research_extract_count_schema, 11).success,
+		).toBe(false);
 	});
 
 	it('bounds extraction URL arrays', () => {

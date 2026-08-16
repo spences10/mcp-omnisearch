@@ -36,6 +36,17 @@ export const get_available_providers = () => providers.names();
 export const get_provider_status_entries = () =>
 	providers.status_entries();
 
+export const get_registered_extract_providers = () =>
+	providers.entries().map((entry) => ({
+		id: entry.id,
+		name: entry.name,
+		modes: entry.modes,
+		process_content: (
+			url: string | string[],
+			extract_depth?: 'basic' | 'advanced',
+		) => entry.instance.process_content(url, extract_depth),
+	}));
+
 const web_extract_modes = Array.from(
 	new Set(
 		web_extract_provider_definitions.map(

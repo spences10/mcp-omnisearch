@@ -7,6 +7,10 @@ import {
 	type WebSearchProviderName,
 } from '../provider-definitions.js';
 import { ProviderRegistry } from '../provider-registry.js';
+import {
+	run_research_mode,
+	select_research_extract_provider,
+} from './research-mode.js';
 import { handle_tool_result } from './responses.js';
 import {
 	exclude_domains_schema,
@@ -14,7 +18,12 @@ import {
 	large_result_mode_schema,
 	limit_schema,
 	query_schema,
+	research_extract_count_schema,
+	research_extract_schema,
+	research_time_budget_schema,
+	search_mode_schema,
 } from './schemas.js';
+import { get_registered_extract_providers } from './web-extract.js';
 
 const providers = new ProviderRegistry<SearchProvider>();
 
@@ -41,7 +50,7 @@ export const register_web_search = (
 		{
 			name: 'web_search',
 			description:
-				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Brave/Kagi support query operators like site:, filetype:, lang:, before:, after:.',
+				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Brave/Kagi support query operators like site:, filetype:, lang:, before:, after:. Optional mode=research fans out to several configured search providers and may extract top URLs under research_time_budget (default 55s). Default remains single-provider.',
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -58,6 +67,10 @@ export const register_web_search = (
 				include_domains: include_domains_schema,
 				exclude_domains: exclude_domains_schema,
 				large_result_mode: large_result_mode_schema,
+				mode: search_mode_schema,
+				research_time_budget: research_time_budget_schema,
+				research_extract: research_extract_schema,
+				research_extract_count: research_extract_count_schema,
 			}),
 		},
 		async ({
@@ -67,10 +80,37 @@ export const register_web_search = (
 			include_domains,
 			exclude_domains,
 			large_result_mode,
+			mode,
+			research_time_budget,
+			research_extract,
+			research_extract_count,
 		}) =>
 			handle_tool_result(
 				'web_search',
 				async () => {
+					if (mode === 'research') {
+						return run_research_mode(
+							{
+								query,
+								limit,
+								include_domains,
+								exclude_domains,
+								preferred_provider: provider,
+								time_budget_seconds: research_time_budget,
+								extract: research_extract,
+								extract_count: research_extract_count,
+							},
+							providers.entries().map((entry) => ({
+								id: entry.id,
+								capabilities: entry.capabilities,
+								search: (params) => entry.instance.search(params),
+							})),
+							select_research_extract_provider(
+								get_registered_extract_providers(),
+							),
+						);
+					}
+
 					const selected = providers.require(provider, 'web_search');
 
 					return selected.search({

@@ -53,3 +53,7 @@ search only. See
   `kagi_fastgpt`, `exa_answer`, or `linkup`.
 - Need to crawl/scrape/map a site? Use `web_extract` with `firecrawl`.
 - Need public code/repository/user discovery? Use `github_search`.
+- Need several search engines plus page extracts in one call? Use
+  `web_search` with `mode: "research"`. See
+  [research mode](research-mode.md). Daily search should stay on one
+  explicit `provider`.

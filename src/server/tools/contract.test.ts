@@ -152,6 +152,31 @@ describe('MCP tool contract', () => {
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
 		).toBe(false);
+		expect(
+			v.safeParse(schema, {
+				query: 'sveltekit docs',
+				provider: 'brave',
+				mode: 'research',
+				research_time_budget: 20,
+				research_extract: false,
+				research_extract_count: 2,
+			}).success,
+		).toBe(true);
+		expect(
+			v.safeParse(schema, {
+				query: 'sveltekit docs',
+				provider: 'brave',
+				mode: 'deep',
+			}).success,
+		).toBe(false);
+		expect(
+			v.safeParse(schema, {
+				query: 'sveltekit docs',
+				provider: 'brave',
+				mode: 'research',
+				research_time_budget: 80,
+			}).success,
+		).toBe(false);
 	});
 
 	it('validates public web_extract payloads and unavailable modes at the MCP layer', async () => {
@@ -261,6 +286,111 @@ describe('MCP tool contract', () => {
 			provider: 'brave',
 			retryable: false,
 		});
+	});
+
+	it('keeps default web_search single-provider and supports research mode', async () => {
+		const { tools } = await load_contract({
+			BRAVE_API_KEY: 'brave-key',
+			TAVILY_API_KEY: 'tavily-key',
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockImplementation(async (url: string) => {
+				const href = String(url);
+				if (href.includes('api.search.brave.com')) {
+					return new Response(
+						JSON.stringify({
+							web: {
+								results: [
+									{
+										title: 'Brave Result',
+										url: 'https://brave.example/a',
+										description: 'From brave',
+									},
+								],
+							},
+						}),
+						{ status: 200 },
+					);
+				}
+				if (href.includes('/search')) {
+					return new Response(
+						JSON.stringify({
+							results: [
+								{
+									title: 'Tavily Result',
+									url: 'https://tavily.example/b',
+									content: 'From tavily',
+									score: 0.9,
+								},
+							],
+						}),
+						{ status: 200 },
+					);
+				}
+				if (href.includes('/extract')) {
+					return new Response(
+						JSON.stringify({
+							results: [
+								{
+									url: 'https://brave.example/a',
+									raw_content: 'Extracted page',
+								},
+							],
+							failed_results: [],
+							response_time: 0.1,
+						}),
+						{ status: 200 },
+					);
+				}
+				return new Response('missing mock', { status: 404 });
+			}),
+		);
+
+		const single = parse_tool_body(
+			await tool.handler({
+				query: 'example',
+				provider: 'brave',
+				large_result_mode: 'inline',
+			}),
+		);
+		expect(single).toEqual([
+			{
+				title: 'Brave Result',
+				url: 'https://brave.example/a',
+				snippet: 'From brave',
+				source_provider: 'brave',
+			},
+		]);
+
+		const research = parse_tool_body(
+			await tool.handler({
+				query: 'example',
+				provider: 'brave',
+				mode: 'research',
+				research_extract: true,
+				research_extract_count: 1,
+				large_result_mode: 'inline',
+			}),
+		);
+
+		expect(research.mode).toBe('research');
+		expect(
+			research.results.map((item: { url: string }) => item.url),
+		).toEqual([
+			'https://brave.example/a',
+			'https://tavily.example/b',
+		]);
+		expect(research.research.selected).toEqual(['brave', 'tavily']);
+		expect(research.research.succeeded).toEqual(
+			expect.arrayContaining(['brave', 'tavily']),
+		);
+		expect(research.research.extract.status).toBe('succeeded');
+		expect(research.extracts.content).toContain('Extracted page');
 	});
 
 	it('covers large-result inline/file modes and compact extraction at the MCP layer', async () => {

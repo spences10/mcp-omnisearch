@@ -84,6 +84,22 @@ Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
 }
 ```
 
+Single-provider search is the default. Opt in to research mode when
+you want several configured search providers plus optional extract
+under a time budget:
+
+```json
+{
+	"query": "turntable reviews under 1000",
+	"provider": "brave",
+	"mode": "research",
+	"research_time_budget": 45
+}
+```
+
+See [research mode](docs/research-mode.md) for budget, early-stop, and
+partial-failure behavior.
+
 ### `ai_search`
 
 Get sourced AI answers with Kagi FastGPT, Exa Answer, or Linkup.
@@ -124,6 +140,8 @@ Tavily, Kagi, Firecrawl, or Exa.
 
 - [Provider selection](docs/provider-selection.md) — choose providers
   by task, key, mode, and capability.
+- [Research mode](docs/research-mode.md) — opt-in multi-provider
+  search plus extract under a time budget.
 - [Search operators](docs/search-operators.md) — operator support
   matrix and tested examples.
 - [Large results](docs/large-results.md) — inline vs file response

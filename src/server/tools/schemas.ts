@@ -76,3 +76,44 @@ export const url_or_urls_schema = v.pipe(
 	]),
 	v.description('URL or array of URLs to process'),
 );
+
+export const search_mode_schema = v.optional(
+	v.pipe(
+		v.picklist(['normal', 'research']),
+		v.description(
+			'Search mode. normal is single-provider (default). research fans out to several eligible search providers and may extract top URLs under a time budget.',
+		),
+	),
+);
+
+export const research_time_budget_schema = v.optional(
+	v.pipe(
+		v.number(),
+		v.minValue(1, 'Research time budget must be at least 1 second'),
+		v.maxValue(75, 'Research time budget must be at most 75 seconds'),
+		v.description(
+			'Best-effort wall-clock budget in seconds for research mode (default: 55)',
+		),
+	),
+);
+
+export const research_extract_schema = v.optional(
+	v.pipe(
+		v.boolean(),
+		v.description(
+			'In research mode, extract a bounded set of top URLs with an available web_extract provider (default: true)',
+		),
+	),
+);
+
+export const research_extract_count_schema = v.optional(
+	v.pipe(
+		v.number(),
+		v.integer('Extract count must be an integer'),
+		v.minValue(1, 'Extract count must be at least 1'),
+		v.maxValue(10, 'Extract count must be at most 10'),
+		v.description(
+			'Maximum number of top URLs to extract in research mode (default: 3)',
+		),
+	),
+);
