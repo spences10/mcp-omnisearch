@@ -27,6 +27,7 @@ describe('provider definitions', () => {
 				category: 'search',
 				tools: ['web_search'],
 			},
+			{ id: 'keenable', category: 'search', tools: ['web_search'] },
 		]);
 
 		expect(
@@ -125,6 +126,12 @@ describe('provider definitions', () => {
 				name: 'exa',
 				mode: 'similar',
 				default_mode: false,
+			},
+			{
+				id: 'keenable:extract',
+				name: 'keenable',
+				mode: 'extract',
+				default_mode: true,
 			},
 		]);
 

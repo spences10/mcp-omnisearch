@@ -7,13 +7,14 @@ mode.
 
 ## Search providers
 
-| Provider          | API key          | Best for                                                              | Operators and filters                                                                                                               |
-| ----------------- | ---------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `brave`           | `BRAVE_API_KEY`  | Privacy-oriented web search, native search operators, exact discovery | Passes rich operators through in the query string and merges `include_domains` / `exclude_domains` into `site:` / `-site:` clauses. |
-| `kagi`            | `KAGI_API_KEY`   | High-quality web results and focused research                         | Preserves query operators, uses Kagi request parameters for `filetype:` and `before:` / `after:` dates.                             |
-| `tavily`          | `TAVILY_API_KEY` | Factual/cited search and API-native filtering                         | Translates supported operators into Tavily fields: domains, dates, exact phrases, and country.                                      |
-| `exa`             | `EXA_API_KEY`    | Semantic/neural search and discovery                                  | Supports domain filters through request parameters; optimized for meaning rather than exact operator syntax.                        |
-| `kagi_enrichment` | `KAGI_API_KEY`   | Specialized Kagi enrichment indexes                                   | Use when enrichment/specialized-index results are desired rather than general web results.                                          |
+| Provider          | API key                                           | Best for                                                              | Operators and filters                                                                                                                                                         |
+| ----------------- | ------------------------------------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `brave`           | `BRAVE_API_KEY`                                   | Privacy-oriented web search, native search operators, exact discovery | Passes rich operators through in the query string and merges `include_domains` / `exclude_domains` into `site:` / `-site:` clauses.                                           |
+| `kagi`            | `KAGI_API_KEY`                                    | High-quality web results and focused research                         | Preserves query operators, uses Kagi request parameters for `filetype:` and `before:` / `after:` dates.                                                                       |
+| `tavily`          | `TAVILY_API_KEY`                                  | Factual/cited search and API-native filtering                         | Translates supported operators into Tavily fields: domains, dates, exact phrases, and country.                                                                                |
+| `exa`             | `EXA_API_KEY`                                     | Semantic/neural search and discovery                                  | Supports domain filters through request parameters; optimized for meaning rather than exact operator syntax.                                                                  |
+| `kagi_enrichment` | `KAGI_API_KEY`                                    | Specialized Kagi enrichment indexes                                   | Use when enrichment/specialized-index results are desired rather than general web results.                                                                                    |
+| `keenable`        | `KEENABLE_API_KEY` (or `KEENABLE_ALLOW_PUBLIC=1`) | Independent web index; lowest-priority explicit fallback              | A single `site:` / `include_domains` value becomes `site`. `after:` / `before:` map to `published_after` / `published_before`. Public tier is opt-in, shared, and has no SLA. |
 
 ## AI answer providers
 
@@ -35,12 +36,13 @@ search only. See
 
 ## Processing providers
 
-| Provider    | API key             | Modes                                          | Best for                                                                   |
-| ----------- | ------------------- | ---------------------------------------------- | -------------------------------------------------------------------------- |
-| `tavily`    | `TAVILY_API_KEY`    | `extract`                                      | Content extraction with optional `extract_depth`.                          |
-| `kagi`      | `KAGI_API_KEY`      | `summarize`                                    | Summaries of pages, videos, and podcasts.                                  |
-| `firecrawl` | `FIRECRAWL_API_KEY` | `scrape`, `crawl`, `map`, `extract`, `actions` | Scraping, crawling, site maps, structured extraction, and browser actions. |
-| `exa`       | `EXA_API_KEY`       | `contents`, `similar`                          | Page content retrieval and semantically similar URLs.                      |
+| Provider    | API key                                           | Modes                                          | Best for                                                                   |
+| ----------- | ------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------- |
+| `tavily`    | `TAVILY_API_KEY`                                  | `extract`                                      | Content extraction with optional `extract_depth`.                          |
+| `kagi`      | `KAGI_API_KEY`                                    | `summarize`                                    | Summaries of pages, videos, and podcasts.                                  |
+| `firecrawl` | `FIRECRAWL_API_KEY`                               | `scrape`, `crawl`, `map`, `extract`, `actions` | Scraping, crawling, site maps, structured extraction, and browser actions. |
+| `exa`       | `EXA_API_KEY`                                     | `contents`, `similar`                          | Page content retrieval and semantically similar URLs.                      |
+| `keenable`  | `KEENABLE_API_KEY` (or `KEENABLE_ALLOW_PUBLIC=1`) | `extract`                                      | Indexed fetch; `extract_depth: "advanced"` adds `live=true`.               |
 
 ## Provider choice cheatsheet
 
@@ -49,6 +51,8 @@ search only. See
 - Need API-level domain/date/country filtering? Use `tavily`.
 - Need semantic discovery, similar pages, or meaning-based results?
   Use `exa`.
+- Need an independent index or an opt-in public fallback? Use
+  `keenable` explicitly.
 - Need source-grounded narrative answers? Use `ai_search` with
   `kagi_fastgpt`, `exa_answer`, or `linkup`.
 - Need to crawl/scrape/map a site? Use `web_extract` with `firecrawl`.

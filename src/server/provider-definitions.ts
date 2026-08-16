@@ -2,7 +2,7 @@ import type {
 	ProcessingProvider,
 	SearchProvider,
 } from '../common/types.js';
-import { config } from '../config/env.js';
+import { config, keenable_registration_key } from '../config/env.js';
 import { ExaAnswerProvider } from '../providers/ai-response/exa-answer/index.js';
 import { KagiFastGPTProvider } from '../providers/ai-response/kagi-fastgpt/index.js';
 import { LinkupProvider } from '../providers/ai-response/linkup/index.js';
@@ -15,10 +15,12 @@ import { FirecrawlExtractProvider } from '../providers/processing/firecrawl-extr
 import { FirecrawlMapProvider } from '../providers/processing/firecrawl-map/index.js';
 import { FirecrawlScrapeProvider } from '../providers/processing/firecrawl-scrape/index.js';
 import { KagiSummarizerProvider } from '../providers/processing/kagi-summarizer/index.js';
+import { KeenableExtractProvider } from '../providers/processing/keenable-extract/index.js';
 import { TavilyExtractProvider } from '../providers/processing/tavily-extract/index.js';
 import { BraveSearchProvider } from '../providers/search/brave/index.js';
 import { ExaSearchProvider } from '../providers/search/exa/index.js';
 import { GitHubSearchProvider } from '../providers/search/github/index.js';
+import { KeenableSearchProvider } from '../providers/search/keenable/index.js';
 import { KagiSearchProvider } from '../providers/search/kagi/index.js';
 import { TavilySearchProvider } from '../providers/search/tavily/index.js';
 import type { ProviderDefinition } from './provider-registry.js';
@@ -28,7 +30,8 @@ export type WebSearchProviderName =
 	| 'brave'
 	| 'kagi'
 	| 'exa'
-	| 'kagi_enrichment';
+	| 'kagi_enrichment'
+	| 'keenable';
 
 export type AISearchProviderName =
 	| 'kagi_fastgpt'
@@ -39,7 +42,8 @@ export type WebExtractProvider =
 	| 'tavily'
 	| 'kagi'
 	| 'firecrawl'
-	| 'exa';
+	| 'exa'
+	| 'keenable';
 
 export type WebExtractMode =
 	| 'extract'
@@ -124,6 +128,16 @@ export const web_search_provider_definitions = [
 		capabilities: ['specialized_indexes', 'web_enrichment'],
 		api_key: config.enhancement.kagi_enrichment.api_key,
 		create: () => new KagiEnrichmentSearchProvider(),
+	},
+	{
+		id: 'keenable',
+		name: 'keenable',
+		category: 'search',
+		api_key_name: 'KEENABLE_API_KEY',
+		tools: ['web_search'],
+		capabilities: ['web_search', 'domain_filters'],
+		api_key: keenable_registration_key(),
+		create: () => new KeenableSearchProvider(),
 	},
 ] satisfies readonly ProviderDefinition<SearchProvider>[];
 
@@ -277,6 +291,18 @@ export const web_extract_provider_definitions = [
 		modes: ['similar'],
 		capabilities: ['similar_pages'],
 		create: () => new ExaSimilarProvider(),
+	},
+	{
+		id: make_processing_provider_key('keenable', 'extract'),
+		name: 'keenable',
+		category: 'processing',
+		api_key: keenable_registration_key(),
+		api_key_name: 'KEENABLE_API_KEY',
+		tools: ['web_extract'],
+		modes: ['extract'],
+		capabilities: ['content_extraction'],
+		default_mode: true,
+		create: () => new KeenableExtractProvider(),
 	},
 ] satisfies readonly ProcessingProviderDefinition[];
 

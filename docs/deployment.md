@@ -67,6 +67,8 @@ matching providers.
 				"EXA_API_KEY": "your-exa-key",
 				"LINKUP_API_KEY": "your-linkup-key",
 				"FIRECRAWL_API_KEY": "your-firecrawl-key",
+				"KEENABLE_API_KEY": "your-keenable-key",
+				"KEENABLE_ALLOW_PUBLIC": "1",
 				"FIRECRAWL_BASE_URL": "http://localhost:3002"
 			}
 		}
@@ -126,6 +128,8 @@ Container variables:
 - `EXA_API_KEY`
 - `LINKUP_API_KEY`
 - `FIRECRAWL_API_KEY`
+- `KEENABLE_API_KEY`
+- `KEENABLE_ALLOW_PUBLIC`
 - `FIRECRAWL_BASE_URL`
 - `PORT`, defaults to `8000`
 

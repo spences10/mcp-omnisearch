@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+	keenable_registration_key,
 	should_warn_for_local_file_offload,
 	warn_for_local_file_offload,
 } from './env.js';
@@ -36,5 +37,21 @@ describe('large-result local file offload warnings', () => {
 				OMNISEARCH_LARGE_RESULT_MODE: 'file',
 			}),
 		).toBe(false);
+	});
+});
+
+describe('keenable_registration_key', () => {
+	it('prefers a real key over the public tier', () => {
+		expect(keenable_registration_key('keen_test', true)).toBe(
+			'keen_test',
+		);
+	});
+
+	it('uses a public sentinel only when the public tier is opted in', () => {
+		expect(keenable_registration_key(undefined, true)).toBe('public');
+		expect(
+			keenable_registration_key(undefined, false),
+		).toBeUndefined();
+		expect(keenable_registration_key('  ', false)).toBeUndefined();
 	});
 });

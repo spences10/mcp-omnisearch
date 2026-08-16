@@ -11,6 +11,8 @@ Each provider requires its own key:
 - Exa: `EXA_API_KEY`
 - Linkup: `LINKUP_API_KEY`
 - Firecrawl: `FIRECRAWL_API_KEY`
+- Keenable: `KEENABLE_API_KEY`, or opt-in public tier via
+  `KEENABLE_ALLOW_PUBLIC=1`
 
 Missing keys do not stop the server. The matching provider is skipped
 and configured providers remain available.
