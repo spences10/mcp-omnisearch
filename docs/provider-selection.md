@@ -42,6 +42,17 @@ search only. See
 | `firecrawl` | `FIRECRAWL_API_KEY` | `scrape`, `crawl`, `map`, `extract`, `actions` | Scraping, crawling, site maps, structured extraction, and browser actions. |
 | `exa`       | `EXA_API_KEY`       | `contents`, `similar`                          | Page content retrieval and semantically similar URLs.                      |
 
+## Measure your providers
+
+`provider_bench` (or `mcp-omnisearch --bench`) races every configured
+`web_search` provider on a small fixed suite. Use it to rank providers
+on your keys and region before you pick a default `provider` for
+`web_search`.
+
+The command spends real API calls. It is read-only: it does not write
+MCP client config and does not feed cooldown or adaptive routing
+stats. Add `--json` for structured output.
+
 ## Provider choice cheatsheet
 
 - Need native operators like `filetype:pdf`, `intitle:`, or `before:`?

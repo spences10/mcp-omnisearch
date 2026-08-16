@@ -27,6 +27,8 @@ export const initialize_web_search = (): boolean => {
 
 export const get_available_providers = () => providers.names();
 
+export const get_search_provider_entries = () => providers.entries();
+
 export const get_provider_status_entries = () =>
 	providers.status_entries();
 

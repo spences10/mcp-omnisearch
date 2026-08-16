@@ -5,7 +5,7 @@
 
 A Model Context Protocol (MCP) server that provides unified access to
 Tavily, Brave, Kagi, Exa AI, GitHub, Linkup, and Firecrawl through
-four consolidated tools.
+four consolidated tools, plus an optional provider benchmark.
 
 <a href="https://glama.ai/mcp/servers/gz5wgmptd8">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/gz5wgmptd8/badge" alt="Glama badge" />
@@ -91,6 +91,31 @@ Tavily, Kagi, Firecrawl, or Exa.
 	"provider": "kagi",
 	"mode": "summarize"
 }
+```
+
+### `provider_bench`
+
+Race configured `web_search` providers on a small fixed suite (docs,
+vendor release, community, non-English). Reports success rate, median
+latency, result volume, unique URLs, snippet coverage, and a
+recommended provider priority.
+
+This spends real API calls and quota. It does not write config and
+does not update cooldown or adaptive routing stats.
+
+```json
+{
+	"providers": ["brave", "tavily"],
+	"limit": 5
+}
+```
+
+CLI equivalent:
+
+```bash
+node ./dist/index.js --bench
+node ./dist/index.js --bench --json
+node ./dist/index.js --bench --providers tavily,brave --limit 5
 ```
 
 ## Documentation

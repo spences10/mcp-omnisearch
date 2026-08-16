@@ -19,12 +19,16 @@ import {
 	initialize_web_extract,
 	register_web_extract,
 } from './web-extract.js';
+import { register_provider_bench } from './provider-bench.js';
 import {
 	get_provider_status_entries as get_search_provider_status_entries,
 	get_available_providers as get_search_providers,
+	get_search_provider_entries,
 	initialize_web_search,
 	register_web_search,
 } from './web-search.js';
+
+export { get_search_provider_entries };
 
 // Track providers by category for the status resource
 export const available_providers = {
@@ -104,6 +108,7 @@ export const initialize_providers = () => {
 
 export const register_tools = (server: McpServer<GenericSchema>) => {
 	register_web_search(server);
+	register_provider_bench(server);
 	register_github_search(server);
 	register_ai_search(server);
 	register_web_extract(server);

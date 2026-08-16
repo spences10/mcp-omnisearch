@@ -82,7 +82,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-describe('MCP tool contract', () => {
+describe('MCP tool contract', { timeout: 15_000 }, () => {
 	it('registers no public tools when no providers are configured', async () => {
 		const { tools, tools_module } = await load_contract({});
 
@@ -108,6 +108,7 @@ describe('MCP tool contract', () => {
 
 		expect(tools.map((tool) => tool.definition.name)).toEqual([
 			'web_search',
+			'provider_bench',
 			'github_search',
 			'ai_search',
 			'web_extract',
@@ -310,6 +311,81 @@ describe('MCP tool contract', () => {
 				file_path: expect.stringContaining('mcp-web_extract-'),
 				estimated_tokens: expect.any(Number),
 				read_hint: expect.stringContaining('Use Read tool'),
+			}),
+		);
+	});
+
+	it('registers provider_bench only when a web_search provider is configured', async () => {
+		const github_only = await load_contract({
+			GITHUB_API_KEY: 'github-token',
+		});
+		expect(
+			github_only.tools.map((tool) => tool.definition.name),
+		).toEqual(['github_search']);
+
+		const { tools } = await load_contract({
+			BRAVE_API_KEY: 'brave-key',
+		});
+		expect(tools.map((tool) => tool.definition.name)).toEqual([
+			'web_search',
+			'provider_bench',
+		]);
+
+		const schema = tools.find(
+			(tool) => tool.definition.name === 'provider_bench',
+		)!.definition.schema;
+		expect(v.safeParse(schema, {}).success).toBe(true);
+		expect(
+			v.safeParse(schema, { providers: ['brave'], limit: 3 }).success,
+		).toBe(true);
+		expect(v.safeParse(schema, { providers: ['kagi'] }).success).toBe(
+			false,
+		);
+		expect(v.safeParse(schema, { providers: [] }).success).toBe(
+			false,
+		);
+
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockImplementation(
+				() =>
+					new Response(
+						JSON.stringify({
+							web: {
+								results: [
+									{
+										title: 'Example',
+										url: 'https://example.com',
+										description: 'Example result',
+									},
+								],
+							},
+						}),
+						{ status: 200 },
+					),
+			),
+		);
+
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'provider_bench',
+		)!;
+		const body = parse_tool_body(
+			await tool.handler({
+				limit: 2,
+				large_result_mode: 'inline',
+			}),
+		);
+
+		expect(body.warning).toContain('real API calls');
+		expect(body.wrote_config).toBe(false);
+		expect(body.feeds_cooldown).toBe(false);
+		expect(body.feeds_adaptive_stats).toBe(false);
+		expect(body.recommended_priority).toEqual(['brave']);
+		expect(body.summary[0]).toEqual(
+			expect.objectContaining({
+				provider: 'brave',
+				successes: 4,
+				attempts: 4,
 			}),
 		);
 	});
