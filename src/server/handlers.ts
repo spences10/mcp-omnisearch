@@ -1,5 +1,6 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
+import { build_auto_allow_quality_report } from './auto-allow.js';
 import type {
 	ProviderCategory,
 	ProviderStatus,
@@ -67,6 +68,7 @@ const aggregate_provider_info = (
 			tools: provider.tools,
 			modes: provider.modes,
 			capabilities: provider.capabilities,
+			auto_allow: provider.auto_allow,
 			unavailable_reason: provider.unavailable_reason,
 		})),
 	};
@@ -126,6 +128,11 @@ export const setup_handlers = (server: McpServer<GenericSchema>) => {
 									...unavailable_count,
 									total: total - available_total,
 								},
+								...build_auto_allow_quality_report(
+									provider_status_entries.filter(
+										(provider) => provider.status === 'available',
+									),
+								),
 							},
 							null,
 							2,

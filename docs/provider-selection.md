@@ -42,6 +42,41 @@ search only. See
 | `firecrawl` | `FIRECRAWL_API_KEY` | `scrape`, `crawl`, `map`, `extract`, `actions` | Scraping, crawling, site maps, structured extraction, and browser actions. |
 | `exa`       | `EXA_API_KEY`       | `contents`, `similar`                          | Page content retrieval and semantically similar URLs.                      |
 
+## Cost gates (`auto_allow`)
+
+API keys enable **explicit** calls. They do not put a provider on
+every automatic query. Each provider has `auto_allow` (default `true`
+for current cheap/known engines). Set `auto_allow: false` on new
+expensive engines so `auto` routing, fan-out, and failover skip them.
+
+Explicit `provider: "parallel"` still works when that key exists.
+
+Opt a gated provider into automatic use:
+
+```bash
+OMNISEARCH_AUTO_ALLOW=parallel,querit
+```
+
+Or per provider:
+
+```bash
+OMNISEARCH_AUTO_ALLOW_PARALLEL=true
+```
+
+Keep a normally-allowed provider explicit-only:
+
+```bash
+OMNISEARCH_AUTO_DENY=exa
+# or
+OMNISEARCH_AUTO_ALLOW_EXA=false
+```
+
+`omnisearch://providers/status` lists gated-but-available providers
+under `auto_allow_excluded`. Automatic selection helpers
+(`select_for_automatic_use`, `ProviderRegistry.automatic_ids()`) honor
+the same gate. Call-site `opt_in` can include a gated provider for one
+request without changing the process-wide default.
+
 ## Provider choice cheatsheet
 
 - Need native operators like `filetype:pdf`, `intitle:`, or `before:`?

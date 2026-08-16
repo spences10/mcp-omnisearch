@@ -19,6 +19,13 @@ const API_KEY_NAMES = [
 	'FIRECRAWL_API_KEY',
 ];
 
+const AUTO_ALLOW_ENV_NAMES = [
+	'OMNISEARCH_AUTO_ALLOW',
+	'OMNISEARCH_AUTO_DENY',
+	'OMNISEARCH_AUTO_ALLOW_BRAVE',
+	'OMNISEARCH_AUTO_ALLOW_EXA',
+];
+
 const create_mock_server = () => {
 	const tools: RegisteredTool[] = [];
 	return {
@@ -78,11 +85,12 @@ const mock_tavily_extract_response = (content: string) => {
 
 afterEach(() => {
 	for (const key of API_KEY_NAMES) delete process.env[key];
+	for (const key of AUTO_ALLOW_ENV_NAMES) delete process.env[key];
 	vi.unstubAllGlobals();
 	vi.restoreAllMocks();
 });
 
-describe('MCP tool contract', () => {
+describe('MCP tool contract', { timeout: 15_000 }, () => {
 	it('registers no public tools when no providers are configured', async () => {
 		const { tools, tools_module } = await load_contract({});
 
@@ -261,6 +269,61 @@ describe('MCP tool contract', () => {
 			provider: 'brave',
 			retryable: false,
 		});
+	});
+
+	it('keeps explicit providers callable when auto_allow is denied', async () => {
+		process.env.OMNISEARCH_AUTO_DENY = 'brave';
+		const { tools, tools_module } = await load_contract({
+			BRAVE_API_KEY: 'brave-key',
+			TAVILY_API_KEY: 'tavily-key',
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+
+		expect(
+			v.safeParse(tool.definition.schema, {
+				query: 'example',
+				provider: 'brave',
+			}).success,
+		).toBe(true);
+		expect(tools_module.get_auto_allow_quality_report()).toEqual({
+			auto_allow_excluded: ['brave'],
+		});
+
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue(
+				new Response(
+					JSON.stringify({
+						web: {
+							results: [
+								{
+									title: 'Example',
+									url: 'https://example.com',
+									description: 'Example result',
+								},
+							],
+						},
+					}),
+					{ status: 200 },
+				),
+			),
+		);
+
+		const success = await tool.handler({
+			query: 'example',
+			provider: 'brave',
+			large_result_mode: 'inline',
+		});
+		expect(parse_tool_body(success)).toEqual([
+			{
+				title: 'Example',
+				url: 'https://example.com',
+				snippet: 'Example result',
+				source_provider: 'brave',
+			},
+		]);
 	});
 
 	it('covers large-result inline/file modes and compact extraction at the MCP layer', async () => {

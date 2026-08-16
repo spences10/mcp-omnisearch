@@ -79,6 +79,10 @@ Container variables:
 - `LINKUP_API_KEY`
 - `FIRECRAWL_API_KEY`
 - `FIRECRAWL_BASE_URL`
+- `OMNISEARCH_AUTO_ALLOW` optional, opt gated providers into automatic
+  use
+- `OMNISEARCH_AUTO_DENY` optional, keep listed providers explicit-only
+- `OMNISEARCH_AUTO_ALLOW_<PROVIDER>` optional per-provider override
 - `PORT`, defaults to `8000`
 
 ## OpenAPI access

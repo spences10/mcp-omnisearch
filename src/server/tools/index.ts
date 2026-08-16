@@ -1,5 +1,6 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
+import { build_auto_allow_quality_report } from '../auto-allow.js';
 import type { ProviderStatus } from '../provider-registry.js';
 import {
 	get_provider_status_entries as get_ai_provider_status_entries,
@@ -108,3 +109,10 @@ export const register_tools = (server: McpServer<GenericSchema>) => {
 	register_ai_search(server);
 	register_web_extract(server);
 };
+
+export const get_auto_allow_quality_report = () =>
+	build_auto_allow_quality_report(
+		provider_status_entries.filter(
+			(provider) => provider.status === 'available',
+		),
+	);

@@ -45,6 +45,7 @@ const provider_status = (
 	tools: ['web_search'],
 	modes: [],
 	capabilities: ['web_search'],
+	auto_allow: true,
 	...overrides,
 });
 
@@ -128,6 +129,51 @@ describe('setup_handlers', () => {
 			processing: 1,
 			total: 1,
 		});
+		expect(status_body.auto_allow_excluded).toEqual([]);
+	});
+
+	it('lists available gated providers in auto_allow_excluded', async () => {
+		reset_available_providers();
+		provider_status_entries.push(
+			provider_status({
+				id: 'tavily',
+				name: 'tavily',
+				api_key_name: 'TAVILY_API_KEY',
+			}),
+			provider_status({
+				id: 'parallel',
+				name: 'parallel',
+				api_key_name: 'PARALLEL_API_KEY',
+				auto_allow: false,
+			}),
+			provider_status({
+				id: 'querit',
+				name: 'querit',
+				status: 'unavailable',
+				api_key_name: 'QUERIT_API_KEY',
+				auto_allow: false,
+				unavailable_reason: 'missing_api_key',
+			}),
+		);
+
+		const { resources, server } = create_mock_server();
+		setup_handlers(server as any);
+
+		const provider_status_resource = resources.find(
+			(resource) => resource.definition.name === 'provider-status',
+		)!;
+		const status_response = await provider_status_resource.handler();
+		const status_body = JSON.parse(status_response.contents[0].text);
+
+		expect(status_body.auto_allow_excluded).toEqual(['parallel']);
+		expect(status_body.providers.search).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					name: 'parallel',
+					auto_allow: false,
+				}),
+			]),
+		);
 	});
 
 	it('returns provider information for available providers', async () => {
@@ -175,6 +221,7 @@ describe('setup_handlers', () => {
 					category: 'search',
 					status: 'available',
 					api_key_name: 'KAGI_API_KEY',
+					auto_allow: true,
 				}),
 			],
 		});

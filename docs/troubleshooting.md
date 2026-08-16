@@ -24,6 +24,7 @@ and configured providers remain available.
 | Query rejected before provider call       | Invalid input                                             | Check for empty queries, unsupported modes, malformed domains, or unsupported URL protocols.                                     |
 | Repeated transient errors                 | Rate limits, timeout, network failure, or provider 5xx    | Retry later or lower request volume. Retryable failures are handled separately from invalid credentials and validation failures. |
 | Returned file path cannot be read         | Server wrote a temp file on a remote/container filesystem | Retry with `large_result_mode: "inline"` or set `OMNISEARCH_LARGE_RESULT_MODE=inline`.                                           |
+| Auto/fan-out skips a configured provider  | Provider is `auto_allow=false`                            | Call it with an explicit `provider`, or opt in via `OMNISEARCH_AUTO_ALLOW`. See `auto_allow_excluded` on provider status.        |
 
 ## GitHub token setup
 

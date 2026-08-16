@@ -12,6 +12,11 @@ export const LINKUP_API_KEY = process.env.LINKUP_API_KEY;
 export const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY;
 export const FIRECRAWL_BASE_URL = process.env.FIRECRAWL_BASE_URL;
 
+// Automatic-use cost gates (explicit provider calls ignore these):
+// OMNISEARCH_AUTO_ALLOW, OMNISEARCH_AUTO_DENY,
+// OMNISEARCH_AUTO_ALLOW_<PROVIDER>
+export { resolve_auto_allow, parse_name_list } from './auto-allow.js';
+
 // Provider configuration
 export const config = {
 	search: {

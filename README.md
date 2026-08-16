@@ -117,6 +117,12 @@ Tavily, Kagi, Firecrawl, or Exa.
 - `FIRECRAWL_API_KEY`
 - `FIRECRAWL_BASE_URL` optional, for self-hosted Firecrawl
 - `OMNISEARCH_LARGE_RESULT_MODE` optional, `file` default or `inline`
+- `OMNISEARCH_AUTO_ALLOW` optional, comma-separated providers to opt
+  into automatic routing / fan-out / failover
+- `OMNISEARCH_AUTO_DENY` optional, comma-separated providers to keep
+  explicit-only
+- `OMNISEARCH_AUTO_ALLOW_<PROVIDER>` optional, `true`/`false` override
+  for one provider (for example `OMNISEARCH_AUTO_ALLOW_EXA=false`)
 
 ## Development
 

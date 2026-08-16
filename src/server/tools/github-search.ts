@@ -22,8 +22,14 @@ export const initialize_github_search = (): boolean => {
 
 export const get_available = () => providers.names();
 
+export const get_automatic_providers = () =>
+	providers.automatic_names();
+
 export const get_provider_status_entries = () =>
 	providers.status_entries();
+
+export const get_auto_allow_quality_report = () =>
+	providers.auto_allow_quality_report();
 
 export const register_github_search = (
 	server: McpServer<GenericSchema>,

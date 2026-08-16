@@ -1,5 +1,10 @@
 import { ErrorType, ProviderError } from '../common/types.js';
 import { is_api_key_valid } from '../common/validation.js';
+import { resolve_auto_allow } from '../config/auto-allow.js';
+import {
+	build_auto_allow_quality_report,
+	select_for_automatic_use,
+} from './auto-allow.js';
 
 export type ProviderCategory =
 	| 'search'
@@ -17,6 +22,7 @@ export interface ProviderDefinition<T> {
 	tools?: readonly string[];
 	modes?: readonly string[];
 	capabilities?: readonly string[];
+	auto_allow?: boolean;
 }
 
 export interface ProviderStatus {
@@ -29,6 +35,7 @@ export interface ProviderStatus {
 	tools: readonly string[];
 	modes: readonly string[];
 	capabilities: readonly string[];
+	auto_allow: boolean;
 	unavailable_reason?: 'missing_api_key';
 }
 
@@ -41,6 +48,7 @@ export interface RegisteredProvider<T> {
 	tools: readonly string[];
 	modes: readonly string[];
 	capabilities: readonly string[];
+	auto_allow: boolean;
 }
 
 export class ProviderRegistry<T> {
@@ -57,8 +65,17 @@ export class ProviderRegistry<T> {
 		this.missing_api_key_names.clear();
 	}
 
-	register(definition: ProviderDefinition<T>) {
+	register(
+		definition: ProviderDefinition<T>,
+		env: NodeJS.ProcessEnv = process.env,
+	) {
 		const api_key_name = definition.api_key_name ?? definition.name;
+		const auto_allow = resolve_auto_allow(
+			definition.id,
+			definition.name,
+			definition.auto_allow ?? true,
+			env,
+		);
 		const base_status = {
 			id: definition.id,
 			name: definition.name,
@@ -68,6 +85,7 @@ export class ProviderRegistry<T> {
 			tools: definition.tools ?? [],
 			modes: definition.modes ?? [],
 			capabilities: definition.capabilities ?? [],
+			auto_allow,
 		};
 
 		if (!definition.api_key || definition.api_key.trim() === '') {
@@ -109,9 +127,12 @@ export class ProviderRegistry<T> {
 		});
 	}
 
-	register_all(definitions: readonly ProviderDefinition<T>[]) {
+	register_all(
+		definitions: readonly ProviderDefinition<T>[],
+		env: NodeJS.ProcessEnv = process.env,
+	) {
 		for (const definition of definitions) {
-			this.register(definition);
+			this.register(definition, env);
 		}
 	}
 
@@ -156,6 +177,26 @@ export class ProviderRegistry<T> {
 
 	status_entries(): ProviderStatus[] {
 		return Array.from(this.statuses.values());
+	}
+
+	automatic_entries(): RegisteredProvider<T>[] {
+		return select_for_automatic_use(this.entries()).selected;
+	}
+
+	automatic_ids(): string[] {
+		return this.automatic_entries().map((provider) => provider.id);
+	}
+
+	automatic_names(): string[] {
+		return Array.from(
+			new Set(
+				this.automatic_entries().map((provider) => provider.name),
+			),
+		);
+	}
+
+	auto_allow_quality_report() {
+		return build_auto_allow_quality_report(this.entries());
 	}
 
 	get size() {

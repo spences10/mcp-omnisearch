@@ -33,8 +33,14 @@ export const initialize_web_extract = (): boolean => {
 
 export const get_available_providers = () => providers.names();
 
+export const get_automatic_providers = () =>
+	providers.automatic_names();
+
 export const get_provider_status_entries = () =>
 	providers.status_entries();
+
+export const get_auto_allow_quality_report = () =>
+	providers.auto_allow_quality_report();
 
 const web_extract_modes = Array.from(
 	new Set(

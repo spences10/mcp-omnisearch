@@ -25,6 +25,7 @@ describe('ProviderRegistry', () => {
 				category: 'search',
 				status: 'available',
 				api_key_name: 'brave',
+				auto_allow: true,
 			}),
 		]);
 	});
@@ -87,5 +88,78 @@ describe('ProviderRegistry', () => {
 		expect(() => registry.require('missing', 'web_search')).toThrow(
 			ProviderError,
 		);
+	});
+
+	it('keeps gated providers callable by explicit id', () => {
+		const registry = new ProviderRegistry<{ name: string }>();
+
+		registry.register({
+			id: 'parallel',
+			name: 'parallel',
+			category: 'search',
+			api_key: 'key',
+			auto_allow: false,
+			create: () => ({ name: 'parallel' }),
+		});
+
+		expect(registry.require('parallel', 'web_search')).toEqual({
+			name: 'parallel',
+		});
+		expect(registry.automatic_ids()).toEqual([]);
+		expect(registry.auto_allow_quality_report()).toEqual({
+			auto_allow_excluded: ['parallel'],
+		});
+	});
+
+	it('excludes env-denied providers from automatic selection', () => {
+		const registry = new ProviderRegistry<{ name: string }>();
+
+		registry.register(
+			{
+				id: 'exa',
+				name: 'exa',
+				category: 'search',
+				api_key: 'key',
+				create: () => ({ name: 'exa' }),
+			},
+			{ OMNISEARCH_AUTO_DENY: 'exa' },
+		);
+		registry.register(
+			{
+				id: 'tavily',
+				name: 'tavily',
+				category: 'search',
+				api_key: 'key',
+				create: () => ({ name: 'tavily' }),
+			},
+			{ OMNISEARCH_AUTO_DENY: 'exa' },
+		);
+
+		expect(registry.automatic_ids()).toEqual(['tavily']);
+		expect(registry.ids()).toEqual(['exa', 'tavily']);
+		expect(registry.auto_allow_quality_report()).toEqual({
+			auto_allow_excluded: ['exa'],
+		});
+	});
+
+	it('opts a declared-gated provider into automatic use', () => {
+		const registry = new ProviderRegistry<{ name: string }>();
+
+		registry.register(
+			{
+				id: 'parallel',
+				name: 'parallel',
+				category: 'search',
+				api_key: 'key',
+				auto_allow: false,
+				create: () => ({ name: 'parallel' }),
+			},
+			{ OMNISEARCH_AUTO_ALLOW: 'parallel' },
+		);
+
+		expect(registry.automatic_ids()).toEqual(['parallel']);
+		expect(registry.auto_allow_quality_report()).toEqual({
+			auto_allow_excluded: [],
+		});
 	});
 });

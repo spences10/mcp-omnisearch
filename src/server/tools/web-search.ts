@@ -27,8 +27,14 @@ export const initialize_web_search = (): boolean => {
 
 export const get_available_providers = () => providers.names();
 
+export const get_automatic_providers = () =>
+	providers.automatic_names();
+
 export const get_provider_status_entries = () =>
 	providers.status_entries();
+
+export const get_auto_allow_quality_report = () =>
+	providers.auto_allow_quality_report();
 
 export const register_web_search = (
 	server: McpServer<GenericSchema>,

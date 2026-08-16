@@ -140,4 +140,19 @@ describe('provider definitions', () => {
 			'exa:contents',
 		);
 	});
+
+	it('defaults current known engines to automatic use', () => {
+		const definitions = [
+			...web_search_provider_definitions,
+			...ai_search_provider_definitions,
+			...github_provider_definitions,
+			...web_extract_provider_definitions,
+		];
+
+		expect(
+			definitions.filter((definition) =>
+				Object.hasOwn(definition, 'auto_allow'),
+			),
+		).toEqual([]);
+	});
 });
