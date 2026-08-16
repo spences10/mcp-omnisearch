@@ -17,6 +17,7 @@ const API_KEY_NAMES = [
 	'EXA_API_KEY',
 	'LINKUP_API_KEY',
 	'FIRECRAWL_API_KEY',
+	'QUERIT_API_KEY',
 ];
 
 const create_mock_server = () => {
@@ -152,6 +153,29 @@ describe('MCP tool contract', () => {
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
 		).toBe(false);
+		expect(
+			v.safeParse(schema, { query: 'test', provider: 'querit' })
+				.success,
+		).toBe(false);
+	});
+
+	it('exposes querit on web_search only when QUERIT_API_KEY is set', async () => {
+		const { tools } = await load_contract({
+			QUERIT_API_KEY: 'querit-key',
+		});
+		const search_schema = tools.find(
+			(tool) => tool.definition.name === 'web_search',
+		)!.definition.schema;
+
+		expect(
+			v.safeParse(search_schema, {
+				query: 'example',
+				provider: 'querit',
+			}).success,
+		).toBe(true);
+		expect(tools.map((tool) => tool.definition.name)).toEqual([
+			'web_search',
+		]);
 	});
 
 	it('validates public web_extract payloads and unavailable modes at the MCP layer', async () => {

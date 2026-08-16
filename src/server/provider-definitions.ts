@@ -20,6 +20,7 @@ import { BraveSearchProvider } from '../providers/search/brave/index.js';
 import { ExaSearchProvider } from '../providers/search/exa/index.js';
 import { GitHubSearchProvider } from '../providers/search/github/index.js';
 import { KagiSearchProvider } from '../providers/search/kagi/index.js';
+import { QueritSearchProvider } from '../providers/search/querit/index.js';
 import { TavilySearchProvider } from '../providers/search/tavily/index.js';
 import type { ProviderDefinition } from './provider-registry.js';
 
@@ -28,7 +29,8 @@ export type WebSearchProviderName =
 	| 'brave'
 	| 'kagi'
 	| 'exa'
-	| 'kagi_enrichment';
+	| 'kagi_enrichment'
+	| 'querit';
 
 export type AISearchProviderName =
 	| 'kagi_fastgpt'
@@ -124,6 +126,16 @@ export const web_search_provider_definitions = [
 		capabilities: ['specialized_indexes', 'web_enrichment'],
 		api_key: config.enhancement.kagi_enrichment.api_key,
 		create: () => new KagiEnrichmentSearchProvider(),
+	},
+	{
+		id: 'querit',
+		name: 'querit',
+		category: 'search',
+		api_key_name: 'QUERIT_API_KEY',
+		tools: ['web_search'],
+		capabilities: ['web_search', 'domain_filters', 'multilingual'],
+		api_key: config.search.querit.api_key,
+		create: () => new QueritSearchProvider(),
 	},
 ] satisfies readonly ProviderDefinition<SearchProvider>[];
 
