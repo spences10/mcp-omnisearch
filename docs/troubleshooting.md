@@ -22,6 +22,7 @@ and configured providers remain available.
 | Provider is unavailable                   | Missing API key                                           | Set the provider key and restart the MCP server. Check `omnisearch://providers/status`.                                          |
 | Request fails with unauthorized/forbidden | Invalid key or plan mismatch                              | Verify the key belongs to the provider and has access to the endpoint or plan tier.                                              |
 | Query rejected before provider call       | Invalid input                                             | Check for empty queries, unsupported modes, malformed domains, or unsupported URL protocols.                                     |
+| Request budget exceeded                   | Multi-provider estimated cost is above `budget_usd`       | Raise `budget_usd`, lower `max_providers`, or pin a single `provider`. Single-provider calls ignore the USD cap.                 |
 | Repeated transient errors                 | Rate limits, timeout, network failure, or provider 5xx    | Retry later or lower request volume. Retryable failures are handled separately from invalid credentials and validation failures. |
 | Returned file path cannot be read         | Server wrote a temp file on a remote/container filesystem | Retry with `large_result_mode: "inline"` or set `OMNISEARCH_LARGE_RESULT_MODE=inline`.                                           |
 

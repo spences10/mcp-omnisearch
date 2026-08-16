@@ -1,6 +1,10 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
+import {
+	estimated_provider_cost_usd,
+	plan_and_run,
+} from '../../common/request-budgets.js';
 import { SearchProvider } from '../../common/types.js';
 import {
 	web_search_provider_definitions,
@@ -14,6 +18,7 @@ import {
 	large_result_mode_schema,
 	limit_schema,
 	query_schema,
+	request_budget_schema_fields,
 } from './schemas.js';
 
 const providers = new ProviderRegistry<SearchProvider>();
@@ -58,6 +63,7 @@ export const register_web_search = (
 				include_domains: include_domains_schema,
 				exclude_domains: exclude_domains_schema,
 				large_result_mode: large_result_mode_schema,
+				...request_budget_schema_fields,
 			}),
 		},
 		async ({
@@ -67,19 +73,37 @@ export const register_web_search = (
 			include_domains,
 			exclude_domains,
 			large_result_mode,
+			max_providers,
+			timeout_seconds,
+			budget_usd,
 		}) =>
 			handle_tool_result(
 				'web_search',
-				async () => {
-					const selected = providers.require(provider, 'web_search');
+				async () =>
+					plan_and_run(
+						'web_search',
+						[
+							{
+								id: provider,
+								estimated_cost_usd:
+									estimated_provider_cost_usd(provider),
+							},
+						],
+						{ max_providers, timeout_seconds, budget_usd },
+						async (plan) => {
+							const selected = providers.require(
+								plan.providers[0].id,
+								'web_search',
+							);
 
-					return selected.search({
-						query,
-						limit,
-						include_domains,
-						exclude_domains,
-					});
-				},
+							return selected.search({
+								query,
+								limit,
+								include_domains,
+								exclude_domains,
+							});
+						},
+					),
 				{ large_result_mode },
 			),
 	);

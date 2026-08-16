@@ -152,6 +152,22 @@ describe('MCP tool contract', () => {
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
 		).toBe(false);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				max_providers: 3,
+				timeout_seconds: 20,
+				budget_usd: 0.02,
+			}).success,
+		).toBe(true);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				max_providers: 0,
+			}).success,
+		).toBe(false);
 	});
 
 	it('validates public web_extract payloads and unavailable modes at the MCP layer', async () => {
@@ -233,6 +249,9 @@ describe('MCP tool contract', () => {
 			query: 'example',
 			provider: 'brave',
 			large_result_mode: 'inline',
+			max_providers: 1,
+			timeout_seconds: 1,
+			budget_usd: 0,
 		});
 		expect(parse_tool_body(success)).toEqual([
 			{

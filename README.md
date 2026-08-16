@@ -120,10 +120,30 @@ Tavily, Kagi, Firecrawl, or Exa.
 }
 ```
 
+### Request budgets
+
+Optional on `web_search`, `ai_search`, and `web_extract`.
+Single-provider calls ignore these knobs. Multi-provider plans can cap
+how many providers run, how long the whole call may take, and how much
+estimated USD the plan may spend. Impossible USD plans fail before any
+provider is called.
+
+```json
+{
+	"query": "sveltekit remote functions",
+	"provider": "brave",
+	"max_providers": 3,
+	"timeout_seconds": 20,
+	"budget_usd": 0.02
+}
+```
+
 ## Documentation
 
 - [Provider selection](docs/provider-selection.md) — choose providers
   by task, key, mode, and capability.
+- [Request budgets](docs/request-budgets.md) — max providers,
+  whole-call timeout, and optional estimated USD.
 - [Search operators](docs/search-operators.md) — operator support
   matrix and tested examples.
 - [Large results](docs/large-results.md) — inline vs file response

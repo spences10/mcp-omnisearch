@@ -1,12 +1,15 @@
 import * as v from 'valibot';
 import { describe, expect, it } from 'vitest';
 import {
+	budget_usd_schema,
 	domain_schema,
 	http_url_schema,
 	include_raw_contents_schema,
 	large_result_mode_schema,
 	limit_schema,
+	max_providers_schema,
 	query_schema,
+	timeout_seconds_schema,
 	url_or_urls_schema,
 } from './schemas.js';
 
@@ -75,6 +78,38 @@ describe('tool schemas', () => {
 		expect(v.safeParse(http_url_schema, 'not a url').success).toBe(
 			false,
 		);
+	});
+
+	it('accepts optional request-budget knobs and rejects invalid values', () => {
+		expect(v.safeParse(max_providers_schema, undefined).success).toBe(
+			true,
+		);
+		expect(v.safeParse(max_providers_schema, 3).success).toBe(true);
+		expect(v.safeParse(max_providers_schema, 0).success).toBe(false);
+		expect(v.safeParse(max_providers_schema, 21).success).toBe(false);
+		expect(v.safeParse(max_providers_schema, 1.5).success).toBe(
+			false,
+		);
+
+		expect(
+			v.safeParse(timeout_seconds_schema, undefined).success,
+		).toBe(true);
+		expect(v.safeParse(timeout_seconds_schema, 20).success).toBe(
+			true,
+		);
+		expect(v.safeParse(timeout_seconds_schema, 0).success).toBe(
+			false,
+		);
+		expect(v.safeParse(timeout_seconds_schema, 121).success).toBe(
+			false,
+		);
+
+		expect(v.safeParse(budget_usd_schema, undefined).success).toBe(
+			true,
+		);
+		expect(v.safeParse(budget_usd_schema, 0).success).toBe(true);
+		expect(v.safeParse(budget_usd_schema, 0.02).success).toBe(true);
+		expect(v.safeParse(budget_usd_schema, -0.01).success).toBe(false);
 	});
 
 	it('bounds extraction URL arrays', () => {

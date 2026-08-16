@@ -1,6 +1,10 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
+import {
+	estimated_provider_cost_usd,
+	plan_and_run,
+} from '../../common/request-budgets.js';
 import { omit_raw_contents } from '../../common/results.js';
 import {
 	ErrorType,
@@ -19,6 +23,7 @@ import { handle_tool_result } from './responses.js';
 import {
 	include_raw_contents_schema,
 	large_result_mode_schema,
+	request_budget_schema_fields,
 	url_or_urls_schema,
 } from './schemas.js';
 
@@ -84,6 +89,7 @@ export const register_web_extract = (
 				),
 				large_result_mode: large_result_mode_schema,
 				include_raw_contents: include_raw_contents_schema,
+				...request_budget_schema_fields,
 			}),
 		},
 		async ({
@@ -93,6 +99,9 @@ export const register_web_extract = (
 			extract_depth,
 			large_result_mode,
 			include_raw_contents = true,
+			max_providers,
+			timeout_seconds,
+			budget_usd,
 		}) =>
 			handle_tool_result(
 				'web_extract',
@@ -110,24 +119,39 @@ export const register_web_extract = (
 						);
 					}
 
-					const key = make_processing_provider_key(
-						provider,
-						resolved_mode,
-					);
-					const selected = providers.require(
-						key,
+					return plan_and_run(
 						'web_extract',
-						`Provider "${provider}" with mode "${resolved_mode}" is not available. Available modes for configured providers: ${allowed.join(', ') || 'none'}.`,
-					);
+						[
+							{
+								id: provider,
+								estimated_cost_usd: estimated_provider_cost_usd(
+									provider,
+									resolved_mode,
+								),
+							},
+						],
+						{ max_providers, timeout_seconds, budget_usd },
+						async () => {
+							const key = make_processing_provider_key(
+								provider,
+								resolved_mode,
+							);
+							const selected = providers.require(
+								key,
+								'web_extract',
+								`Provider "${provider}" with mode "${resolved_mode}" is not available. Available modes for configured providers: ${allowed.join(', ') || 'none'}.`,
+							);
 
-					const result = await selected.process_content(
-						url,
-						extract_depth,
-					);
+							const result = await selected.process_content(
+								url,
+								extract_depth,
+							);
 
-					return include_raw_contents
-						? result
-						: omit_raw_contents(result);
+							return include_raw_contents
+								? result
+								: omit_raw_contents(result);
+						},
+					);
 				},
 				{ large_result_mode },
 			),

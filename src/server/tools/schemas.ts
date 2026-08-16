@@ -76,3 +76,43 @@ export const url_or_urls_schema = v.pipe(
 	]),
 	v.description('URL or array of URLs to process'),
 );
+
+export const max_providers_schema = v.optional(
+	v.pipe(
+		v.number(),
+		v.integer('max_providers must be an integer'),
+		v.minValue(1, 'max_providers must be at least 1'),
+		v.maxValue(20, 'max_providers must be at most 20'),
+		v.description(
+			'Maximum providers to run for a multi-provider plan (default: 3). Ignored for single-provider calls.',
+		),
+	),
+);
+
+export const timeout_seconds_schema = v.optional(
+	v.pipe(
+		v.number(),
+		v.integer('timeout_seconds must be an integer'),
+		v.minValue(1, 'timeout_seconds must be at least 1'),
+		v.maxValue(120, 'timeout_seconds must be at most 120'),
+		v.description(
+			'Whole-call timeout in seconds for multi-provider fan-out (default: 20). Ignored for single-provider calls.',
+		),
+	),
+);
+
+export const budget_usd_schema = v.optional(
+	v.pipe(
+		v.number(),
+		v.minValue(0, 'budget_usd must be at least 0'),
+		v.description(
+			'Optional estimated USD cap for a multi-provider plan. Impossible plans fail before any provider call. Ignored for single-provider calls.',
+		),
+	),
+);
+
+export const request_budget_schema_fields = {
+	max_providers: max_providers_schema,
+	timeout_seconds: timeout_seconds_schema,
+	budget_usd: budget_usd_schema,
+};
