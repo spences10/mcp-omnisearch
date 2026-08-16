@@ -1,5 +1,15 @@
 # mcp-omnisearch
 
+## 0.0.29
+
+### Patch Changes
+
+- 1b801ea: Support the stateless MCP 2026-07-28 protocol, including
+  server discovery and modern request metadata.
+- cb5bff7: Document MCPick installation, project-scoped client
+  configuration, secret-safe provider keys, and dry-run previews for
+  easier setup.
+
 ## 0.0.28
 
 ### Patch Changes
