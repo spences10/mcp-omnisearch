@@ -6,7 +6,7 @@ import {
 	it,
 	vi,
 } from 'vitest';
-import { http_json } from './http.js';
+import { http_json, http_json_result } from './http.js';
 import { ErrorType } from './types.js';
 
 const fetch_mock = vi.fn();
@@ -20,6 +20,25 @@ describe('http_json', () => {
 	afterEach(() => {
 		vi.unstubAllGlobals();
 		vi.restoreAllMocks();
+	});
+
+	it('exposes response headers for MCP session handling', async () => {
+		fetch_mock.mockResolvedValue(
+			new Response(JSON.stringify({ ok: true }), {
+				status: 200,
+				headers: {
+					'Content-Type': 'application/json',
+					'Mcp-Session-Id': 'session-1',
+				},
+			}),
+		);
+
+		const result = await http_json_result(
+			'exa_mcp',
+			'https://mcp.exa.ai/mcp',
+		);
+		expect(result.data).toEqual({ ok: true });
+		expect(result.headers.get('mcp-session-id')).toBe('session-1');
 	});
 
 	it('returns parsed JSON for successful responses', async () => {

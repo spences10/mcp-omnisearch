@@ -7,13 +7,14 @@ mode.
 
 ## Search providers
 
-| Provider          | API key          | Best for                                                              | Operators and filters                                                                                                               |
-| ----------------- | ---------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `brave`           | `BRAVE_API_KEY`  | Privacy-oriented web search, native search operators, exact discovery | Passes rich operators through in the query string and merges `include_domains` / `exclude_domains` into `site:` / `-site:` clauses. |
-| `kagi`            | `KAGI_API_KEY`   | High-quality web results and focused research                         | Preserves query operators, uses Kagi request parameters for `filetype:` and `before:` / `after:` dates.                             |
-| `tavily`          | `TAVILY_API_KEY` | Factual/cited search and API-native filtering                         | Translates supported operators into Tavily fields: domains, dates, exact phrases, and country.                                      |
-| `exa`             | `EXA_API_KEY`    | Semantic/neural search and discovery                                  | Supports domain filters through request parameters; optimized for meaning rather than exact operator syntax.                        |
-| `kagi_enrichment` | `KAGI_API_KEY`   | Specialized Kagi enrichment indexes                                   | Use when enrichment/specialized-index results are desired rather than general web results.                                          |
+| Provider          | API key                   | Best for                                                              | Operators and filters                                                                                                               |
+| ----------------- | ------------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `brave`           | `BRAVE_API_KEY`           | Privacy-oriented web search, native search operators, exact discovery | Passes rich operators through in the query string and merges `include_domains` / `exclude_domains` into `site:` / `-site:` clauses. |
+| `kagi`            | `KAGI_API_KEY`            | High-quality web results and focused research                         | Preserves query operators, uses Kagi request parameters for `filetype:` and `before:` / `after:` dates.                             |
+| `tavily`          | `TAVILY_API_KEY`          | Factual/cited search and API-native filtering                         | Translates supported operators into Tavily fields: domains, dates, exact phrases, and country.                                      |
+| `exa`             | `EXA_API_KEY`             | Semantic/neural search and discovery                                  | Supports domain filters through request parameters; optimized for meaning rather than exact operator syntax.                        |
+| `kagi_enrichment` | `KAGI_API_KEY`            | Specialized Kagi enrichment indexes                                   | Use when enrichment/specialized-index results are desired rather than general web results.                                          |
+| configured MCP id | `OMNISEARCH_MCP_BACKENDS` | Official remote or stdio MCP that you already run                     | Opt-in only. HTTP adapters stay the default. See [MCP backends](mcp-backends.md).                                                   |
 
 ## AI answer providers
 

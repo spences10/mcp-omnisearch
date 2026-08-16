@@ -12,6 +12,7 @@ export interface ProviderDefinition<T> {
 	category: ProviderCategory;
 	api_key: string | undefined;
 	api_key_name?: string;
+	requires_api_key?: boolean;
 	create: () => T;
 	description?: string;
 	tools?: readonly string[];
@@ -69,6 +70,25 @@ export class ProviderRegistry<T> {
 			modes: definition.modes ?? [],
 			capabilities: definition.capabilities ?? [],
 		};
+
+		if (definition.requires_api_key === false) {
+			const instance = definition.create();
+			this.providers.set(definition.id, {
+				...base_status,
+				instance,
+				description:
+					definition.description ??
+					(instance as { description?: string }).description,
+			});
+			this.statuses.set(definition.id, {
+				...base_status,
+				status: 'available',
+				description:
+					definition.description ??
+					(instance as { description?: string }).description,
+			});
+			return;
+		}
 
 		if (!definition.api_key || definition.api_key.trim() === '') {
 			if (!this.missing_api_key_names.has(api_key_name)) {

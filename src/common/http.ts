@@ -23,11 +23,17 @@ const get_error_message = (body: unknown) => {
 	}
 };
 
-export const http_json = async <T = unknown>(
+export interface HttpJsonResult<T = unknown> {
+	data: T;
+	status: number;
+	headers: Headers;
+}
+
+export const http_json_result = async <T = unknown>(
 	provider: string,
 	url: string,
 	options: HttpJsonOptions = {},
-): Promise<T> => {
+): Promise<HttpJsonResult<T>> => {
 	const res = await fetch(url, options);
 	const raw = await res.text();
 	const body = tryParseJson(raw);
@@ -46,6 +52,18 @@ export const http_json = async <T = unknown>(
 		);
 	}
 
-	// Prefer JSON if parseable, otherwise return raw text.
-	return (body ?? raw) as T;
+	return {
+		data: (body ?? raw) as T,
+		status: res.status,
+		headers: res.headers,
+	};
+};
+
+export const http_json = async <T = unknown>(
+	provider: string,
+	url: string,
+	options: HttpJsonOptions = {},
+): Promise<T> => {
+	const { data } = await http_json_result<T>(provider, url, options);
+	return data;
 };

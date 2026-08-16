@@ -17,6 +17,7 @@ const API_KEY_NAMES = [
 	'EXA_API_KEY',
 	'LINKUP_API_KEY',
 	'FIRECRAWL_API_KEY',
+	'OMNISEARCH_MCP_BACKENDS',
 ];
 
 const create_mock_server = () => {
@@ -152,6 +153,52 @@ describe('MCP tool contract', () => {
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
 		).toBe(false);
+	});
+
+	it('registers optional MCP backends beside HTTP adapters', async () => {
+		const { tools } = await load_contract({
+			BRAVE_API_KEY: 'brave-key',
+			EXA_API_KEY: 'exa-key',
+			OMNISEARCH_MCP_BACKENDS: JSON.stringify({
+				exa_mcp: {
+					transport: {
+						url: 'https://mcp.exa.ai/mcp',
+						headers: { 'x-api-key': '$EXA_API_KEY' },
+					},
+					tool: 'web_search_exa',
+					limit_argument: 'numResults',
+				},
+			}),
+		});
+		const schema = tools.find(
+			(tool) => tool.definition.name === 'web_search',
+		)!.definition.schema;
+
+		expect(
+			v.safeParse(schema, {
+				query: 'sveltekit docs',
+				provider: 'brave',
+			}).success,
+		).toBe(true);
+		expect(
+			v.safeParse(schema, {
+				query: 'sveltekit docs',
+				provider: 'exa_mcp',
+			}).success,
+		).toBe(true);
+	});
+
+	it('fails configuration when an MCP backend mapping is invalid', async () => {
+		await expect(
+			load_contract({
+				OMNISEARCH_MCP_BACKENDS: JSON.stringify({
+					exa: {
+						transport: 'https://mcp.exa.ai/mcp',
+						tool: 'web_search_exa',
+					},
+				}),
+			}),
+		).rejects.toThrow(/collides with a built-in HTTP adapter/);
 	});
 
 	it('validates public web_extract payloads and unavailable modes at the MCP layer', async () => {

@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
 	should_warn_for_local_file_offload,
+	validate_config,
 	warn_for_local_file_offload,
 } from './env.js';
 
@@ -36,5 +37,22 @@ describe('large-result local file offload warnings', () => {
 				OMNISEARCH_LARGE_RESULT_MODE: 'file',
 			}),
 		).toBe(false);
+	});
+});
+
+describe('validate_config MCP backends', () => {
+	afterEach(() => {
+		delete process.env.OMNISEARCH_MCP_BACKENDS;
+		vi.restoreAllMocks();
+	});
+
+	it('fails startup when OMNISEARCH_MCP_BACKENDS is invalid', () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
+		process.env.OMNISEARCH_MCP_BACKENDS = '{';
+
+		expect(() => validate_config()).toThrow(
+			/OMNISEARCH_MCP_BACKENDS: must be valid JSON/,
+		);
 	});
 });

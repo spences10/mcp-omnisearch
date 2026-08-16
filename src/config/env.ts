@@ -1,3 +1,5 @@
+import { load_mcp_backends } from './mcp-backends.js';
+
 // Environment variable configuration for the MCP Omnisearch server
 
 // Search provider API keys
@@ -197,4 +199,5 @@ export const validate_config = () => {
 	}
 
 	warn_for_local_file_offload();
+	load_mcp_backends();
 };

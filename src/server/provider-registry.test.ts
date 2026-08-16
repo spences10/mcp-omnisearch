@@ -75,6 +75,30 @@ describe('ProviderRegistry', () => {
 		expect(registry.names()).toEqual(['exa']);
 	});
 
+	it('registers configured providers that do not require API keys', () => {
+		const registry = new ProviderRegistry<{ name: string }>();
+
+		registry.register({
+			id: 'exa_mcp',
+			name: 'exa_mcp',
+			category: 'search',
+			api_key: undefined,
+			api_key_name: 'OMNISEARCH_MCP_BACKENDS',
+			requires_api_key: false,
+			create: () => ({ name: 'exa_mcp' }),
+		});
+
+		expect(registry.size).toBe(1);
+		expect(registry.get('exa_mcp')).toEqual({ name: 'exa_mcp' });
+		expect(registry.status_entries()).toEqual([
+			expect.objectContaining({
+				id: 'exa_mcp',
+				status: 'available',
+				api_key_name: 'OMNISEARCH_MCP_BACKENDS',
+			}),
+		]);
+	});
+
 	it('throws a ProviderError when requiring a missing provider', () => {
 		const registry = new ProviderRegistry<{ name: string }>();
 

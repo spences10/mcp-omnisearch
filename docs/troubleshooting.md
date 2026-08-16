@@ -15,6 +15,12 @@ Each provider requires its own key:
 Missing keys do not stop the server. The matching provider is skipped
 and configured providers remain available.
 
+`OMNISEARCH_MCP_BACKENDS` is different: invalid JSON, reserved ids,
+unknown fields, or missing `$NAME` header/env references fail startup.
+A bad `result_path` or field alias fails the search with
+`MALFORMED_RESPONSE` instead of an empty list. See
+[MCP backends](mcp-backends.md).
+
 ## Common failure modes
 
 | Symptom                                   | Likely cause                                              | Fix                                                                                                                              |

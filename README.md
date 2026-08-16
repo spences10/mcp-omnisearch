@@ -124,6 +124,8 @@ Tavily, Kagi, Firecrawl, or Exa.
 
 - [Provider selection](docs/provider-selection.md) — choose providers
   by task, key, mode, and capability.
+- [MCP backends](docs/mcp-backends.md) — optional downstream official
+  remotes or stdio MCP servers.
 - [Search operators](docs/search-operators.md) — operator support
   matrix and tested examples.
 - [Large results](docs/large-results.md) — inline vs file response
@@ -144,6 +146,8 @@ Tavily, Kagi, Firecrawl, or Exa.
 - `FIRECRAWL_API_KEY`
 - `FIRECRAWL_BASE_URL` optional, for self-hosted Firecrawl
 - `OMNISEARCH_LARGE_RESULT_MODE` optional, `file` default or `inline`
+- `OMNISEARCH_MCP_BACKENDS` optional JSON map of downstream MCP search
+  backends; see [MCP backends](docs/mcp-backends.md)
 
 ## Development
 
