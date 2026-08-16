@@ -16,11 +16,13 @@ import { FirecrawlMapProvider } from '../providers/processing/firecrawl-map/inde
 import { FirecrawlScrapeProvider } from '../providers/processing/firecrawl-scrape/index.js';
 import { KagiSummarizerProvider } from '../providers/processing/kagi-summarizer/index.js';
 import { TavilyExtractProvider } from '../providers/processing/tavily-extract/index.js';
+import { YouContentsProvider } from '../providers/processing/you-contents/index.js';
 import { BraveSearchProvider } from '../providers/search/brave/index.js';
 import { ExaSearchProvider } from '../providers/search/exa/index.js';
 import { GitHubSearchProvider } from '../providers/search/github/index.js';
 import { KagiSearchProvider } from '../providers/search/kagi/index.js';
 import { TavilySearchProvider } from '../providers/search/tavily/index.js';
+import { YouSearchProvider } from '../providers/search/you/index.js';
 import type { ProviderDefinition } from './provider-registry.js';
 
 export type WebSearchProviderName =
@@ -28,7 +30,8 @@ export type WebSearchProviderName =
 	| 'brave'
 	| 'kagi'
 	| 'exa'
-	| 'kagi_enrichment';
+	| 'kagi_enrichment'
+	| 'you';
 
 export type AISearchProviderName =
 	| 'kagi_fastgpt'
@@ -39,7 +42,8 @@ export type WebExtractProvider =
 	| 'tavily'
 	| 'kagi'
 	| 'firecrawl'
-	| 'exa';
+	| 'exa'
+	| 'you';
 
 export type WebExtractMode =
 	| 'extract'
@@ -124,6 +128,20 @@ export const web_search_provider_definitions = [
 		capabilities: ['specialized_indexes', 'web_enrichment'],
 		api_key: config.enhancement.kagi_enrichment.api_key,
 		create: () => new KagiEnrichmentSearchProvider(),
+	},
+	{
+		id: 'you',
+		name: 'you',
+		category: 'search',
+		api_key_name: 'YOU_API_KEY',
+		tools: ['web_search'],
+		capabilities: [
+			'web_search',
+			'domain_filters',
+			'operator_translation',
+		],
+		api_key: config.search.you.api_key,
+		create: () => new YouSearchProvider(),
 	},
 ] satisfies readonly ProviderDefinition<SearchProvider>[];
 
@@ -277,6 +295,18 @@ export const web_extract_provider_definitions = [
 		modes: ['similar'],
 		capabilities: ['similar_pages'],
 		create: () => new ExaSimilarProvider(),
+	},
+	{
+		id: make_processing_provider_key('you', 'contents'),
+		name: 'you',
+		category: 'processing',
+		api_key: config.processing.you_contents.api_key,
+		api_key_name: 'YOU_API_KEY',
+		tools: ['web_extract'],
+		modes: ['contents'],
+		capabilities: ['content_retrieval'],
+		default_mode: true,
+		create: () => new YouContentsProvider(),
 	},
 ] satisfies readonly ProcessingProviderDefinition[];
 

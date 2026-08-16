@@ -27,6 +27,7 @@ describe('provider definitions', () => {
 				category: 'search',
 				tools: ['web_search'],
 			},
+			{ id: 'you', category: 'search', tools: ['web_search'] },
 		]);
 
 		expect(
@@ -125,6 +126,12 @@ describe('provider definitions', () => {
 				name: 'exa',
 				mode: 'similar',
 				default_mode: false,
+			},
+			{
+				id: 'you:contents',
+				name: 'you',
+				mode: 'contents',
+				default_mode: true,
 			},
 		]);
 

@@ -17,6 +17,7 @@ const API_KEY_NAMES = [
 	'EXA_API_KEY',
 	'LINKUP_API_KEY',
 	'FIRECRAWL_API_KEY',
+	'YOU_API_KEY',
 ];
 
 const create_mock_server = () => {
@@ -152,6 +153,35 @@ describe('MCP tool contract', () => {
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
 		).toBe(false);
+		expect(
+			v.safeParse(schema, { query: 'test', provider: 'you' }).success,
+		).toBe(false);
+	});
+
+	it('exposes you on web_search and web_extract only when YOU_API_KEY is set', async () => {
+		const { tools } = await load_contract({
+			YOU_API_KEY: 'you-key',
+		});
+		const search_schema = tools.find(
+			(tool) => tool.definition.name === 'web_search',
+		)!.definition.schema;
+		const extract_schema = tools.find(
+			(tool) => tool.definition.name === 'web_extract',
+		)!.definition.schema;
+
+		expect(
+			v.safeParse(search_schema, {
+				query: 'example',
+				provider: 'you',
+			}).success,
+		).toBe(true);
+		expect(
+			v.safeParse(extract_schema, {
+				url: 'https://example.com',
+				provider: 'you',
+				mode: 'contents',
+			}).success,
+		).toBe(true);
 	});
 
 	it('validates public web_extract payloads and unavailable modes at the MCP layer', async () => {
