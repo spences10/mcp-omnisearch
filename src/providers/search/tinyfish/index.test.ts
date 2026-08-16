@@ -60,7 +60,12 @@ describe('TinyFishSearchProvider', () => {
 			},
 		]);
 
-		const requested = new URL(String(fetch.mock.calls[0]?.[0]));
+		const input = fetch.mock.calls[0]?.[0];
+		expect(typeof input).toBe('string');
+		if (typeof input !== 'string') {
+			throw new Error('expected TinyFish search URL string');
+		}
+		const requested = new URL(input);
 		expect(requested.origin + requested.pathname).toBe(
 			'https://api.search.tinyfish.ai/',
 		);
