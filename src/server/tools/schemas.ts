@@ -59,6 +59,15 @@ export const exclude_domains_schema = v.optional(
 	),
 );
 
+export const no_cache_schema = v.optional(
+	v.pipe(
+		v.boolean(),
+		v.description(
+			'Bypass the search result cache and fetch fresh results from the provider',
+		),
+	),
+);
+
 export const http_url_schema = v.pipe(
 	v.string(),
 	v.url('URL must be valid'),

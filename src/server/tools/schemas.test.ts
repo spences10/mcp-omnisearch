@@ -6,6 +6,7 @@ import {
 	include_raw_contents_schema,
 	large_result_mode_schema,
 	limit_schema,
+	no_cache_schema,
 	query_schema,
 	url_or_urls_schema,
 } from './schemas.js';
@@ -45,6 +46,11 @@ describe('tool schemas', () => {
 		expect(
 			v.safeParse(include_raw_contents_schema, 'false').success,
 		).toBe(false);
+		expect(v.safeParse(no_cache_schema, undefined).success).toBe(
+			true,
+		);
+		expect(v.safeParse(no_cache_schema, true).success).toBe(true);
+		expect(v.safeParse(no_cache_schema, 'true').success).toBe(false);
 	});
 
 	it('accepts hostnames but rejects URLs as domain filters', () => {

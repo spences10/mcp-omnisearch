@@ -23,6 +23,7 @@ and configured providers remain available.
 | Request fails with unauthorized/forbidden | Invalid key or plan mismatch                              | Verify the key belongs to the provider and has access to the endpoint or plan tier.                                              |
 | Query rejected before provider call       | Invalid input                                             | Check for empty queries, unsupported modes, malformed domains, or unsupported URL protocols.                                     |
 | Repeated transient errors                 | Rate limits, timeout, network failure, or provider 5xx    | Retry later or lower request volume. Retryable failures are handled separately from invalid credentials and validation failures. |
+| Search results look stale                 | In-process cache hit within TTL                           | Pass `no_cache: true` or set `OMNISEARCH_NO_CACHE=true`. Restarting the server also clears the cache.                            |
 | Returned file path cannot be read         | Server wrote a temp file on a remote/container filesystem | Retry with `large_result_mode: "inline"` or set `OMNISEARCH_LARGE_RESULT_MODE=inline`.                                           |
 
 ## GitHub token setup

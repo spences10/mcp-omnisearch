@@ -84,6 +84,13 @@ Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
 }
 ```
 
+Identical `web_search` calls reuse an in-process cache keyed by
+normalized query, provider, limit, and domain filters. The default TTL
+is one hour. Pass `no_cache: true` (or set `OMNISEARCH_NO_CACHE=true`)
+to force a fresh vendor request. Cache write failures are ignored so
+search still returns. Partial multi-provider responses are never
+stored as complete answers.
+
 ### `ai_search`
 
 Get sourced AI answers with Kagi FastGPT, Exa Answer, or Linkup.
@@ -144,6 +151,10 @@ Tavily, Kagi, Firecrawl, or Exa.
 - `FIRECRAWL_API_KEY`
 - `FIRECRAWL_BASE_URL` optional, for self-hosted Firecrawl
 - `OMNISEARCH_LARGE_RESULT_MODE` optional, `file` default or `inline`
+- `OMNISEARCH_SEARCH_CACHE_TTL_MS` optional, default `3600000` (1
+  hour)
+- `OMNISEARCH_NO_CACHE` optional, `true`/`1`/`yes`/`on` bypasses the
+  search cache for every request
 
 ## Development
 

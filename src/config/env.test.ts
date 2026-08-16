@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+	DEFAULT_SEARCH_CACHE_TTL_MS,
+	is_search_cache_disabled,
+	parse_search_cache_ttl_ms,
 	should_warn_for_local_file_offload,
 	warn_for_local_file_offload,
 } from './env.js';
@@ -35,6 +38,25 @@ describe('large-result local file offload warnings', () => {
 			should_warn_for_local_file_offload({
 				OMNISEARCH_LARGE_RESULT_MODE: 'file',
 			}),
+		).toBe(false);
+	});
+});
+
+describe('search cache environment', () => {
+	it('parses TTL overrides and no_cache bypass flags', () => {
+		expect(parse_search_cache_ttl_ms({})).toBe(
+			DEFAULT_SEARCH_CACHE_TTL_MS,
+		);
+		expect(
+			parse_search_cache_ttl_ms({
+				OMNISEARCH_SEARCH_CACHE_TTL_MS: '0',
+			}),
+		).toBe(0);
+		expect(
+			is_search_cache_disabled({ OMNISEARCH_NO_CACHE: 'yes' }),
+		).toBe(true);
+		expect(
+			is_search_cache_disabled({ OMNISEARCH_NO_CACHE: 'false' }),
 		).toBe(false);
 	});
 });

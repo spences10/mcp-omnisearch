@@ -198,3 +198,30 @@ export const validate_config = () => {
 
 	warn_for_local_file_offload();
 };
+
+export const DEFAULT_SEARCH_CACHE_TTL_MS = 60 * 60 * 1000;
+
+const truthy_env_values = new Set(['1', 'true', 'yes', 'on']);
+
+export const parse_search_cache_ttl_ms = (
+	env: NodeJS.ProcessEnv = process.env,
+): number => {
+	const raw = env.OMNISEARCH_SEARCH_CACHE_TTL_MS;
+	if (raw === undefined || raw.trim() === '') {
+		return DEFAULT_SEARCH_CACHE_TTL_MS;
+	}
+
+	const parsed = Number(raw);
+	if (!Number.isFinite(parsed) || parsed < 0) {
+		return DEFAULT_SEARCH_CACHE_TTL_MS;
+	}
+
+	return parsed;
+};
+
+export const is_search_cache_disabled = (
+	env: NodeJS.ProcessEnv = process.env,
+): boolean => {
+	const raw = env.OMNISEARCH_NO_CACHE?.trim().toLowerCase();
+	return raw !== undefined && truthy_env_values.has(raw);
+};

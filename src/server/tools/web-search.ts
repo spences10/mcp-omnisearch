@@ -1,6 +1,7 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
+import { cached_search } from '../../common/search-cache.js';
 import { SearchProvider } from '../../common/types.js';
 import {
 	web_search_provider_definitions,
@@ -13,6 +14,7 @@ import {
 	include_domains_schema,
 	large_result_mode_schema,
 	limit_schema,
+	no_cache_schema,
 	query_schema,
 } from './schemas.js';
 
@@ -58,6 +60,7 @@ export const register_web_search = (
 				include_domains: include_domains_schema,
 				exclude_domains: exclude_domains_schema,
 				large_result_mode: large_result_mode_schema,
+				no_cache: no_cache_schema,
 			}),
 		},
 		async ({
@@ -67,18 +70,30 @@ export const register_web_search = (
 			include_domains,
 			exclude_domains,
 			large_result_mode,
+			no_cache,
 		}) =>
 			handle_tool_result(
 				'web_search',
 				async () => {
 					const selected = providers.require(provider, 'web_search');
 
-					return selected.search({
-						query,
-						limit,
-						include_domains,
-						exclude_domains,
-					});
+					return cached_search(
+						{
+							query,
+							provider,
+							limit,
+							include_domains,
+							exclude_domains,
+						},
+						() =>
+							selected.search({
+								query,
+								limit,
+								include_domains,
+								exclude_domains,
+							}),
+						{ no_cache },
+					);
 				},
 				{ large_result_mode },
 			),

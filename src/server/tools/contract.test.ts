@@ -152,6 +152,20 @@ describe('MCP tool contract', () => {
 			v.safeParse(schema, { query: 'test', provider: 'kagi' })
 				.success,
 		).toBe(false);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				no_cache: true,
+			}).success,
+		).toBe(true);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				no_cache: 'yes',
+			}).success,
+		).toBe(false);
 	});
 
 	it('validates public web_extract payloads and unavailable modes at the MCP layer', async () => {
@@ -250,7 +264,7 @@ describe('MCP tool contract', () => {
 				.mockResolvedValue(new Response('nope', { status: 401 })),
 		);
 		const failure = await tool.handler({
-			query: 'example',
+			query: 'unauthorized example',
 			provider: 'brave',
 		});
 
@@ -261,6 +275,57 @@ describe('MCP tool contract', () => {
 			provider: 'brave',
 			retryable: false,
 		});
+	});
+
+	it('reuses cached web_search results and honors no_cache', async () => {
+		const { tools } = await load_contract({
+			BRAVE_API_KEY: 'brave-key',
+		});
+		const tool = tools.find(
+			(entry) => entry.definition.name === 'web_search',
+		)!;
+		const brave_body = {
+			web: {
+				results: [
+					{
+						title: 'Cached',
+						url: 'https://example.com',
+						description: 'Cached result',
+					},
+				],
+			},
+		};
+		const fetch_mock = vi
+			.fn()
+			.mockResolvedValue(
+				new Response(JSON.stringify(brave_body), { status: 200 }),
+			);
+		vi.stubGlobal('fetch', fetch_mock);
+
+		const first = await tool.handler({
+			query: 'Example Query',
+			provider: 'brave',
+			limit: 5,
+			large_result_mode: 'inline',
+		});
+		const second = await tool.handler({
+			query: 'example query',
+			provider: 'brave',
+			limit: 5,
+			large_result_mode: 'inline',
+		});
+
+		expect(parse_tool_body(first)).toEqual(parse_tool_body(second));
+		expect(fetch_mock).toHaveBeenCalledTimes(1);
+
+		await tool.handler({
+			query: 'example query',
+			provider: 'brave',
+			limit: 5,
+			no_cache: true,
+			large_result_mode: 'inline',
+		});
+		expect(fetch_mock).toHaveBeenCalledTimes(2);
 	});
 
 	it('covers large-result inline/file modes and compact extraction at the MCP layer', async () => {
