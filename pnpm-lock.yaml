@@ -10,19 +10,19 @@ importers:
     dependencies:
       '@tmcp/adapter-valibot':
         specifier: ^0.1.6
-        version: 0.1.6(tmcp@1.19.4)(valibot@1.4.2)
+        version: 0.1.6(tmcp@1.20.0)(valibot@1.4.2)
       '@tmcp/transport-http':
-        specifier: ^0.8.6
-        version: 0.8.6(tmcp@1.19.4)
+        specifier: ^0.9.0
+        version: 0.9.0(tmcp@1.20.0)
       '@tmcp/transport-stdio':
-        specifier: ^0.4.3
-        version: 0.4.3(tmcp@1.19.4)
+        specifier: ^0.5.0
+        version: 0.5.0(tmcp@1.20.0)
       octokit:
         specifier: ^5.0.5
         version: 5.0.5
       tmcp:
-        specifier: ^1.19.4
-        version: 1.19.4
+        specifier: ^1.20.0
+        version: 1.20.0
       valibot:
         specifier: ^1.4.2
         version: 1.4.2
@@ -702,24 +702,24 @@ packages:
       tmcp: ^1.17.0
       valibot: ^1.1.0
 
-  '@tmcp/session-manager@0.2.2':
-    resolution: {integrity: sha512-UrCRpTsxh5XnMbplspvftEYboiZWgAiXqqAUbyFTHoHMJ0LoNDy8bQd0+7qtxtT4S5Qsnv650gvs/Nbec5NTCQ==}
+  '@tmcp/session-manager@0.3.0':
+    resolution: {integrity: sha512-L16r8qlzXUoS0ec7kuap1P1nQorCcZHHUFe7UGijwwrfBRXB0hFnfC+/BM1PVdGlM7Ade8YxomecybQN5imYXA==}
     peerDependencies:
-      tmcp: ^1.16.3
+      tmcp: ^1.20.0-next.0 || ^1.20.0
 
-  '@tmcp/transport-http@0.8.6':
-    resolution: {integrity: sha512-iLcxu+tEMbkVHbhFfyXQhxfPDDTfm+F0kEw8Xg/a1rm29s4cBg1vwcpbtk02XTxsdDh8RJ1AZkQwF9WDGeb/IA==}
+  '@tmcp/transport-http@0.9.0':
+    resolution: {integrity: sha512-AcHg8frvReVBtSIy3Wps9EBN2nfdq1cC82UzRoNGy5LoNDGe5xDkeYcgcqR9Gyz9uYcfO1evbhZIVtRzmQqW2Q==}
     peerDependencies:
-      '@tmcp/auth': ^0.3.3 || ^0.4.0
-      tmcp: ^1.18.0
+      '@tmcp/auth': ^0.3.3 || ^0.4.0 || ^0.5.0-next.0
+      tmcp: ^1.20.0-next.0 || ^1.20.0
     peerDependenciesMeta:
       '@tmcp/auth':
         optional: true
 
-  '@tmcp/transport-stdio@0.4.3':
-    resolution: {integrity: sha512-chdmSwk7PSXjkaQId2OAY8ZMFrTFWwckfCyXJuw6b6WFK9IMK95EoU2VDFioybcmawuQox0MNPM5R2DVxlptoA==}
+  '@tmcp/transport-stdio@0.5.0':
+    resolution: {integrity: sha512-1NZsGDveDraa/KWsOOn8VybPn5PbYJi5hRWuIRUKIX7joa3Lx7tSf+0EeXwzG1OyPlsEeTNagBWpBpvpfh5lpw==}
     peerDependencies:
-      tmcp: ^1.16.3
+      tmcp: ^1.20.0-next.0 || ^1.20.0
 
   '@tybys/wasm-util@0.10.3':
     resolution: {integrity: sha512-F3fo1MYrRJYL3zER0OUOmkutjr1Vp23m7OsSgp7nq4SP6OqX6C/56XFIPAl5bt3zaBRjmW7SGz3u/6LwFpYcOg==}
@@ -1392,8 +1392,8 @@ packages:
     resolution: {integrity: sha512-yau8yJdTt989Mm0Bd/236QnzEiPf2xLLTqUZRUJOo/3CB078LSwzei343DgtJVmfJKJE3TMINY1u42SQsP6mXw==}
     engines: {node: '>=14.0.0'}
 
-  tmcp@1.19.4:
-    resolution: {integrity: sha512-fMoUJ3Gef9iA0yKZNeW2SQCCKTluCwghUyOz/qxPS8XxrQk6Jlw4lgql3S+s6L//FteLeSJ7erKxMWl727mZoQ==}
+  tmcp@1.20.0:
+    resolution: {integrity: sha512-dcDximKQBGqLP/aEAVA26HcWRHhKipstg1w0fbDDJ0HcFZ6lolLU1YYmStYEn/73f534i7WrDNcjRfRYdV9CoA==}
 
   toad-cache@3.7.0:
     resolution: {integrity: sha512-/m8M+2BJUpoJdgAHoG+baCwBT+tf2VraSfkBgl0Y00qIWt41DJ8R5B8nsEw0I58YwF5IZH6z24/2TobDKnqSWw==}
@@ -2101,26 +2101,28 @@ snapshots:
     dependencies:
       '@testing-library/dom': 10.4.1
 
-  '@tmcp/adapter-valibot@0.1.6(tmcp@1.19.4)(valibot@1.4.2)':
+  '@tmcp/adapter-valibot@0.1.6(tmcp@1.20.0)(valibot@1.4.2)':
     dependencies:
       '@standard-schema/spec': 1.1.0
       '@valibot/to-json-schema': 1.7.0(valibot@1.4.2)
-      tmcp: 1.19.4
+      tmcp: 1.20.0
       valibot: 1.4.2
 
-  '@tmcp/session-manager@0.2.2(tmcp@1.19.4)':
+  '@tmcp/session-manager@0.3.0(tmcp@1.20.0)':
     dependencies:
-      tmcp: 1.19.4
+      json-rpc-2.0: 1.7.1
+      tmcp: 1.20.0
 
-  '@tmcp/transport-http@0.8.6(tmcp@1.19.4)':
+  '@tmcp/transport-http@0.9.0(tmcp@1.20.0)':
     dependencies:
-      '@tmcp/session-manager': 0.2.2(tmcp@1.19.4)
+      '@tmcp/session-manager': 0.3.0(tmcp@1.20.0)
       esm-env: 1.2.2
-      tmcp: 1.19.4
+      tmcp: 1.20.0
 
-  '@tmcp/transport-stdio@0.4.3(tmcp@1.19.4)':
+  '@tmcp/transport-stdio@0.5.0(tmcp@1.20.0)':
     dependencies:
-      tmcp: 1.19.4
+      '@tmcp/session-manager': 0.3.0(tmcp@1.20.0)
+      tmcp: 1.20.0
 
   '@tybys/wasm-util@0.10.3':
     dependencies:
@@ -2677,7 +2679,7 @@ snapshots:
 
   tinyrainbow@3.1.1: {}
 
-  tmcp@1.19.4:
+  tmcp@1.20.0:
     dependencies:
       '@standard-schema/spec': 1.1.0
       json-rpc-2.0: 1.7.1

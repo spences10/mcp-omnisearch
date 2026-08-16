@@ -13,14 +13,41 @@ four consolidated tools.
 
 ## Quick start
 
+Install the published server with
+[MCPick](https://github.com/spences10/mcpick):
+
+```bash
+npx mcpick add \
+  --name mcp-omnisearch \
+  --command npx \
+  --args=-y,mcp-omnisearch
+```
+
+MCPick defaults to Claude Code. Use `--client` and `--scope` to target
+another client or add the server to the current repository:
+
+```bash
+npx mcpick add \
+  --name mcp-omnisearch \
+  --command npx \
+  --args=-y,mcp-omnisearch \
+  --client vscode \
+  --scope project
+```
+
+See [Deployment](docs/deployment.md#install-with-mcpick) for
+secret-safe provider-key setup and the supported clients.
+
+To run from source instead:
+
 ```bash
 pnpm install
 pnpm run build
 node ./dist/index.js
 ```
 
-Configure the server in your MCP client with whichever provider keys
-you have. Providers without keys are skipped and the rest keep
+You can also configure the server manually with whichever provider
+keys you have. Providers without keys are skipped and the rest keep
 working.
 
 ```json

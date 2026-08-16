@@ -18,5 +18,11 @@ export const start_http_server = async (
 		transport.respond(request),
 	);
 
-	return handle;
+	return {
+		port: handle.port,
+		close: async () => {
+			await transport.close();
+			await handle.close();
+		},
+	};
 };
