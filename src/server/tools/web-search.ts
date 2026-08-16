@@ -1,7 +1,12 @@
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
 import * as v from 'valibot';
-import { SearchProvider } from '../../common/types.js';
+import { merge_search_result_lists } from '../../common/rrf-merge.js';
+import {
+	SearchProvider,
+	type SearchResult,
+} from '../../common/types.js';
+import { get_rrf_k } from '../../config/env.js';
 import {
 	web_search_provider_definitions,
 	type WebSearchProviderName,
@@ -29,6 +34,18 @@ export const get_available_providers = () => providers.names();
 
 export const get_provider_status_entries = () =>
 	providers.status_entries();
+
+// Thin hook for current single-list calls and future fan-out
+// (#188). One list stays a plain SearchResult[]; several lists
+// are fused with RRF, URL/title identity, and sources[].
+export const merge_web_search_results = (
+	lists: readonly SearchResult[][],
+	options: { limit?: number } = {},
+) =>
+	merge_search_result_lists(lists, {
+		k: get_rrf_k(),
+		limit: options.limit,
+	});
 
 export const register_web_search = (
 	server: McpServer<GenericSchema>,
@@ -73,12 +90,17 @@ export const register_web_search = (
 				async () => {
 					const selected = providers.require(provider, 'web_search');
 
-					return selected.search({
-						query,
-						limit,
-						include_domains,
-						exclude_domains,
-					});
+					return merge_web_search_results(
+						[
+							await selected.search({
+								query,
+								limit,
+								include_domains,
+								exclude_domains,
+							}),
+						],
+						{ limit },
+					);
 				},
 				{ large_result_mode },
 			),

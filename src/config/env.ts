@@ -134,6 +134,24 @@ const remote_deployment_markers = [
 	'VERCEL',
 ];
 
+// Reciprocal rank fusion constant. Standard RRF uses
+// sum(1 / (k + rank)) with 1-based ranks. Hub default is 60.
+export const DEFAULT_RRF_K = 60;
+
+export const get_rrf_k = (
+	env: NodeJS.ProcessEnv = process.env,
+): number => {
+	const raw = env.OMNISEARCH_RRF_K?.trim();
+	if (!raw) return DEFAULT_RRF_K;
+
+	const parsed = Number(raw);
+	if (!Number.isInteger(parsed) || parsed < 1) {
+		return DEFAULT_RRF_K;
+	}
+
+	return parsed;
+};
+
 export const should_warn_for_local_file_offload = (
 	env: NodeJS.ProcessEnv = process.env,
 ) =>

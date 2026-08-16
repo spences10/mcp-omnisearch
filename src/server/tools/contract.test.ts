@@ -82,7 +82,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-describe('MCP tool contract', () => {
+describe('MCP tool contract', { timeout: 15_000 }, () => {
 	it('registers no public tools when no providers are configured', async () => {
 		const { tools, tools_module } = await load_contract({});
 

@@ -127,6 +127,7 @@ Container variables:
 - `LINKUP_API_KEY`
 - `FIRECRAWL_API_KEY`
 - `FIRECRAWL_BASE_URL`
+- `OMNISEARCH_RRF_K` optional, default `60`
 - `PORT`, defaults to `8000`
 
 ## OpenAPI access

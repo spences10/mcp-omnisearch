@@ -132,6 +132,9 @@ Tavily, Kagi, Firecrawl, or Exa.
   and Firecrawl setup.
 - [Troubleshooting](docs/troubleshooting.md) — keys, access,
   validation, rate limits, and common failures.
+- [Result fusion](docs/result-fusion.md) — RRF merge, URL/title
+  identity, and per-result provenance when multiple provider lists are
+  present.
 
 ## Environment variables
 
@@ -144,6 +147,8 @@ Tavily, Kagi, Firecrawl, or Exa.
 - `FIRECRAWL_API_KEY`
 - `FIRECRAWL_BASE_URL` optional, for self-hosted Firecrawl
 - `OMNISEARCH_LARGE_RESULT_MODE` optional, `file` default or `inline`
+- `OMNISEARCH_RRF_K` optional, reciprocal-rank fusion constant
+  (default `60`)
 
 ## Development
 

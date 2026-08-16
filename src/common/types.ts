@@ -2,12 +2,19 @@
 
 export type ProviderMetadata = Record<string, unknown>;
 
+export interface SearchResultSource {
+	provider: string;
+	rank: number;
+	score?: number;
+}
+
 export interface SearchResult {
 	title: string;
 	url: string;
 	snippet: string;
 	score?: number;
 	source_provider: string;
+	sources?: SearchResultSource[];
 	metadata?: ProviderMetadata;
 }
 
