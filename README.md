@@ -128,8 +128,8 @@ Tavily, Kagi, Firecrawl, or Exa.
   matrix and tested examples.
 - [Large results](docs/large-results.md) — inline vs file response
   behavior and remote deployment caveats.
-- [Deployment](docs/deployment.md) — MCP client, WSL, Docker, cloud,
-  and Firecrawl setup.
+- [Deployment](docs/deployment.md) — MCP client, WSL, and Firecrawl
+  setup.
 - [Troubleshooting](docs/troubleshooting.md) — keys, access,
   validation, rate limits, and common failures.
 
