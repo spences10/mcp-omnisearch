@@ -5,8 +5,13 @@ FROM node:24-alpine
 WORKDIR /app
 
 # Install system dependencies including Python and uv
+ENV UV_TOOL_BIN_DIR=/usr/local/bin
 RUN apk add --no-cache python3 py3-pip gettext && \
-    pip3 install --break-system-packages uv
+    pip3 install --break-system-packages uv && \
+    uv tool install \
+      --python python3 \
+      --with "mcp==1.17.0" \
+      "mcpo==0.0.20"
 
 # Install pnpm globally
 RUN npm install -g pnpm
@@ -46,7 +51,7 @@ RUN echo '{\
 }' > /app/mcpo-config.json
 
 # Create startup script file
-RUN printf '#!/bin/sh\n# Substitute environment variables in config\nenvsubst < /app/mcpo-config.json > /app/mcpo-config-final.json\n\n# Start MCPO with the config\nexec uv tool run mcpo --port ${PORT:-8000} --config /app/mcpo-config-final.json\n' > /app/start.sh && \
+RUN printf '#!/bin/sh\n# Substitute environment variables in config\nenvsubst < /app/mcpo-config.json > /app/mcpo-config-final.json\n\n# Start MCPO with the config\nexec mcpo --port ${PORT:-8000} --config /app/mcpo-config-final.json\n' > /app/start.sh && \
     chmod +x /app/start.sh
 
 # Expose port for MCPO
