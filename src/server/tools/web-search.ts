@@ -11,9 +11,14 @@ import { handle_tool_result } from './responses.js';
 import {
 	exclude_domains_schema,
 	include_domains_schema,
+	include_raw_content_schema,
 	large_result_mode_schema,
 	limit_schema,
 	query_schema,
+	safe_search_schema,
+	search_depth_schema,
+	search_time_range_schema,
+	search_topic_schema,
 } from './schemas.js';
 
 const providers = new ProviderRegistry<SearchProvider>();
@@ -41,7 +46,7 @@ export const register_web_search = (
 		{
 			name: 'web_search',
 			description:
-				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Brave/Kagi support query operators like site:, filetype:, lang:, before:, after:.',
+				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations and search controls), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Search depth, topic, time range, safe search, and raw content apply when supported by the provider.',
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -57,6 +62,11 @@ export const register_web_search = (
 				limit: limit_schema,
 				include_domains: include_domains_schema,
 				exclude_domains: exclude_domains_schema,
+				search_depth: search_depth_schema,
+				topic: search_topic_schema,
+				time_range: search_time_range_schema,
+				safe_search: safe_search_schema,
+				include_raw_content: include_raw_content_schema,
 				large_result_mode: large_result_mode_schema,
 			}),
 		},
@@ -66,6 +76,11 @@ export const register_web_search = (
 			limit,
 			include_domains,
 			exclude_domains,
+			search_depth,
+			topic,
+			time_range,
+			safe_search,
+			include_raw_content,
 			large_result_mode,
 		}) =>
 			handle_tool_result(
@@ -78,6 +93,11 @@ export const register_web_search = (
 						limit,
 						include_domains,
 						exclude_domains,
+						search_depth,
+						topic,
+						time_range,
+						safe_search,
+						include_raw_content,
 					});
 				},
 				{ large_result_mode },

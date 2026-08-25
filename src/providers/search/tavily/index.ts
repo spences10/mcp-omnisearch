@@ -23,8 +23,11 @@ interface TavilySearchRequest {
 	max_results: number;
 	include_domains: string[];
 	exclude_domains: string[];
-	search_depth: 'basic';
-	topic: 'general';
+	search_depth: 'basic' | 'advanced' | 'fast' | 'ultra-fast';
+	topic: 'general' | 'news' | 'finance';
+	time_range?: 'day' | 'week' | 'month' | 'year';
+	safe_search?: boolean;
+	include_raw_content?: boolean;
 	start_date?: string;
 	end_date?: string;
 	exact_match?: boolean;
@@ -37,6 +40,7 @@ const tavily_search_response_schema = v.object({
 			title: v.string(),
 			url: v.string(),
 			content: v.string(),
+			raw_content: v.optional(v.nullable(v.string())),
 			score: v.number(),
 		}),
 	),
@@ -92,9 +96,20 @@ export class TavilySearchProvider implements SearchProvider {
 						include_domains.length > 0 ? include_domains : [],
 					exclude_domains:
 						exclude_domains.length > 0 ? exclude_domains : [],
-					search_depth: 'basic',
-					topic: 'general',
+					search_depth: params.search_depth ?? 'basic',
+					topic: params.topic ?? 'general',
 				};
+
+				if (params.time_range) {
+					request_body.time_range = params.time_range;
+				}
+				if (params.safe_search !== undefined) {
+					request_body.safe_search = params.safe_search;
+				}
+				if (params.include_raw_content !== undefined) {
+					request_body.include_raw_content =
+						params.include_raw_content;
+				}
 
 				// Map date operators to Tavily's start_date/end_date
 				if (search_params.date_after) {
@@ -153,6 +168,9 @@ export class TavilySearchProvider implements SearchProvider {
 					snippet: result.content,
 					score: result.score,
 					source_provider: this.name,
+					...(params.include_raw_content && result.raw_content
+						? { metadata: { raw_content: result.raw_content } }
+						: {}),
 				}));
 			} catch (error) {
 				handle_provider_error(

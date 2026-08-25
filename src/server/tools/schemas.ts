@@ -20,6 +20,45 @@ export const limit_schema = v.optional(
 	),
 );
 
+export const search_depth_schema = v.optional(
+	v.pipe(
+		v.picklist(['basic', 'advanced', 'fast', 'ultra-fast']),
+		v.description(
+			'Search depth. Providers may use this to balance speed, relevance, and cost.',
+		),
+	),
+);
+
+export const search_topic_schema = v.optional(
+	v.pipe(
+		v.picklist(['general', 'news', 'finance']),
+		v.description('Search topic category.'),
+	),
+);
+
+export const search_time_range_schema = v.optional(
+	v.pipe(
+		v.picklist(['day', 'week', 'month', 'year']),
+		v.description('Only return results from this recent time range.'),
+	),
+);
+
+export const safe_search_schema = v.optional(
+	v.pipe(
+		v.boolean(),
+		v.description('Enable provider safe-search filtering.'),
+	),
+);
+
+export const include_raw_content_schema = v.optional(
+	v.pipe(
+		v.boolean(),
+		v.description(
+			'Include full page content when the selected provider supports it.',
+		),
+	),
+);
+
 export const large_result_mode_schema = v.optional(
 	v.pipe(
 		v.picklist(['inline', 'file']),

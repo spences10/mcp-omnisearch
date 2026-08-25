@@ -62,6 +62,55 @@ describe('TavilySearchProvider', () => {
 		]);
 	});
 
+	it('passes portable search controls and returns requested raw content', async () => {
+		const fetch = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
+				json_response({
+					results: [
+						{
+							title: 'Market update',
+							url: 'https://example.com/market',
+							content: 'Market summary',
+							raw_content: '# Full market report',
+							score: 0.8,
+						},
+					],
+					response_time: 0.2,
+				}),
+		);
+		vi.stubGlobal('fetch', fetch);
+		const { TavilySearchProvider } = await import('./index.js');
+
+		await expect(
+			new TavilySearchProvider().search({
+				query: 'market update',
+				search_depth: 'advanced',
+				topic: 'finance',
+				time_range: 'week',
+				safe_search: true,
+				include_raw_content: true,
+			}),
+		).resolves.toEqual([
+			{
+				title: 'Market update',
+				url: 'https://example.com/market',
+				snippet: 'Market summary',
+				score: 0.8,
+				source_provider: 'tavily',
+				metadata: { raw_content: '# Full market report' },
+			},
+		]);
+
+		const request_init = fetch.mock.calls[0]?.[1];
+		expect(JSON.parse(request_init?.body as string)).toMatchObject({
+			search_depth: 'advanced',
+			topic: 'finance',
+			time_range: 'week',
+			safe_search: true,
+			include_raw_content: true,
+		});
+	});
+
 	it('normalizes date and country operators for Tavily API fields', async () => {
 		const fetch = vi.fn(
 			async (_input: RequestInfo | URL, _init?: RequestInit) =>

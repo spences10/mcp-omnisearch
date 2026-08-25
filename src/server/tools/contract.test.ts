@@ -128,6 +128,11 @@ describe('MCP tool contract', () => {
 				provider: 'brave',
 				limit: 5,
 				include_domains: ['svelte.dev'],
+				search_depth: 'advanced',
+				topic: 'news',
+				time_range: 'week',
+				safe_search: true,
+				include_raw_content: true,
 				large_result_mode: 'inline',
 			}).success,
 		).toBe(true);
@@ -146,6 +151,13 @@ describe('MCP tool contract', () => {
 				query: 'test',
 				provider: 'brave',
 				limit: 51,
+			}).success,
+		).toBe(false);
+		expect(
+			v.safeParse(schema, {
+				query: 'test',
+				provider: 'brave',
+				search_depth: 'extreme',
 			}).success,
 		).toBe(false);
 		expect(

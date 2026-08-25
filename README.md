@@ -78,11 +78,18 @@ Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
 
 ```json
 {
-	"query": "sveltekit remote functions site:docs.svelte.dev",
-	"provider": "brave",
-	"limit": 10
+	"query": "latest SvelteKit releases",
+	"provider": "tavily",
+	"limit": 10,
+	"search_depth": "advanced",
+	"topic": "news",
+	"time_range": "month",
+	"safe_search": true,
+	"include_raw_content": false
 }
 ```
+
+Search controls apply when supported by the selected provider.
 
 ### `ai_search`
 

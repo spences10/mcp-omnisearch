@@ -11,11 +11,24 @@ export interface SearchResult {
 	metadata?: ProviderMetadata;
 }
 
+export type SearchDepth =
+	| 'basic'
+	| 'advanced'
+	| 'fast'
+	| 'ultra-fast';
+export type SearchTopic = 'general' | 'news' | 'finance';
+export type SearchTimeRange = 'day' | 'week' | 'month' | 'year';
+
 export interface BaseSearchParams {
 	query: string;
 	limit?: number;
 	include_domains?: string[];
 	exclude_domains?: string[];
+	search_depth?: SearchDepth;
+	topic?: SearchTopic;
+	time_range?: SearchTimeRange;
+	safe_search?: boolean;
+	include_raw_content?: boolean;
 }
 
 export interface ProcessingResult {
