@@ -17,6 +17,9 @@ import {
 import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
 import {
+	chunks_per_source_schema,
+	extraction_format_schema,
+	extraction_query_schema,
 	include_raw_contents_schema,
 	large_result_mode_schema,
 	url_or_urls_schema,
@@ -82,6 +85,9 @@ export const register_web_extract = (
 						v.description('Extraction depth (default: basic)'),
 					),
 				),
+				query: extraction_query_schema,
+				chunks_per_source: chunks_per_source_schema,
+				format: extraction_format_schema,
 				large_result_mode: large_result_mode_schema,
 				include_raw_contents: include_raw_contents_schema,
 			}),
@@ -91,12 +97,23 @@ export const register_web_extract = (
 			provider,
 			mode,
 			extract_depth,
+			query,
+			chunks_per_source,
+			format,
 			large_result_mode,
 			include_raw_contents = true,
 		}) =>
 			handle_tool_result(
 				'web_extract',
 				async () => {
+					if (chunks_per_source !== undefined && !query) {
+						throw new ProviderError(
+							ErrorType.INVALID_INPUT,
+							'query is required when chunks_per_source is provided',
+							'web_extract',
+						);
+					}
+
 					const provider_name = provider as WebExtractProvider;
 					const resolved_mode =
 						mode || get_default_web_extract_mode(provider_name);
@@ -123,6 +140,7 @@ export const register_web_extract = (
 					const result = await selected.process_content(
 						url,
 						extract_depth,
+						{ query, chunks_per_source, format },
 					);
 
 					return include_raw_contents

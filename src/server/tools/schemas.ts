@@ -68,6 +68,36 @@ export const large_result_mode_schema = v.optional(
 	),
 );
 
+export const extraction_query_schema = v.optional(
+	v.pipe(
+		v.string(),
+		v.minLength(1, 'Extraction query cannot be empty'),
+		v.regex(/\S/, 'Extraction query cannot be empty'),
+		v.description(
+			'Focus extracted content on information relevant to this query.',
+		),
+	),
+);
+
+export const chunks_per_source_schema = v.optional(
+	v.pipe(
+		v.number(),
+		v.integer('Chunks per source must be an integer'),
+		v.minValue(1, 'Chunks per source must be at least 1'),
+		v.maxValue(5, 'Chunks per source must be at most 5'),
+		v.description(
+			'Maximum relevant content chunks per source when a query is provided.',
+		),
+	),
+);
+
+export const extraction_format_schema = v.optional(
+	v.pipe(
+		v.picklist(['markdown', 'text']),
+		v.description('Extracted page format (default: markdown).'),
+	),
+);
+
 export const include_raw_contents_schema = v.optional(
 	v.pipe(
 		v.boolean(),

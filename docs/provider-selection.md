@@ -38,7 +38,7 @@ search only. See
 
 | Provider    | API key             | Modes                                          | Best for                                                                   |
 | ----------- | ------------------- | ---------------------------------------------- | -------------------------------------------------------------------------- |
-| `tavily`    | `TAVILY_API_KEY`    | `extract`, `crawl`, `map`                      | Content extraction, site crawling, and fast URL discovery.                 |
+| `tavily`    | `TAVILY_API_KEY`    | `extract`, `crawl`, `map`                      | Query-focused extraction, site crawling, and fast URL discovery.           |
 | `kagi`      | `KAGI_API_KEY`      | `summarize`                                    | Summaries of pages, videos, and podcasts.                                  |
 | `firecrawl` | `FIRECRAWL_API_KEY` | `scrape`, `crawl`, `map`, `extract`, `actions` | Scraping, crawling, site maps, structured extraction, and browser actions. |
 | `exa`       | `EXA_API_KEY`       | `contents`, `similar`                          | Page content retrieval and semantically similar URLs.                      |

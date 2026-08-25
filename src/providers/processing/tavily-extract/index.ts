@@ -1,10 +1,14 @@
 import * as v from 'valibot';
-import { handle_provider_error } from '../../../common/errors.js';
+import {
+	handle_provider_error,
+	sanitize_query,
+} from '../../../common/errors.js';
 import { http_json } from '../../../common/http.js';
 import { parse_provider_response } from '../../../common/provider-response.js';
 import { retry_with_backoff } from '../../../common/retry.js';
 import {
 	ErrorType,
+	ProcessingOptions,
 	ProcessingProvider,
 	ProcessingResult,
 	ProviderError,
@@ -40,8 +44,17 @@ export class TavilyExtractProvider implements ProcessingProvider {
 	async process_content(
 		url: string | string[],
 		extract_depth: 'basic' | 'advanced' = 'basic',
+		options: ProcessingOptions = {},
 	): Promise<ProcessingResult> {
 		const urls = validate_processing_urls(url, this.name);
+
+		if (options.chunks_per_source !== undefined && !options.query) {
+			throw new ProviderError(
+				ErrorType.INVALID_INPUT,
+				'query is required when chunks_per_source is provided',
+				this.name,
+			);
+		}
 
 		const extract_request = async () => {
 			const api_key = validate_api_key(
@@ -50,6 +63,18 @@ export class TavilyExtractProvider implements ProcessingProvider {
 			);
 
 			try {
+				const request_body = {
+					urls,
+					include_images: false,
+					extract_depth,
+					format: options.format ?? 'markdown',
+					...(options.query
+						? { query: sanitize_query(options.query) }
+						: {}),
+					...(options.chunks_per_source !== undefined
+						? { chunks_per_source: options.chunks_per_source }
+						: {}),
+				};
 				const raw_data = await http_json(
 					this.name,
 					`${config.processing.tavily_extract.base_url}/extract`,
@@ -59,11 +84,7 @@ export class TavilyExtractProvider implements ProcessingProvider {
 							Authorization: `Bearer ${api_key}`,
 							'Content-Type': 'application/json',
 						},
-						body: JSON.stringify({
-							urls: urls,
-							include_images: false,
-							extract_depth,
-						}),
+						body: JSON.stringify(request_body),
 						signal: AbortSignal.timeout(
 							config.processing.tavily_extract.timeout,
 						),

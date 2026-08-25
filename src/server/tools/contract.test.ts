@@ -179,6 +179,10 @@ describe('MCP tool contract', () => {
 				url: 'https://example.com',
 				provider: 'tavily',
 				mode: 'extract',
+				extract_depth: 'advanced',
+				query: 'installation requirements',
+				chunks_per_source: 3,
+				format: 'text',
 				include_raw_contents: false,
 			}).success,
 		).toBe(true);
@@ -195,6 +199,26 @@ describe('MCP tool contract', () => {
 				mode: 'bogus',
 			}).success,
 		).toBe(false);
+		expect(
+			v.safeParse(tool.definition.schema, {
+				url: 'https://example.com',
+				provider: 'tavily',
+				chunks_per_source: 6,
+			}).success,
+		).toBe(false);
+
+		const missing_query_response = await tool.handler({
+			url: 'https://example.com',
+			provider: 'tavily',
+			chunks_per_source: 2,
+		});
+		expect(missing_query_response.isError).toBe(true);
+		expect(parse_tool_body(missing_query_response)).toEqual(
+			expect.objectContaining({
+				type: 'INVALID_INPUT',
+				provider: 'web_extract',
+			}),
+		);
 
 		const response = await tool.handler({
 			url: 'https://example.com',

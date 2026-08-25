@@ -57,10 +57,17 @@ export interface SearchProvider {
 	description: string;
 }
 
+export interface ProcessingOptions {
+	query?: string;
+	chunks_per_source?: number;
+	format?: 'markdown' | 'text';
+}
+
 export interface ProcessingProvider {
 	process_content(
 		url: string | string[],
 		extract_depth?: 'basic' | 'advanced',
+		options?: ProcessingOptions,
 	): Promise<ProcessingResult>;
 	name: string;
 	description: string;

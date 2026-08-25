@@ -123,8 +123,12 @@ Tavily, Kagi, Firecrawl, or Exa.
 ```json
 {
 	"url": "https://example.com/long-article",
-	"provider": "kagi",
-	"mode": "summarize"
+	"provider": "tavily",
+	"mode": "extract",
+	"extract_depth": "advanced",
+	"query": "installation requirements",
+	"chunks_per_source": 3,
+	"format": "markdown"
 }
 ```
 
