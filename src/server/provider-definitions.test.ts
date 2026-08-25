@@ -79,6 +79,18 @@ describe('provider definitions', () => {
 				default_mode: true,
 			},
 			{
+				id: 'tavily:crawl',
+				name: 'tavily',
+				mode: 'crawl',
+				default_mode: false,
+			},
+			{
+				id: 'tavily:map',
+				name: 'tavily',
+				mode: 'map',
+				default_mode: false,
+			},
+			{
 				id: 'kagi:summarize',
 				name: 'kagi',
 				mode: 'summarize',
@@ -128,6 +140,12 @@ describe('provider definitions', () => {
 			},
 		]);
 
+		expect(get_default_web_extract_mode('tavily')).toBe('extract');
+		expect(get_valid_web_extract_modes('tavily')).toEqual([
+			'extract',
+			'crawl',
+			'map',
+		]);
 		expect(get_default_web_extract_mode('firecrawl')).toBe('scrape');
 		expect(get_valid_web_extract_modes('firecrawl')).toEqual([
 			'scrape',

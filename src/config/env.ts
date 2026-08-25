@@ -69,6 +69,16 @@ export const config = {
 			base_url: 'https://api.tavily.com',
 			timeout: 30000, // 30 seconds
 		},
+		tavily_crawl: {
+			api_key: TAVILY_API_KEY,
+			base_url: 'https://api.tavily.com',
+			timeout: 150000, // Tavily accepts crawl timeouts up to 150 seconds
+		},
+		tavily_map: {
+			api_key: TAVILY_API_KEY,
+			base_url: 'https://api.tavily.com',
+			timeout: 150000, // Tavily accepts map timeouts up to 150 seconds
+		},
 		firecrawl_scrape: {
 			api_key: FIRECRAWL_API_KEY,
 			base_url: FIRECRAWL_BASE_URL

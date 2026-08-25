@@ -15,7 +15,9 @@ import { FirecrawlExtractProvider } from '../providers/processing/firecrawl-extr
 import { FirecrawlMapProvider } from '../providers/processing/firecrawl-map/index.js';
 import { FirecrawlScrapeProvider } from '../providers/processing/firecrawl-scrape/index.js';
 import { KagiSummarizerProvider } from '../providers/processing/kagi-summarizer/index.js';
+import { TavilyCrawlProvider } from '../providers/processing/tavily-crawl/index.js';
 import { TavilyExtractProvider } from '../providers/processing/tavily-extract/index.js';
+import { TavilyMapProvider } from '../providers/processing/tavily-map/index.js';
 import { BraveSearchProvider } from '../providers/search/brave/index.js';
 import { ExaSearchProvider } from '../providers/search/exa/index.js';
 import { GitHubSearchProvider } from '../providers/search/github/index.js';
@@ -186,6 +188,28 @@ export const web_extract_provider_definitions = [
 		capabilities: ['content_extraction', 'raw_contents'],
 		default_mode: true,
 		create: () => new TavilyExtractProvider(),
+	},
+	{
+		id: make_processing_provider_key('tavily', 'crawl'),
+		name: 'tavily',
+		category: 'processing',
+		api_key: config.processing.tavily_crawl.api_key,
+		api_key_name: 'TAVILY_API_KEY',
+		tools: ['web_extract'],
+		modes: ['crawl'],
+		capabilities: ['crawling', 'content_extraction', 'raw_contents'],
+		create: () => new TavilyCrawlProvider(),
+	},
+	{
+		id: make_processing_provider_key('tavily', 'map'),
+		name: 'tavily',
+		category: 'processing',
+		api_key: config.processing.tavily_map.api_key,
+		api_key_name: 'TAVILY_API_KEY',
+		tools: ['web_extract'],
+		modes: ['map'],
+		capabilities: ['site_mapping'],
+		create: () => new TavilyMapProvider(),
 	},
 	{
 		id: make_processing_provider_key('kagi', 'summarize'),

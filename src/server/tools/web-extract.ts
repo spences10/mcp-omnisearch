@@ -72,7 +72,7 @@ export const register_web_extract = (
 					v.pipe(
 						v.picklist(web_extract_modes),
 						v.description(
-							'Processing mode. Firecrawl: scrape/crawl/map/extract/actions. Exa: contents/similar. Tavily: extract. Kagi: summarize. Defaults to provider default.',
+							'Processing mode. Firecrawl: scrape/crawl/map/extract/actions. Exa: contents/similar. Tavily: extract/crawl/map. Kagi: summarize. Defaults to provider default.',
 						),
 					),
 				),
