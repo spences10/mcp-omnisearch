@@ -9,6 +9,7 @@ import {
 import { ProviderRegistry } from '../provider-registry.js';
 import { handle_tool_result } from './responses.js';
 import {
+	auto_parameters_schema,
 	exclude_domains_schema,
 	include_domains_schema,
 	include_raw_content_schema,
@@ -46,7 +47,7 @@ export const register_web_search = (
 		{
 			name: 'web_search',
 			description:
-				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations and search controls), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Search depth, topic, time range, safe search, and raw content apply when supported by the provider.',
+				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations and search controls), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Search depth, topic, time range, safe search, raw content, and automatic parameters apply when supported by the provider.',
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -67,6 +68,7 @@ export const register_web_search = (
 				time_range: search_time_range_schema,
 				safe_search: safe_search_schema,
 				include_raw_content: include_raw_content_schema,
+				auto_parameters: auto_parameters_schema,
 				large_result_mode: large_result_mode_schema,
 			}),
 		},
@@ -81,6 +83,7 @@ export const register_web_search = (
 			time_range,
 			safe_search,
 			include_raw_content,
+			auto_parameters,
 			large_result_mode,
 		}) =>
 			handle_tool_result(
@@ -98,6 +101,7 @@ export const register_web_search = (
 						time_range,
 						safe_search,
 						include_raw_content,
+						auto_parameters,
 					});
 				},
 				{ large_result_mode },

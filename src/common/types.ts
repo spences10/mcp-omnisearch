@@ -29,6 +29,7 @@ export interface BaseSearchParams {
 	time_range?: SearchTimeRange;
 	safe_search?: boolean;
 	include_raw_content?: boolean;
+	auto_parameters?: boolean;
 }
 
 export interface ProcessingResult {
@@ -37,7 +38,7 @@ export interface ProcessingResult {
 		url: string;
 		content: string;
 	}>;
-	metadata: {
+	metadata: ProviderMetadata & {
 		title?: string;
 		author?: string;
 		date?: string;

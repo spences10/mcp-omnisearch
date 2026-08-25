@@ -131,6 +131,8 @@ describe('search provider operator handling', () => {
 			exclude_domains: ['ads.example.com', 'spam.dev'],
 			search_depth: 'basic',
 			topic: 'general',
+			include_favicon: true,
+			include_usage: true,
 			start_date: '2023-01-01',
 			end_date: '2024-01-01',
 			exact_match: true,

@@ -25,6 +25,7 @@ const tavily_extract_response_schema = v.object({
 			url: v.string(),
 			raw_content: v.string(),
 			images: v.optional(v.array(v.string())),
+			favicon: v.optional(v.string()),
 		}),
 	),
 	failed_results: v.array(
@@ -33,7 +34,13 @@ const tavily_extract_response_schema = v.object({
 			error: v.string(),
 		}),
 	),
-	response_time: v.number(),
+	response_time: v.union([v.number(), v.string()]),
+	request_id: v.optional(v.string()),
+	usage: v.optional(
+		v.object({
+			credits: v.number(),
+		}),
+	),
 });
 
 export class TavilyExtractProvider implements ProcessingProvider {
@@ -66,6 +73,8 @@ export class TavilyExtractProvider implements ProcessingProvider {
 				const request_body = {
 					urls,
 					include_images: false,
+					include_favicon: true,
+					include_usage: true,
 					extract_depth,
 					format: options.format ?? 'markdown',
 					...(options.query
@@ -121,6 +130,12 @@ export class TavilyExtractProvider implements ProcessingProvider {
 					.split(/\s+/)
 					.filter(Boolean).length;
 
+				const favicons = Object.fromEntries(
+					data.results
+						.filter((result) => result.favicon)
+						.map((result) => [result.url, result.favicon]),
+				);
+
 				// Include any failed URLs in metadata
 				const failed_urls =
 					data.failed_results.length > 0
@@ -136,6 +151,12 @@ export class TavilyExtractProvider implements ProcessingProvider {
 						urls_processed: urls.length,
 						successful_extractions: data.results.length,
 						extract_depth,
+						response_time: data.response_time,
+						...(data.request_id
+							? { request_id: data.request_id }
+							: {}),
+						...(data.usage ? { usage: data.usage } : {}),
+						...(Object.keys(favicons).length > 0 ? { favicons } : {}),
 					},
 					source_provider: this.name,
 				};

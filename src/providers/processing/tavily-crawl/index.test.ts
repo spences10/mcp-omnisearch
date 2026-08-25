@@ -34,9 +34,12 @@ describe('TavilyCrawlProvider', () => {
 						{
 							url: 'https://example.com/docs',
 							raw_content: 'Docs content',
+							favicon: 'https://example.com/favicon.ico',
 						},
 					],
 					response_time: 0.1,
+					request_id: 'crawl-request',
+					usage: { credits: 2 },
 				}),
 		);
 		vi.stubGlobal('fetch', fetch_mock);
@@ -58,6 +61,13 @@ describe('TavilyCrawlProvider', () => {
 				urls_processed: 2,
 				successful_extractions: 2,
 				extract_depth: 'basic',
+				response_time: 0.1,
+				request_id: 'crawl-request',
+				usage: { credits: 2 },
+				favicons: {
+					'https://example.com/docs':
+						'https://example.com/favicon.ico',
+				},
 			},
 			source_provider: 'tavily_crawl',
 		});

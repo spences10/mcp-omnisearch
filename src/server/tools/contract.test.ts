@@ -133,6 +133,7 @@ describe('MCP tool contract', () => {
 				time_range: 'week',
 				safe_search: true,
 				include_raw_content: true,
+				auto_parameters: true,
 				large_result_mode: 'inline',
 			}).success,
 		).toBe(true);

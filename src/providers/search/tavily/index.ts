@@ -28,6 +28,9 @@ interface TavilySearchRequest {
 	time_range?: 'day' | 'week' | 'month' | 'year';
 	safe_search?: boolean;
 	include_raw_content?: boolean;
+	auto_parameters?: boolean;
+	include_favicon: boolean;
+	include_usage: boolean;
 	start_date?: string;
 	end_date?: string;
 	exact_match?: boolean;
@@ -41,7 +44,16 @@ const tavily_search_response_schema = v.object({
 			url: v.string(),
 			content: v.string(),
 			raw_content: v.optional(v.nullable(v.string())),
+			favicon: v.optional(v.string()),
 			score: v.number(),
+		}),
+	),
+	response_time: v.optional(v.union([v.number(), v.string()])),
+	request_id: v.optional(v.string()),
+	auto_parameters: v.optional(v.record(v.string(), v.unknown())),
+	usage: v.optional(
+		v.object({
+			credits: v.number(),
 		}),
 	),
 });
@@ -98,6 +110,8 @@ export class TavilySearchProvider implements SearchProvider {
 						exclude_domains.length > 0 ? exclude_domains : [],
 					search_depth: params.search_depth ?? 'basic',
 					topic: params.topic ?? 'general',
+					include_favicon: true,
+					include_usage: true,
 				};
 
 				if (params.time_range) {
@@ -109,6 +123,9 @@ export class TavilySearchProvider implements SearchProvider {
 				if (params.include_raw_content !== undefined) {
 					request_body.include_raw_content =
 						params.include_raw_content;
+				}
+				if (params.auto_parameters !== undefined) {
+					request_body.auto_parameters = params.auto_parameters;
 				}
 
 				// Map date operators to Tavily's start_date/end_date
@@ -168,9 +185,22 @@ export class TavilySearchProvider implements SearchProvider {
 					snippet: result.content,
 					score: result.score,
 					source_provider: this.name,
-					...(params.include_raw_content && result.raw_content
-						? { metadata: { raw_content: result.raw_content } }
-						: {}),
+					metadata: {
+						...(params.include_raw_content && result.raw_content
+							? { raw_content: result.raw_content }
+							: {}),
+						...(result.favicon ? { favicon: result.favicon } : {}),
+						...(data.request_id
+							? { request_id: data.request_id }
+							: {}),
+						...(data.response_time !== undefined
+							? { response_time: data.response_time }
+							: {}),
+						...(data.auto_parameters
+							? { auto_parameters: data.auto_parameters }
+							: {}),
+						...(data.usage ? { usage: data.usage } : {}),
+					},
 				}));
 			} catch (error) {
 				handle_provider_error(

@@ -29,16 +29,19 @@ describe('TavilyExtractProvider', () => {
 						{
 							url: 'https://example.com',
 							raw_content: 'Focused text',
+							favicon: 'https://example.com/favicon.ico',
 						},
 					],
 					failed_results: [],
 					response_time: 0.1,
+					request_id: 'extract-request',
+					usage: { credits: 2 },
 				}),
 		);
 		vi.stubGlobal('fetch', fetch_mock);
 		const { TavilyExtractProvider } = await import('./index.js');
 
-		await new TavilyExtractProvider().process_content(
+		const result = await new TavilyExtractProvider().process_content(
 			'https://example.com',
 			'advanced',
 			{
@@ -48,12 +51,23 @@ describe('TavilyExtractProvider', () => {
 			},
 		);
 
+		expect(result.metadata).toMatchObject({
+			request_id: 'extract-request',
+			response_time: 0.1,
+			usage: { credits: 2 },
+			favicons: {
+				'https://example.com': 'https://example.com/favicon.ico',
+			},
+		});
+
 		const request = fetch_mock.mock.calls[0]?.[1];
 		expect(request).toBeDefined();
 		if (!request) throw new Error('Expected Tavily extract request');
 		expect(JSON.parse(request.body as string)).toEqual({
 			urls: ['https://example.com'],
 			include_images: false,
+			include_favicon: true,
+			include_usage: true,
 			extract_depth: 'advanced',
 			format: 'text',
 			query: 'installation requirements',

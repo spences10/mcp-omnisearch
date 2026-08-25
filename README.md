@@ -85,7 +85,8 @@ Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
 	"topic": "news",
 	"time_range": "month",
 	"safe_search": true,
-	"include_raw_content": false
+	"include_raw_content": false,
+	"auto_parameters": false
 }
 ```
 

@@ -48,7 +48,8 @@ search only. See
 - Need native operators like `filetype:pdf`, `intitle:`, or `before:`?
   Start with `brave` or `kagi`.
 - Need API-level domain/date/country filtering, depth, topic, recency,
-  safe search, or raw page content? Use `tavily`.
+  safe search, raw page content, or request and credit metadata? Use
+  `tavily`.
 - Need semantic discovery, similar pages, or meaning-based results?
   Use `exa`.
 - Need source-grounded narrative answers? Use `ai_search` with

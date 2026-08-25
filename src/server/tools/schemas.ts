@@ -50,6 +50,15 @@ export const safe_search_schema = v.optional(
 	),
 );
 
+export const auto_parameters_schema = v.optional(
+	v.pipe(
+		v.boolean(),
+		v.description(
+			'Let supported providers select search settings from the query. This can change cost.',
+		),
+	),
+);
+
 export const include_raw_content_schema = v.optional(
 	v.pipe(
 		v.boolean(),

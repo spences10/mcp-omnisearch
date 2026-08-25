@@ -31,6 +31,8 @@ describe('TavilyMapProvider', () => {
 						'https://example.com/docs',
 					],
 					response_time: 0.1,
+					request_id: 'map-request',
+					usage: { credits: 1 },
 				}),
 		);
 		vi.stubGlobal('fetch', fetch_mock);
@@ -47,6 +49,9 @@ describe('TavilyMapProvider', () => {
 				urls_processed: 1,
 				successful_extractions: 2,
 				extract_depth: 'advanced',
+				response_time: 0.1,
+				request_id: 'map-request',
+				usage: { credits: 1 },
 			},
 			source_provider: 'tavily_map',
 		});

@@ -58,6 +58,10 @@ describe('TavilySearchProvider', () => {
 				snippet: 'Reserved example domains.',
 				score: 0.99986553,
 				source_provider: 'tavily',
+				metadata: {
+					request_id: '77d06e01-a9a1-4968-8fc3-5889dd2b61e9',
+					response_time: 0.57,
+				},
 			},
 		]);
 	});
@@ -72,10 +76,17 @@ describe('TavilySearchProvider', () => {
 							url: 'https://example.com/market',
 							content: 'Market summary',
 							raw_content: '# Full market report',
+							favicon: 'https://example.com/favicon.ico',
 							score: 0.8,
 						},
 					],
 					response_time: 0.2,
+					request_id: 'market-request',
+					auto_parameters: {
+						topic: 'finance',
+						search_depth: 'advanced',
+					},
+					usage: { credits: 2 },
 				}),
 		);
 		vi.stubGlobal('fetch', fetch);
@@ -89,6 +100,7 @@ describe('TavilySearchProvider', () => {
 				time_range: 'week',
 				safe_search: true,
 				include_raw_content: true,
+				auto_parameters: true,
 			}),
 		).resolves.toEqual([
 			{
@@ -97,7 +109,17 @@ describe('TavilySearchProvider', () => {
 				snippet: 'Market summary',
 				score: 0.8,
 				source_provider: 'tavily',
-				metadata: { raw_content: '# Full market report' },
+				metadata: {
+					raw_content: '# Full market report',
+					favicon: 'https://example.com/favicon.ico',
+					request_id: 'market-request',
+					response_time: 0.2,
+					auto_parameters: {
+						topic: 'finance',
+						search_depth: 'advanced',
+					},
+					usage: { credits: 2 },
+				},
 			},
 		]);
 
@@ -108,6 +130,9 @@ describe('TavilySearchProvider', () => {
 			time_range: 'week',
 			safe_search: true,
 			include_raw_content: true,
+			auto_parameters: true,
+			include_favicon: true,
+			include_usage: true,
 		});
 	});
 

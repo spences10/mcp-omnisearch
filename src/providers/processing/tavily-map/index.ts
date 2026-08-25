@@ -18,7 +18,13 @@ import { config } from '../../../config/env.js';
 const tavily_map_response_schema = v.object({
 	base_url: v.string(),
 	results: v.array(v.string()),
-	response_time: v.number(),
+	response_time: v.union([v.number(), v.string()]),
+	request_id: v.optional(v.string()),
+	usage: v.optional(
+		v.object({
+			credits: v.number(),
+		}),
+	),
 });
 
 export class TavilyMapProvider implements ProcessingProvider {
@@ -53,6 +59,7 @@ export class TavilyMapProvider implements ProcessingProvider {
 							max_depth: extract_depth === 'advanced' ? 3 : 1,
 							max_breadth: extract_depth === 'advanced' ? 50 : 20,
 							limit: extract_depth === 'advanced' ? 200 : 50,
+							include_usage: true,
 						}),
 						signal: AbortSignal.timeout(
 							config.processing.tavily_map.timeout,
@@ -86,6 +93,11 @@ export class TavilyMapProvider implements ProcessingProvider {
 						urls_processed: 1,
 						successful_extractions: data.results.length,
 						extract_depth,
+						response_time: data.response_time,
+						...(data.request_id
+							? { request_id: data.request_id }
+							: {}),
+						...(data.usage ? { usage: data.usage } : {}),
 					},
 					source_provider: this.name,
 				};

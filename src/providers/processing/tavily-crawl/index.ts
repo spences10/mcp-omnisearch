@@ -24,7 +24,13 @@ const tavily_crawl_response_schema = v.object({
 			favicon: v.optional(v.string()),
 		}),
 	),
-	response_time: v.number(),
+	response_time: v.union([v.number(), v.string()]),
+	request_id: v.optional(v.string()),
+	usage: v.optional(
+		v.object({
+			credits: v.number(),
+		}),
+	),
 });
 
 export class TavilyCrawlProvider implements ProcessingProvider {
@@ -61,6 +67,8 @@ export class TavilyCrawlProvider implements ProcessingProvider {
 							limit: extract_depth === 'advanced' ? 50 : 20,
 							extract_depth,
 							format: 'markdown',
+							include_favicon: true,
+							include_usage: true,
 						}),
 						signal: AbortSignal.timeout(
 							config.processing.tavily_crawl.timeout,
@@ -88,6 +96,11 @@ export class TavilyCrawlProvider implements ProcessingProvider {
 				const content = raw_contents
 					.map((result) => `# ${result.url}\n\n${result.content}`)
 					.join('\n\n---\n\n');
+				const favicons = Object.fromEntries(
+					data.results
+						.filter((result) => result.favicon)
+						.map((result) => [result.url, result.favicon]),
+				);
 
 				return {
 					content,
@@ -97,6 +110,12 @@ export class TavilyCrawlProvider implements ProcessingProvider {
 						urls_processed: data.results.length,
 						successful_extractions: data.results.length,
 						extract_depth,
+						response_time: data.response_time,
+						...(data.request_id
+							? { request_id: data.request_id }
+							: {}),
+						...(data.usage ? { usage: data.usage } : {}),
+						...(Object.keys(favicons).length > 0 ? { favicons } : {}),
 					},
 					source_provider: this.name,
 				};
