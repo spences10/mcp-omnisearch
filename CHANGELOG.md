@@ -1,5 +1,25 @@
 # mcp-omnisearch
 
+## 0.1.0
+
+### Minor Changes
+
+- 978bb0e: Add Tavily Research to AI search with asynchronous polling,
+  reports, timeout handling, documentation, and tests.
+- 2f77746: Add focused Tavily extraction with query, chunk limits,
+  output formats, validation, documentation, and test coverage.
+- 169cdb2: Preserve Tavily request, usage, timing, automatic
+  parameter, favicon, and raw content metadata across supported tools.
+- 03a2cd0: Add Tavily crawl and map modes to web extraction with
+  routing, configuration, documentation, and tests.
+- 33a1b9e: Add portable search controls for depth, topic, recency,
+  safety, and raw content with Tavily support.
+
+### Patch Changes
+
+- a0a24bb: Make Tavily Research asynchronous and handle nullable crawl
+  pages, preventing MCP timeouts and parsing failures.
+
 ## 0.0.29
 
 ### Patch Changes
