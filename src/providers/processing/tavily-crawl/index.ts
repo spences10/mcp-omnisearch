@@ -20,8 +20,8 @@ const tavily_crawl_response_schema = v.object({
 	results: v.array(
 		v.object({
 			url: v.string(),
-			raw_content: v.string(),
-			favicon: v.optional(v.string()),
+			raw_content: v.nullable(v.string()),
+			favicon: v.optional(v.nullable(v.string())),
 		}),
 	),
 	response_time: v.union([v.number(), v.string()]),
@@ -81,7 +81,14 @@ export class TavilyCrawlProvider implements ProcessingProvider {
 					raw_data,
 				);
 
-				if (data.results.length === 0) {
+				const successful_results = data.results.filter(
+					(
+						result,
+					): result is typeof result & { raw_content: string } =>
+						typeof result.raw_content === 'string' &&
+						result.raw_content.length > 0,
+				);
+				if (successful_results.length === 0) {
 					throw new ProviderError(
 						ErrorType.PROVIDER_ERROR,
 						'Crawl returned no content',
@@ -89,7 +96,7 @@ export class TavilyCrawlProvider implements ProcessingProvider {
 					);
 				}
 
-				const raw_contents = data.results.map((result) => ({
+				const raw_contents = successful_results.map((result) => ({
 					url: result.url,
 					content: result.raw_content,
 				}));
@@ -97,10 +104,13 @@ export class TavilyCrawlProvider implements ProcessingProvider {
 					.map((result) => `# ${result.url}\n\n${result.content}`)
 					.join('\n\n---\n\n');
 				const favicons = Object.fromEntries(
-					data.results
+					successful_results
 						.filter((result) => result.favicon)
 						.map((result) => [result.url, result.favicon]),
 				);
+				const failed_urls = data.results
+					.filter((result) => !result.raw_content)
+					.map((result) => result.url);
 
 				return {
 					content,
@@ -108,7 +118,9 @@ export class TavilyCrawlProvider implements ProcessingProvider {
 					metadata: {
 						word_count: content.split(/\s+/).filter(Boolean).length,
 						urls_processed: data.results.length,
-						successful_extractions: data.results.length,
+						successful_extractions: successful_results.length,
+						failed_urls:
+							failed_urls.length > 0 ? failed_urls : undefined,
 						extract_depth,
 						response_time: data.response_time,
 						...(data.request_id

@@ -36,6 +36,11 @@ describe('TavilyCrawlProvider', () => {
 							raw_content: 'Docs content',
 							favicon: 'https://example.com/favicon.ico',
 						},
+						{
+							url: 'https://example.com/empty',
+							raw_content: null,
+							favicon: null,
+						},
 					],
 					response_time: 0.1,
 					request_id: 'crawl-request',
@@ -58,8 +63,9 @@ describe('TavilyCrawlProvider', () => {
 				},
 			],
 			metadata: {
-				urls_processed: 2,
+				urls_processed: 3,
 				successful_extractions: 2,
+				failed_urls: ['https://example.com/empty'],
 				extract_depth: 'basic',
 				response_time: 0.1,
 				request_id: 'crawl-request',

@@ -39,7 +39,7 @@ export const register_ai_search = (
 		{
 			name: 'ai_search',
 			description:
-				'Get AI-powered answers with citations and reasoning. Use when you need synthesized answers rather than raw search results. Providers: kagi_fastgpt (fast answers), exa_answer (semantic AI), linkup (deep agentic search), tavily_research (comprehensive multi-search reports).',
+				'Get AI-powered answers with citations and reasoning. Use when you need synthesized answers rather than raw search results. Providers: kagi_fastgpt (fast answers), exa_answer (semantic AI), linkup (deep agentic search), tavily_research (asynchronous multi-search reports; resubmit its research_id to retrieve results).',
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,
@@ -53,10 +53,25 @@ export const register_ai_search = (
 					v.description('AI search provider to use'),
 				),
 				limit: limit_schema,
+				research_id: v.optional(
+					v.pipe(
+						v.string(),
+						v.minLength(1),
+						v.description(
+							'Existing asynchronous research task ID to retrieve. Supported by Tavily Research.',
+						),
+					),
+				),
 				large_result_mode: large_result_mode_schema,
 			}),
 		},
-		async ({ query, provider, limit, large_result_mode }) =>
+		async ({
+			query,
+			provider,
+			limit,
+			research_id,
+			large_result_mode,
+		}) =>
 			handle_tool_result(
 				'ai_search',
 				async () => {
@@ -65,6 +80,7 @@ export const register_ai_search = (
 					return selected.search({
 						query,
 						limit,
+						research_id,
 					});
 				},
 				{ large_result_mode },

@@ -60,9 +60,7 @@ export const config = {
 		tavily_research: {
 			api_key: TAVILY_API_KEY,
 			base_url: 'https://api.tavily.com',
-			request_timeout: 30000,
-			poll_interval: 2000,
-			timeout: 300000, // Research tasks can take several minutes
+			request_timeout: 10000,
 		},
 	},
 	processing: {

@@ -30,6 +30,7 @@ export interface BaseSearchParams {
 	safe_search?: boolean;
 	include_raw_content?: boolean;
 	auto_parameters?: boolean;
+	research_id?: string;
 }
 
 export interface ProcessingResult {

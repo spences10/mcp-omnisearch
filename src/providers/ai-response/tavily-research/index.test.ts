@@ -21,24 +21,46 @@ describe('TavilyResearchProvider', () => {
 		vi.restoreAllMocks();
 	});
 
-	it('creates a research task and returns its report with sources', async () => {
-		const fetch_mock = vi
-			.fn<
-				(
-					input: RequestInfo | URL,
-					init?: RequestInit,
-				) => Promise<Response>
-			>()
-			.mockResolvedValueOnce(
+	it('creates an asynchronous research task without blocking', async () => {
+		const fetch_mock = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
 				json_response(
-					{
-						request_id: 'research-123',
-						status: 'pending',
-					},
+					{ request_id: 'research-123', status: 'pending' },
 					202,
 				),
-			)
-			.mockResolvedValueOnce(
+		);
+		vi.stubGlobal('fetch', fetch_mock);
+		const { TavilyResearchProvider } = await import('./index.js');
+
+		await expect(
+			new TavilyResearchProvider().search({
+				query: 'Research this topic',
+			}),
+		).resolves.toEqual([
+			expect.objectContaining({
+				title: 'Tavily Research Task',
+				snippet: expect.stringContaining('research-123'),
+				metadata: {
+					type: 'research_task',
+					request_id: 'research-123',
+					status: 'pending',
+				},
+			}),
+		]);
+		expect(fetch_mock).toHaveBeenCalledTimes(1);
+		const request = fetch_mock.mock.calls[0]?.[1];
+		expect(request).toBeDefined();
+		if (!request) throw new Error('Expected research request');
+		expect(JSON.parse(request.body as string)).toMatchObject({
+			input: 'Research this topic',
+			model: 'mini',
+			stream: false,
+		});
+	});
+
+	it('retrieves a completed research task with sources', async () => {
+		const fetch_mock = vi.fn(
+			async (_input: RequestInfo | URL, _init?: RequestInit) =>
 				json_response({
 					request_id: 'research-123',
 					status: 'completed',
@@ -47,48 +69,22 @@ describe('TavilyResearchProvider', () => {
 						{
 							title: 'Primary source',
 							url: 'https://example.com/source',
-							favicon: 'https://example.com/favicon.ico',
 						},
 					],
 					response_time: 12.5,
 				}),
-			);
+		);
 		vi.stubGlobal('fetch', fetch_mock);
 		const { TavilyResearchProvider } = await import('./index.js');
 
 		await expect(
 			new TavilyResearchProvider().search({
 				query: 'Research this topic',
+				research_id: 'research-123',
 				limit: 1,
 			}),
-		).resolves.toEqual([
-			expect.objectContaining({
-				title: 'Tavily Research Report',
-				snippet: 'Completed research report',
-				source_provider: 'tavily_research',
-				metadata: expect.objectContaining({
-					request_id: 'research-123',
-					sources_count: 1,
-				}),
-			}),
-			expect.objectContaining({
-				title: 'Primary source',
-				url: 'https://example.com/source',
-			}),
-		]);
-
-		expect(fetch_mock).toHaveBeenCalledTimes(2);
-		const create_request = fetch_mock.mock.calls[0]?.[1];
-		expect(create_request).toBeDefined();
-		if (!create_request) throw new Error('Expected research request');
-		expect(JSON.parse(create_request.body as string)).toEqual({
-			input: 'Research this topic',
-			model: 'auto',
-			stream: false,
-			citation_format: 'numbered',
-			output_length: 'standard',
-		});
-		expect(fetch_mock.mock.calls[1]?.[0]).toBe(
+		).resolves.toHaveLength(2);
+		expect(fetch_mock.mock.calls[0]?.[0]).toBe(
 			'https://api.tavily.com/research/research-123',
 		);
 	});
@@ -96,27 +92,20 @@ describe('TavilyResearchProvider', () => {
 	it('returns a provider error when the research task fails', async () => {
 		vi.stubGlobal(
 			'fetch',
-			vi
-				.fn()
-				.mockResolvedValueOnce(
-					json_response({
-						request_id: 'failed-123',
-						status: 'pending',
-					}),
-				)
-				.mockResolvedValueOnce(
-					json_response({
-						request_id: 'failed-123',
-						status: 'failed',
-						error: 'Research could not complete',
-					}),
-				),
+			vi.fn(async () =>
+				json_response({
+					request_id: 'failed-123',
+					status: 'failed',
+					error: 'Research could not complete',
+				}),
+			),
 		);
 		const { TavilyResearchProvider } = await import('./index.js');
 
 		await expect(
 			new TavilyResearchProvider().search({
 				query: 'Fail this task',
+				research_id: 'failed-123',
 			}),
 		).rejects.toMatchObject({
 			type: 'PROVIDER_ERROR',

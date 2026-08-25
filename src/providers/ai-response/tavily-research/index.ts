@@ -19,6 +19,7 @@ import { config } from '../../../config/env.js';
 const tavily_research_created_schema = v.object({
 	request_id: v.string(),
 	status: v.string(),
+	created_at: v.optional(v.string()),
 });
 
 const tavily_research_status_schema = v.variant('status', [
@@ -52,13 +53,28 @@ type TavilyResearchStatus = v.InferOutput<
 	typeof tavily_research_status_schema
 >;
 
-const wait = (milliseconds: number) =>
-	new Promise((resolve) => setTimeout(resolve, milliseconds));
+const pending_result = (
+	request_id: string,
+	status: string,
+): SearchResult[] => [
+	{
+		title: 'Tavily Research Task',
+		url: '',
+		snippet: `Research is ${status}. Call ai_search again with provider "tavily_research" and research_id "${request_id}" to retrieve the report.`,
+		score: 1,
+		source_provider: 'tavily_research',
+		metadata: {
+			type: 'research_task',
+			request_id,
+			status,
+		},
+	},
+];
 
 export class TavilyResearchProvider implements SearchProvider {
 	name = 'tavily_research';
 	description =
-		'Run comprehensive Tavily research that performs multiple searches and returns a synthesized report with sources.';
+		'Start or retrieve asynchronous Tavily research with synthesized reports and sources.';
 
 	async search(params: BaseSearchParams): Promise<SearchResult[]> {
 		const api_key = validate_api_key(
@@ -67,47 +83,32 @@ export class TavilyResearchProvider implements SearchProvider {
 		);
 
 		try {
-			const created = await retry_with_backoff(async () => {
-				const raw_created = await http_json(
-					this.name,
-					`${config.ai_response.tavily_research.base_url}/research`,
-					{
-						method: 'POST',
-						headers: {
-							Authorization: `Bearer ${api_key}`,
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify({
-							input: sanitize_query(params.query),
-							model: 'auto',
-							stream: false,
-							citation_format: 'numbered',
-							output_length: 'standard',
-						}),
-						signal: AbortSignal.timeout(
-							config.ai_response.tavily_research.request_timeout,
-						),
-					},
+			if (params.research_id) {
+				const status = await this.get_status(
+					params.research_id,
+					api_key,
 				);
-				return parse_provider_response(
-					this.name,
-					tavily_research_created_schema,
-					raw_created,
-				);
-			});
+				return this.map_status(status, params.limit);
+			}
 
-			const deadline =
-				Date.now() + config.ai_response.tavily_research.timeout;
-			let status: TavilyResearchStatus;
-
-			do {
-				status = await retry_with_backoff(async () => {
-					const raw_status = await http_json(
+			const created = await retry_with_backoff(
+				async () => {
+					const raw_created = await http_json(
 						this.name,
-						`${config.ai_response.tavily_research.base_url}/research/${created.request_id}`,
+						`${config.ai_response.tavily_research.base_url}/research`,
 						{
-							headers: { Authorization: `Bearer ${api_key}` },
-							expectedStatuses: [202],
+							method: 'POST',
+							headers: {
+								Authorization: `Bearer ${api_key}`,
+								'Content-Type': 'application/json',
+							},
+							body: JSON.stringify({
+								input: sanitize_query(params.query),
+								model: 'mini',
+								stream: false,
+								citation_format: 'numbered',
+								output_length: 'standard',
+							}),
 							signal: AbortSignal.timeout(
 								config.ai_response.tavily_research.request_timeout,
 							),
@@ -115,55 +116,81 @@ export class TavilyResearchProvider implements SearchProvider {
 					);
 					return parse_provider_response(
 						this.name,
-						tavily_research_status_schema,
-						raw_status,
+						tavily_research_created_schema,
+						raw_created,
 					);
-				});
-
-				if (status.status === 'failed') {
-					throw new ProviderError(
-						ErrorType.PROVIDER_ERROR,
-						status.error || 'Tavily research task failed',
-						this.name,
-					);
-				}
-				if (status.status !== 'completed') {
-					await wait(
-						config.ai_response.tavily_research.poll_interval,
-					);
-				}
-			} while (
-				status.status !== 'completed' &&
-				Date.now() < deadline
+				},
+				{ max_retries: 1, initial_delay: 250 },
 			);
 
-			if (status.status !== 'completed') {
-				throw new ProviderError(
-					ErrorType.TIMEOUT,
-					'Tavily research task timed out',
-					this.name,
-					{ retryable: false },
-				);
-			}
+			return pending_result(created.request_id, created.status);
+		} catch (error) {
+			handle_provider_error(error, this.name, 'complete research');
+		}
+	}
 
-			const results: SearchResult[] = [
-				{
-					title: 'Tavily Research Report',
-					url: '',
-					snippet: status.content,
-					score: 1,
-					source_provider: this.name,
-					metadata: {
-						type: 'ai_answer',
-						request_id: status.request_id,
-						response_time: status.response_time,
-						sources_count: status.sources.length,
+	private async get_status(
+		research_id: string,
+		api_key: string,
+	): Promise<TavilyResearchStatus> {
+		return retry_with_backoff(
+			async () => {
+				const raw_status = await http_json(
+					this.name,
+					`${config.ai_response.tavily_research.base_url}/research/${research_id}`,
+					{
+						headers: { Authorization: `Bearer ${api_key}` },
+						expectedStatuses: [202],
+						signal: AbortSignal.timeout(
+							config.ai_response.tavily_research.request_timeout,
+						),
 					},
+				);
+				return parse_provider_response(
+					this.name,
+					tavily_research_status_schema,
+					raw_status,
+				);
+			},
+			{ max_retries: 1, initial_delay: 250 },
+		);
+	}
+
+	private map_status(
+		status: TavilyResearchStatus,
+		limit?: number,
+	): SearchResult[] {
+		if (status.status === 'failed') {
+			throw new ProviderError(
+				ErrorType.PROVIDER_ERROR,
+				status.error || 'Tavily research task failed',
+				this.name,
+			);
+		}
+		if (status.status !== 'completed') {
+			return pending_result(status.request_id, status.status);
+		}
+
+		const results: SearchResult[] = [
+			{
+				title: 'Tavily Research Report',
+				url: '',
+				snippet: status.content,
+				score: 1,
+				source_provider: this.name,
+				metadata: {
+					type: 'ai_answer',
+					request_id: status.request_id,
+					response_time: status.response_time,
+					sources_count: status.sources.length,
 				},
-			];
-			const limit = params.limit ?? status.sources.length;
-			results.push(
-				...status.sources.slice(0, limit).map((source, index) => ({
+			},
+		];
+		const source_limit = limit ?? status.sources.length;
+		results.push(
+			...status.sources
+				.slice(0, source_limit)
+				.map((source, index) => ({
 					title: source.title,
 					url: source.url,
 					snippet: 'Source reference',
@@ -171,11 +198,7 @@ export class TavilyResearchProvider implements SearchProvider {
 					source_provider: this.name,
 					metadata: { type: 'source', favicon: source.favicon },
 				})),
-			);
-
-			return results;
-		} catch (error) {
-			handle_provider_error(error, this.name, 'complete research');
-		}
+		);
+		return results;
 	}
 }

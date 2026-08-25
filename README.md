@@ -95,7 +95,8 @@ Search controls apply when supported by the selected provider.
 ### `ai_search`
 
 Get sourced AI answers with Kagi FastGPT, Exa Answer, Linkup, or
-Tavily Research.
+Tavily Research. Tavily Research returns a task ID first; pass it back
+as `research_id` to retrieve the report.
 
 ```json
 {

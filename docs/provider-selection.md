@@ -22,7 +22,7 @@ mode.
 | `kagi_fastgpt`    | `KAGI_API_KEY`   | Fast sourced answers.                          |
 | `exa_answer`      | `EXA_API_KEY`    | Semantic AI answers grounded in Exa retrieval. |
 | `linkup`          | `LINKUP_API_KEY` | Deep agentic search with sources.              |
-| `tavily_research` | `TAVILY_API_KEY` | Comprehensive multi-search research reports.   |
+| `tavily_research` | `TAVILY_API_KEY` | Asynchronous multi-search research reports.    |
 
 ## GitHub provider
 
@@ -55,7 +55,7 @@ search only. See
 - Need source-grounded narrative answers? Use `ai_search` with
   `kagi_fastgpt`, `exa_answer`, or `linkup`.
 - Need a comprehensive multi-search report? Use `ai_search` with
-  `tavily_research`.
+  `tavily_research`, then retrieve it with the returned `research_id`.
 - Need to crawl/scrape/map a site? Use `web_extract` with `tavily` or
   `firecrawl`.
 - Need public code/repository/user discovery? Use `github_search`.
