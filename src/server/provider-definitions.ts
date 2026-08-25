@@ -6,6 +6,7 @@ import { config } from '../config/env.js';
 import { ExaAnswerProvider } from '../providers/ai-response/exa-answer/index.js';
 import { KagiFastGPTProvider } from '../providers/ai-response/kagi-fastgpt/index.js';
 import { LinkupProvider } from '../providers/ai-response/linkup/index.js';
+import { TavilyResearchProvider } from '../providers/ai-response/tavily-research/index.js';
 import { KagiEnrichmentSearchProvider } from '../providers/enhancement/kagi-enrichment/index.js';
 import { ExaContentsProvider } from '../providers/processing/exa-contents/index.js';
 import { ExaSimilarProvider } from '../providers/processing/exa-similar/index.js';
@@ -35,7 +36,8 @@ export type WebSearchProviderName =
 export type AISearchProviderName =
 	| 'kagi_fastgpt'
 	| 'exa_answer'
-	| 'linkup';
+	| 'linkup'
+	| 'tavily_research';
 
 export type WebExtractProvider =
 	| 'tavily'
@@ -159,6 +161,16 @@ export const ai_search_provider_definitions = [
 		capabilities: ['answer_generation', 'citations'],
 		api_key: config.ai_response.linkup.api_key,
 		create: () => new LinkupProvider(),
+	},
+	{
+		id: 'tavily_research',
+		name: 'tavily_research',
+		category: 'ai_response',
+		api_key_name: 'TAVILY_API_KEY',
+		tools: ['ai_search'],
+		capabilities: ['deep_research', 'answer_generation', 'citations'],
+		api_key: config.ai_response.tavily_research.api_key,
+		create: () => new TavilyResearchProvider(),
 	},
 ] satisfies readonly ProviderDefinition<SearchProvider>[];
 

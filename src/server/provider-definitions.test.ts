@@ -51,6 +51,11 @@ describe('provider definitions', () => {
 				category: 'ai_response',
 				tools: ['ai_search'],
 			},
+			{
+				id: 'tavily_research',
+				category: 'ai_response',
+				tools: ['ai_search'],
+			},
 		]);
 
 		expect(github_provider_definitions[0]).toEqual(

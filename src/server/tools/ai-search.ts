@@ -39,7 +39,7 @@ export const register_ai_search = (
 		{
 			name: 'ai_search',
 			description:
-				'Get AI-powered answers with citations and reasoning. Use when you need synthesized answers rather than raw search results. Providers: kagi_fastgpt (fast ~900ms answers), exa_answer (semantic AI), linkup (deep agentic search with sources).',
+				'Get AI-powered answers with citations and reasoning. Use when you need synthesized answers rather than raw search results. Providers: kagi_fastgpt (fast answers), exa_answer (semantic AI), linkup (deep agentic search), tavily_research (comprehensive multi-search reports).',
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,

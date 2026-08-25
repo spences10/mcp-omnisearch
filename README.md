@@ -86,7 +86,8 @@ Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
 
 ### `ai_search`
 
-Get sourced AI answers with Kagi FastGPT, Exa Answer, or Linkup.
+Get sourced AI answers with Kagi FastGPT, Exa Answer, Linkup, or
+Tavily Research.
 
 ```json
 {
