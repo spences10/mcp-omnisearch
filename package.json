@@ -68,7 +68,7 @@
 		"@changesets/cli": "^3.0.0",
 		"@types/node": "^26.1.1",
 		"@vitest/coverage-v8": "^4.1.10",
-		"vite-plus": "^0.2.4",
+		"vite-plus": "^0.3.0",
 		"vitest": "^4.1.10"
 	},
 	"engines": {
