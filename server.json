@@ -1,22 +1,80 @@
 {
-	"$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+	"$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
 	"name": "io.github.spences10/mcp-omnisearch",
+	"title": "MCP Omnisearch",
 	"description": "MCP server for integrating Omnisearch with LLMs",
-	"status": "active",
 	"repository": {
 		"url": "https://github.com/spences10/mcp-omnisearch",
 		"source": "github"
 	},
-	"version": "0.0.15",
+	"version": "0.1.0",
 	"packages": [
 		{
-			"registry_type": "npm",
-			"registry_base_url": "https://registry.npmjs.org",
+			"registryType": "npm",
+			"registryBaseUrl": "https://registry.npmjs.org",
 			"identifier": "mcp-omnisearch",
-			"version": "0.0.15",
+			"version": "0.1.0",
 			"transport": {
 				"type": "stdio"
-			}
+			},
+			"environmentVariables": [
+				{
+					"name": "TAVILY_API_KEY",
+					"description": "Tavily API key",
+					"format": "string",
+					"isRequired": false,
+					"isSecret": true
+				},
+				{
+					"name": "KAGI_API_KEY",
+					"description": "Kagi API key",
+					"format": "string",
+					"isRequired": false,
+					"isSecret": true
+				},
+				{
+					"name": "BRAVE_API_KEY",
+					"description": "Brave Search API key",
+					"format": "string",
+					"isRequired": false,
+					"isSecret": true
+				},
+				{
+					"name": "GITHUB_API_KEY",
+					"description": "GitHub API token",
+					"format": "string",
+					"isRequired": false,
+					"isSecret": true
+				},
+				{
+					"name": "EXA_API_KEY",
+					"description": "Exa API key",
+					"format": "string",
+					"isRequired": false,
+					"isSecret": true
+				},
+				{
+					"name": "LINKUP_API_KEY",
+					"description": "Linkup API key",
+					"format": "string",
+					"isRequired": false,
+					"isSecret": true
+				},
+				{
+					"name": "FIRECRAWL_API_KEY",
+					"description": "Firecrawl API key",
+					"format": "string",
+					"isRequired": false,
+					"isSecret": true
+				},
+				{
+					"name": "FIRECRAWL_BASE_URL",
+					"description": "Optional base URL for a self-hosted Firecrawl instance",
+					"format": "string",
+					"isRequired": false,
+					"isSecret": false
+				}
+			]
 		}
 	]
 }

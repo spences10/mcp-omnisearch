@@ -35,8 +35,8 @@ npx mcpick add \
   --scope project
 ```
 
-See [Deployment](docs/deployment.md#install-with-mcpick) for
-secret-safe provider-key setup and the supported clients.
+See [Deployment](docs/deployment.md#install-with-mcpick) for supported
+clients and provider credential storage options.
 
 To run from source instead:
 
@@ -46,29 +46,29 @@ pnpm run build
 node ./dist/index.js
 ```
 
-You can also configure the server manually with whichever provider
-keys you have. Providers without keys are skipped and the rest keep
-working.
+Providers without keys are skipped and the rest keep working. If your
+client supports environment-variable expansion, reference keys instead
+of storing their values in the MCP configuration:
 
 ```json
 {
 	"mcpServers": {
 		"mcp-omnisearch": {
-			"command": "node",
-			"args": ["/path/to/mcp-omnisearch/dist/index.js"],
+			"command": "npx",
+			"args": ["-y", "mcp-omnisearch"],
 			"env": {
-				"TAVILY_API_KEY": "your-tavily-key",
-				"KAGI_API_KEY": "your-kagi-key",
-				"BRAVE_API_KEY": "your-brave-key",
-				"GITHUB_API_KEY": "your-github-token",
-				"EXA_API_KEY": "your-exa-key",
-				"LINKUP_API_KEY": "your-linkup-key",
-				"FIRECRAWL_API_KEY": "your-firecrawl-key"
+				"TAVILY_API_KEY": "${TAVILY_API_KEY}",
+				"EXA_API_KEY": "${EXA_API_KEY}"
 			}
 		}
 	}
 }
 ```
+
+Add only the provider keys you use. Expansion syntax and secret
+storage are client-specific; see
+[Deployment](docs/deployment.md#keep-provider-keys-out-of-mcp-configuration)
+for secure options and plaintext fallback guidance.
 
 ## Tools
 

@@ -30,9 +30,78 @@ Supported client values include `claude-code`, `gemini-cli`, `vscode`,
 `cursor`, `windsurf`, `opencode`, and `pi`. Run `npx mcpick clients`
 to see the configuration paths available on your machine.
 
-Keep provider credentials out of shell history by loading only the
-keys you use with [nopeek](https://github.com/spences10/nopeek), then
-having MCPick copy them from its environment:
+Installation adds the server command. Configure provider credentials
+separately with one of the methods below.
+
+### Keep provider keys out of MCP configuration
+
+MCP Omnisearch reads provider credentials from its process
+environment. The MCP configuration does not need to contain literal
+key values. Never commit provider credentials to a repository.
+
+#### Environment references
+
+Clients such as Claude Code can expand environment references in MCP
+configuration. Set the keys in the client process environment or load
+them with a secrets manager, then reference only their names:
+
+```json
+{
+	"mcpServers": {
+		"mcp-omnisearch": {
+			"command": "npx",
+			"args": ["-y", "mcp-omnisearch"],
+			"env": {
+				"TAVILY_API_KEY": "${TAVILY_API_KEY}",
+				"EXA_API_KEY": "${EXA_API_KEY}"
+			}
+		}
+	}
+}
+```
+
+Add only the keys you use. Expansion syntax is client-specific.
+Confirm support in your client's documentation before using this
+example. See
+[Claude Code environment-variable expansion](https://code.claude.com/docs/en/mcp#environment-variable-expansion-in-mcp-json).
+
+#### Native client secret storage
+
+Prefer the client's protected secret store when it has one. VS Code
+supports password inputs that it prompts for once and stores securely:
+
+```json
+{
+	"inputs": [
+		{
+			"type": "promptString",
+			"id": "tavily-api-key",
+			"description": "Tavily API key",
+			"password": true
+		}
+	],
+	"servers": {
+		"mcp-omnisearch": {
+			"type": "stdio",
+			"command": "npx",
+			"args": ["-y", "mcp-omnisearch"],
+			"env": {
+				"TAVILY_API_KEY": "${input:tavily-api-key}"
+			}
+		}
+	}
+}
+```
+
+Add another password input for each provider you use. See the
+[VS Code MCP configuration reference](https://code.visualstudio.com/docs/agents/reference/mcp-configuration#_input-variables-for-sensitive-data).
+Other clients can provide different secret-storage mechanisms.
+
+#### Plaintext fallback
+
+MCPick can copy selected variables from its environment into a client
+configuration. Use [nopeek](https://github.com/spences10/nopeek) to
+avoid putting values in the command or exposing unrelated variables:
 
 ```bash
 pnpx nopeek run .env \
@@ -44,42 +113,19 @@ pnpx nopeek run .env \
   --from-env TAVILY_API_KEY,EXA_API_KEY
 ```
 
-Replace that example key list with any providers you use. Add
-`--dry-run --json` to preview the exact configuration diff without
-writing it.
-
-### Manual configuration
-
-Configure only the API keys you have. Missing keys disable only their
-matching providers.
-
-```json
-{
-	"mcpServers": {
-		"mcp-omnisearch": {
-			"command": "node",
-			"args": ["/path/to/mcp-omnisearch/dist/index.js"],
-			"env": {
-				"TAVILY_API_KEY": "your-tavily-key",
-				"KAGI_API_KEY": "your-kagi-key",
-				"BRAVE_API_KEY": "your-brave-key",
-				"GITHUB_API_KEY": "your-github-token",
-				"EXA_API_KEY": "your-exa-key",
-				"LINKUP_API_KEY": "your-linkup-key",
-				"FIRECRAWL_API_KEY": "your-firecrawl-key",
-				"FIRECRAWL_BASE_URL": "http://localhost:3002"
-			}
-		}
-	}
-}
-```
+`--from-env` writes the resolved values into the selected client's
+configuration. It is not encrypted secret storage. Use it only when
+that risk is acceptable, restrict access to the configuration file,
+and never commit the file. Add `--dry-run --json` to inspect the
+configuration change before writing it.
 
 ## Claude Desktop with WSL
 
-Prefer putting provider keys in the MCP client's `env` object. If your
-client cannot pass WSL environment variables directly, wrap startup in
-a shell script inside WSL that exports the needed keys and then runs
-`node /path/to/mcp-omnisearch/dist/index.js`.
+Keep provider keys in the WSL environment or load them through a
+secrets manager. If the client cannot pass WSL environment variables
+directly, use a startup script inside WSL to load them and then run
+`node /path/to/mcp-omnisearch/dist/index.js`. Do not put literal keys
+in a committed startup script.
 
 ```json
 {
