@@ -4,7 +4,7 @@
 [![tested with vitest](https://img.shields.io/badge/tested%20with-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev)
 
 A Model Context Protocol (MCP) server that provides unified access to
-Tavily, Brave, Kagi, Exa AI, GitHub, Linkup, and Firecrawl through
+Tavily, Brave, Kagi, Exa AI, GitHub, Linkup, You.com, and Firecrawl through
 four consolidated tools.
 
 <a href="https://glama.ai/mcp/servers/gz5wgmptd8">
@@ -36,6 +36,7 @@ working.
 				"GITHUB_API_KEY": "your-github-token",
 				"EXA_API_KEY": "your-exa-key",
 				"LINKUP_API_KEY": "your-linkup-key",
+				"YOUCOM_API_KEY": "your-youcom-key",
 				"FIRECRAWL_API_KEY": "your-firecrawl-key"
 			}
 		}
@@ -47,7 +48,7 @@ working.
 
 ### `web_search`
 
-Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
+Search the web with Tavily, Brave, Kagi, Exa, You.com, or Kagi Enrichment.
 
 ```json
 {

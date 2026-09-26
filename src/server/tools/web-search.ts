@@ -41,7 +41,7 @@ export const register_web_search = (
 		{
 			name: 'web_search',
 			description:
-				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), kagi_enrichment (specialized indexes). Brave/Kagi support query operators like site:, filetype:, lang:, before:, after:.',
+				'Search the web for information. Use when you need to find web pages, articles, or data. Providers: tavily (factual/citations), brave (privacy/operators), kagi (quality/operators), exa (AI-semantic), youcom (real-time/free-tier), kagi_enrichment (specialized indexes). Brave/Kagi support query operators like site:, filetype:, lang:, before:, after:. You.com offers a free tier.',
 			annotations: {
 				readOnlyHint: true,
 				destructiveHint: false,

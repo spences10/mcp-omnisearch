@@ -13,6 +13,7 @@ mode.
 | `kagi`            | `KAGI_API_KEY`   | High-quality web results and focused research                         | Preserves query operators, uses Kagi request parameters for `filetype:` and `before:` / `after:` dates.                             |
 | `tavily`          | `TAVILY_API_KEY` | Factual/cited search and API-native filtering                         | Translates supported operators into Tavily fields: domains, dates, exact phrases, and country.                                      |
 | `exa`             | `EXA_API_KEY`    | Semantic/neural search and discovery                                  | Supports domain filters through request parameters; optimized for meaning rather than exact operator syntax.                        |
+| `youcom`          | `YOUCOM_API_KEY` | Real-time web search with news and free-tier access                   | Supports domain filters; free API key available at you.com/platform/api-keys. Best for current events and general knowledge.       |
 | `kagi_enrichment` | `KAGI_API_KEY`   | Specialized Kagi enrichment indexes                                   | Use when enrichment/specialized-index results are desired rather than general web results.                                          |
 
 ## AI answer providers
@@ -49,6 +50,7 @@ search only. See
 - Need API-level domain/date/country filtering? Use `tavily`.
 - Need semantic discovery, similar pages, or meaning-based results?
   Use `exa`.
+- Need real-time web search with a free tier? Use `youcom`.
 - Need source-grounded narrative answers? Use `ai_search` with
   `kagi_fastgpt`, `exa_answer`, or `linkup`.
 - Need to crawl/scrape/map a site? Use `web_extract` with `firecrawl`.
