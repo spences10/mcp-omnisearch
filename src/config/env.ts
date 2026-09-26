@@ -63,6 +63,11 @@ export const config = {
 			base_url: 'https://api.linkup.so/v1',
 			timeout: 30000, // 30 seconds
 		},
+		tavily_research: {
+			api_key: TAVILY_API_KEY,
+			base_url: 'https://api.tavily.com',
+			request_timeout: 10000,
+		},
 	},
 	processing: {
 		kagi_summarizer: {
@@ -74,6 +79,16 @@ export const config = {
 			api_key: TAVILY_API_KEY,
 			base_url: 'https://api.tavily.com',
 			timeout: 30000, // 30 seconds
+		},
+		tavily_crawl: {
+			api_key: TAVILY_API_KEY,
+			base_url: 'https://api.tavily.com',
+			timeout: 150000, // Tavily accepts crawl timeouts up to 150 seconds
+		},
+		tavily_map: {
+			api_key: TAVILY_API_KEY,
+			base_url: 'https://api.tavily.com',
+			timeout: 150000, // Tavily accepts map timeouts up to 150 seconds
 		},
 		firecrawl_scrape: {
 			api_key: FIRECRAWL_API_KEY,
@@ -183,9 +198,6 @@ export const validate_config = () => {
 
 	if (!LINKUP_API_KEY) missing_keys.push('LINKUP_API_KEY');
 	else available_keys.push('LINKUP_API_KEY');
-
-	if (!YOUCOM_API_KEY) missing_keys.push('YOUCOM_API_KEY');
-	else available_keys.push('YOUCOM_API_KEY');
 
 	// Log available keys
 	if (available_keys.length > 0) {

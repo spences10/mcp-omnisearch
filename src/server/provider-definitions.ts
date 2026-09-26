@@ -6,6 +6,7 @@ import { config } from '../config/env.js';
 import { ExaAnswerProvider } from '../providers/ai-response/exa-answer/index.js';
 import { KagiFastGPTProvider } from '../providers/ai-response/kagi-fastgpt/index.js';
 import { LinkupProvider } from '../providers/ai-response/linkup/index.js';
+import { TavilyResearchProvider } from '../providers/ai-response/tavily-research/index.js';
 import { KagiEnrichmentSearchProvider } from '../providers/enhancement/kagi-enrichment/index.js';
 import { ExaContentsProvider } from '../providers/processing/exa-contents/index.js';
 import { ExaSimilarProvider } from '../providers/processing/exa-similar/index.js';
@@ -15,7 +16,9 @@ import { FirecrawlExtractProvider } from '../providers/processing/firecrawl-extr
 import { FirecrawlMapProvider } from '../providers/processing/firecrawl-map/index.js';
 import { FirecrawlScrapeProvider } from '../providers/processing/firecrawl-scrape/index.js';
 import { KagiSummarizerProvider } from '../providers/processing/kagi-summarizer/index.js';
+import { TavilyCrawlProvider } from '../providers/processing/tavily-crawl/index.js';
 import { TavilyExtractProvider } from '../providers/processing/tavily-extract/index.js';
+import { TavilyMapProvider } from '../providers/processing/tavily-map/index.js';
 import { BraveSearchProvider } from '../providers/search/brave/index.js';
 import { ExaSearchProvider } from '../providers/search/exa/index.js';
 import { GitHubSearchProvider } from '../providers/search/github/index.js';
@@ -29,13 +32,14 @@ export type WebSearchProviderName =
 	| 'brave'
 	| 'kagi'
 	| 'exa'
-	| 'youcom'
-	| 'kagi_enrichment';
+	| 'kagi_enrichment'
+	| 'youcom';
 
 export type AISearchProviderName =
 	| 'kagi_fastgpt'
 	| 'exa_answer'
-	| 'linkup';
+	| 'linkup'
+	| 'tavily_research';
 
 export type WebExtractProvider =
 	| 'tavily'
@@ -118,20 +122,6 @@ export const web_search_provider_definitions = [
 		create: () => new ExaSearchProvider(),
 	},
 	{
-		id: 'youcom',
-		name: 'youcom',
-		category: 'search',
-		api_key_name: 'YOUCOM_API_KEY',
-		tools: ['web_search'],
-		capabilities: [
-			'web_search',
-			'domain_filters',
-			'news_search',
-		],
-		api_key: config.search.youcom.api_key,
-		create: () => new YoucomSearchProvider(),
-	},
-	{
 		id: 'kagi_enrichment',
 		name: 'kagi_enrichment',
 		category: 'search',
@@ -140,6 +130,16 @@ export const web_search_provider_definitions = [
 		capabilities: ['specialized_indexes', 'web_enrichment'],
 		api_key: config.enhancement.kagi_enrichment.api_key,
 		create: () => new KagiEnrichmentSearchProvider(),
+	},
+	{
+		id: 'youcom',
+		name: 'youcom',
+		category: 'search',
+		api_key_name: 'YOUCOM_API_KEY',
+		tools: ['web_search'],
+		capabilities: ['web_search', 'domain_filters'],
+		api_key: config.search.youcom.api_key,
+		create: () => new YoucomSearchProvider(),
 	},
 ] satisfies readonly ProviderDefinition<SearchProvider>[];
 
@@ -174,6 +174,16 @@ export const ai_search_provider_definitions = [
 		api_key: config.ai_response.linkup.api_key,
 		create: () => new LinkupProvider(),
 	},
+	{
+		id: 'tavily_research',
+		name: 'tavily_research',
+		category: 'ai_response',
+		api_key_name: 'TAVILY_API_KEY',
+		tools: ['ai_search'],
+		capabilities: ['deep_research', 'answer_generation', 'citations'],
+		api_key: config.ai_response.tavily_research.api_key,
+		create: () => new TavilyResearchProvider(),
+	},
 ] satisfies readonly ProviderDefinition<SearchProvider>[];
 
 export const github_provider_definitions = [
@@ -202,6 +212,28 @@ export const web_extract_provider_definitions = [
 		capabilities: ['content_extraction', 'raw_contents'],
 		default_mode: true,
 		create: () => new TavilyExtractProvider(),
+	},
+	{
+		id: make_processing_provider_key('tavily', 'crawl'),
+		name: 'tavily',
+		category: 'processing',
+		api_key: config.processing.tavily_crawl.api_key,
+		api_key_name: 'TAVILY_API_KEY',
+		tools: ['web_extract'],
+		modes: ['crawl'],
+		capabilities: ['crawling', 'content_extraction', 'raw_contents'],
+		create: () => new TavilyCrawlProvider(),
+	},
+	{
+		id: make_processing_provider_key('tavily', 'map'),
+		name: 'tavily',
+		category: 'processing',
+		api_key: config.processing.tavily_map.api_key,
+		api_key_name: 'TAVILY_API_KEY',
+		tools: ['web_extract'],
+		modes: ['map'],
+		capabilities: ['site_mapping'],
+		create: () => new TavilyMapProvider(),
 	},
 	{
 		id: make_processing_provider_key('kagi', 'summarize'),

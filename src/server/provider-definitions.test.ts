@@ -23,15 +23,11 @@ describe('provider definitions', () => {
 			{ id: 'kagi', category: 'search', tools: ['web_search'] },
 			{ id: 'exa', category: 'search', tools: ['web_search'] },
 			{
-				id: 'youcom',
-				category: 'search',
-				tools: ['web_search'],
-			},
-			{
 				id: 'kagi_enrichment',
 				category: 'search',
 				tools: ['web_search'],
 			},
+			{ id: 'youcom', category: 'search', tools: ['web_search'] },
 		]);
 
 		expect(
@@ -53,6 +49,11 @@ describe('provider definitions', () => {
 			},
 			{
 				id: 'linkup',
+				category: 'ai_response',
+				tools: ['ai_search'],
+			},
+			{
+				id: 'tavily_research',
 				category: 'ai_response',
 				tools: ['ai_search'],
 			},
@@ -82,6 +83,18 @@ describe('provider definitions', () => {
 				name: 'tavily',
 				mode: 'extract',
 				default_mode: true,
+			},
+			{
+				id: 'tavily:crawl',
+				name: 'tavily',
+				mode: 'crawl',
+				default_mode: false,
+			},
+			{
+				id: 'tavily:map',
+				name: 'tavily',
+				mode: 'map',
+				default_mode: false,
 			},
 			{
 				id: 'kagi:summarize',
@@ -133,6 +146,12 @@ describe('provider definitions', () => {
 			},
 		]);
 
+		expect(get_default_web_extract_mode('tavily')).toBe('extract');
+		expect(get_valid_web_extract_modes('tavily')).toEqual([
+			'extract',
+			'crawl',
+			'map',
+		]);
 		expect(get_default_web_extract_mode('firecrawl')).toBe('scrape');
 		expect(get_valid_web_extract_modes('firecrawl')).toEqual([
 			'scrape',

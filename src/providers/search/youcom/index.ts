@@ -29,7 +29,7 @@ const youcom_search_response_schema = v.object({
 export class YoucomSearchProvider implements SearchProvider {
 	name = 'youcom';
 	description =
-		'Real-time web search with news, knowledge, and video sources, free tier available (you.com). Supports domain filters and safe search. Best for current events, general knowledge, and cited factual queries.';
+		'Real-time web search using the You.com Search API. Best for current events, general knowledge, and cited factual queries. Free tier available with API key at you.com/platform/api-keys. Supports domain filters via query operators.';
 
 	async search(params: BaseSearchParams): Promise<SearchResult[]> {
 		const api_key = validate_api_key(
