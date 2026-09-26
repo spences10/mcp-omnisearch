@@ -27,6 +27,7 @@ describe('provider definitions', () => {
 				category: 'search',
 				tools: ['web_search'],
 			},
+			{ id: 'youcom', category: 'search', tools: ['web_search'] },
 		]);
 
 		expect(

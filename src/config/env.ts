@@ -7,6 +7,7 @@ export const KAGI_API_KEY = process.env.KAGI_API_KEY;
 export const GITHUB_API_KEY = process.env.GITHUB_API_KEY;
 export const EXA_API_KEY = process.env.EXA_API_KEY;
 export const LINKUP_API_KEY = process.env.LINKUP_API_KEY;
+export const YOUCOM_API_KEY = process.env.YOUCOM_API_KEY;
 
 // Content processing API keys
 export const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY;
@@ -39,6 +40,11 @@ export const config = {
 			api_key: EXA_API_KEY,
 			base_url: 'https://api.exa.ai',
 			timeout: 30000, // 30 seconds
+		},
+		youcom: {
+			api_key: YOUCOM_API_KEY,
+			base_url: 'https://api.you.com',
+			timeout: 15000, // 15 seconds
 		},
 	},
 	ai_response: {
