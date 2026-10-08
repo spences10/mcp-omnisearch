@@ -1,5 +1,12 @@
 # mcp-omnisearch
 
+## 0.2.0
+
+### Minor Changes
+
+- 6fd7a25: Move Kagi search to API v1, requiring v1 keys; remove
+  v0-only enrichment, FastGPT, summarizer providers.
+
 ## 0.1.0
 
 ### Minor Changes
