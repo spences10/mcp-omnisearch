@@ -27,7 +27,7 @@ export const config = {
 		},
 		kagi: {
 			api_key: KAGI_API_KEY,
-			base_url: 'https://kagi.com/api/v0',
+			base_url: 'https://kagi.com/api/v1',
 			timeout: 20000, // 20 seconds
 		},
 		github: {
@@ -42,11 +42,6 @@ export const config = {
 		},
 	},
 	ai_response: {
-		kagi_fastgpt: {
-			api_key: KAGI_API_KEY,
-			base_url: 'https://kagi.com/api/v0/fastgpt',
-			timeout: 30000, // 30 seconds
-		},
 		exa_answer: {
 			api_key: EXA_API_KEY,
 			base_url: 'https://api.exa.ai',
@@ -64,11 +59,6 @@ export const config = {
 		},
 	},
 	processing: {
-		kagi_summarizer: {
-			api_key: KAGI_API_KEY,
-			base_url: 'https://kagi.com/api/v0/summarize',
-			timeout: 30000, // 30 seconds
-		},
 		tavily_extract: {
 			api_key: TAVILY_API_KEY,
 			base_url: 'https://api.tavily.com',
@@ -128,13 +118,6 @@ export const config = {
 			api_key: EXA_API_KEY,
 			base_url: 'https://api.exa.ai',
 			timeout: 30000, // 30 seconds
-		},
-	},
-	enhancement: {
-		kagi_enrichment: {
-			api_key: KAGI_API_KEY,
-			base_url: 'https://kagi.com/api/v0/enrich',
-			timeout: 20000, // 20 seconds
 		},
 	},
 };

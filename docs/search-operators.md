@@ -12,13 +12,13 @@ and GitHub uses GitHub search qualifiers.
 | `site:example.com`                    | Native query passthrough                | Query passthrough                      | `include_domains`                              | Domain parameter                 | Use `repo:` / `user:` where relevant    |
 | `-site:example.com`                   | Native query passthrough                | Query passthrough                      | `exclude_domains`                              | Domain parameter where supported | Not applicable                          |
 | `include_domains` / `exclude_domains` | Merged into query as `site:` / `-site:` | Merged/preserved as provider filtering | Native request fields                          | Native request fields            | Not applicable                          |
-| `filetype:pdf` / `ext:pdf`            | Native query passthrough                | Kagi `file_type` parameter             | Left in sanitized query only where unsupported | Not a primary operator           | Not applicable                          |
+| `filetype:pdf` / `ext:pdf`            | Native query passthrough                | Query passthrough                      | Left in sanitized query only where unsupported | Not a primary operator           | Not applicable                          |
 | `intitle:`                            | Native query passthrough                | Query passthrough                      | Left in sanitized query                        | Not a primary operator           | Not applicable                          |
 | `inurl:`                              | Native query passthrough                | Query passthrough                      | Left in sanitized query                        | Not a primary operator           | Not applicable                          |
 | `inbody:` / `inpage:`                 | Native query passthrough                | Query passthrough                      | Left in sanitized query                        | Not a primary operator           | Not applicable                          |
 | `lang:en`                             | Native query passthrough                | Query passthrough                      | Left in sanitized query                        | Not a primary operator           | `language:typescript` for GitHub        |
 | `loc:us` / `location:us`              | Native query passthrough                | Query passthrough                      | `country` parameter                            | Not a primary operator           | Not applicable                          |
-| `before:` / `after:`                  | Native query passthrough                | Kagi `time_range` parameter            | `end_date` / `start_date`                      | Not a primary operator           | GitHub supports its own date qualifiers |
+| `before:` / `after:`                  | Native query passthrough                | Query passthrough                      | `end_date` / `start_date`                      | Not a primary operator           | GitHub supports its own date qualifiers |
 | `"exact phrase"`                      | Native query passthrough                | Query passthrough                      | Enables `exact_match`                          | Semantic matching                | Quote strings in GitHub query           |
 | `+required` / `-excluded`             | Native query passthrough                | Query passthrough                      | Left in sanitized query where unsupported      | Not a primary operator           | GitHub query syntax                     |
 | `AND` / `OR` / `NOT`                  | Native query passthrough                | Query passthrough                      | Left in sanitized query where unsupported      | Not a primary operator           | GitHub query syntax varies by endpoint  |
@@ -44,7 +44,7 @@ where possible rather than being flattened globally.
 Brave receives a query with explicit domain arrays merged into `site:`
 and `-site:` clauses.
 
-### Kagi: parameters for file type and dates
+### Kagi: native operators
 
 ```json
 {
@@ -54,8 +54,8 @@ and `-site:` clauses.
 }
 ```
 
-Kagi receives `file_type=pdf`, `time_range=after:2023,before:2024`,
-and a cleaned query preserving other supported operators.
+Kagi receives the query with its operators intact, including
+`filetype:pdf`, `before:2024`, and `after:2023`.
 
 ### Tavily: translated operators
 

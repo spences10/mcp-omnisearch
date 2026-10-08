@@ -102,7 +102,7 @@ describe('MCP tool contract', () => {
 		const { tools } = await load_contract({
 			BRAVE_API_KEY: 'brave-key',
 			GITHUB_API_KEY: 'github-token',
-			KAGI_API_KEY: 'kagi-key',
+			LINKUP_API_KEY: 'linkup-key',
 			FIRECRAWL_API_KEY: 'firecrawl-key',
 		});
 
@@ -224,7 +224,7 @@ describe('MCP tool contract', () => {
 		const response = await tool.handler({
 			url: 'https://example.com',
 			provider: 'tavily',
-			mode: 'summarize',
+			mode: 'scrape',
 		});
 		const body = parse_tool_body(response);
 

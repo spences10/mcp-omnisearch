@@ -22,11 +22,6 @@ describe('provider definitions', () => {
 			{ id: 'brave', category: 'search', tools: ['web_search'] },
 			{ id: 'kagi', category: 'search', tools: ['web_search'] },
 			{ id: 'exa', category: 'search', tools: ['web_search'] },
-			{
-				id: 'kagi_enrichment',
-				category: 'search',
-				tools: ['web_search'],
-			},
 		]);
 
 		expect(
@@ -36,11 +31,6 @@ describe('provider definitions', () => {
 				tools: definition.tools,
 			})),
 		).toEqual([
-			{
-				id: 'kagi_fastgpt',
-				category: 'ai_response',
-				tools: ['ai_search'],
-			},
 			{
 				id: 'exa_answer',
 				category: 'ai_response',
@@ -94,12 +84,6 @@ describe('provider definitions', () => {
 				name: 'tavily',
 				mode: 'map',
 				default_mode: false,
-			},
-			{
-				id: 'kagi:summarize',
-				name: 'kagi',
-				mode: 'summarize',
-				default_mode: true,
 			},
 			{
 				id: 'firecrawl:scrape',
