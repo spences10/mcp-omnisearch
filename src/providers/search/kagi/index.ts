@@ -17,11 +17,9 @@ import { validate_api_key } from '../../../common/validation.js';
 import { config } from '../../../config/env.js';
 
 const kagi_search_response_schema = v.object({
-	data: v.array(v.unknown()),
-	meta: v.optional(
+	data: v.nullish(
 		v.object({
-			total_hits: v.optional(v.number()),
-			api_balance: v.optional(v.number()),
+			search: v.optional(v.array(v.unknown())),
 		}),
 	),
 });
@@ -32,7 +30,6 @@ const is_kagi_search_result = (
 	title: string;
 	url: string;
 	snippet?: string | null;
-	rank?: number;
 } =>
 	typeof result === 'object' &&
 	result !== null &&
@@ -42,8 +39,17 @@ const is_kagi_search_result = (
 	typeof result.url === 'string' &&
 	(!('snippet' in result) ||
 		typeof result.snippet === 'string' ||
-		result.snippet === null) &&
-	(!('rank' in result) || typeof result.rank === 'number');
+		result.snippet === null);
+
+// Kagi wraps matched terms in <strong> and HTML-encodes snippets
+const clean_snippet = (snippet: string) =>
+	snippet
+		.replace(/<\/?strong>/g, '')
+		.replace(/&#39;/g, "'")
+		.replace(/&quot;/g, '"')
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&amp;/g, '&');
 
 export class KagiSearchProvider implements SearchProvider {
 	name = 'kagi';
@@ -63,45 +69,27 @@ export class KagiSearchProvider implements SearchProvider {
 		const search_request = async () => {
 			try {
 				// Build query with all operators using shared utility
-				// Exclude file_type and dates since Kagi handles them as query params
+				// Kagi handles operators natively in the query string
 				const query = build_query_with_operators(
 					search_params,
 					params.include_domains,
 					params.exclude_domains,
-					{ exclude_file_type: true, exclude_dates: true },
 				);
-
-				const query_params = new URLSearchParams({
-					q: query,
-					limit: (params.limit ?? 10).toString(),
-				});
-
-				// Add file type as query parameter (Kagi-specific)
-				if (search_params.file_type) {
-					query_params.append('file_type', search_params.file_type);
-				}
-
-				// Add time range as query parameter (Kagi-specific)
-				if (search_params.date_before || search_params.date_after) {
-					const time_range: string[] = [];
-					if (search_params.date_after) {
-						time_range.push(`after:${search_params.date_after}`);
-					}
-					if (search_params.date_before) {
-						time_range.push(`before:${search_params.date_before}`);
-					}
-					query_params.append('time_range', time_range.join(','));
-				}
 
 				const raw_data = await http_json(
 					this.name,
-					`${config.search.kagi.base_url}/search?${query_params}`,
+					`${config.search.kagi.base_url}/search`,
 					{
-						method: 'GET',
+						method: 'POST',
 						headers: {
-							Authorization: `Bot ${api_key}`,
+							Authorization: `Bearer ${api_key}`,
+							'Content-Type': 'application/json',
 							Accept: 'application/json',
 						},
+						body: JSON.stringify({
+							query,
+							limit: params.limit ?? 10,
+						}),
 						signal: AbortSignal.timeout(config.search.kagi.timeout),
 					},
 				);
@@ -112,13 +100,12 @@ export class KagiSearchProvider implements SearchProvider {
 					raw_data,
 				);
 
-				return data.data
+				return (data.data?.search ?? [])
 					.filter(is_kagi_search_result)
 					.map((result) => ({
 						title: result.title,
 						url: result.url,
-						snippet: result.snippet ?? '',
-						score: result.rank,
+						snippet: clean_snippet(result.snippet ?? ''),
 						source_provider: this.name,
 					}));
 			} catch (error) {

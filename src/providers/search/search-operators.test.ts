@@ -61,19 +61,20 @@ describe('search provider operator handling', () => {
 		);
 	});
 
-	it('uses Kagi parameters for file type and dates while preserving query operators', async () => {
+	it('passes operators through natively in the Kagi query', async () => {
 		vi.stubEnv('KAGI_API_KEY', 'kagi-key');
 		const { KagiSearchProvider } = await import('./kagi/index.js');
 		fetch_mock.mockResolvedValue(
 			json_response({
-				data: [
-					{
-						title: 'Kagi result',
-						url: 'https://example.com/kagi',
-						snippet: 'Kagi snippet',
-						rank: 1,
-					},
-				],
+				data: {
+					search: [
+						{
+							title: 'Kagi result',
+							url: 'https://example.com/kagi',
+							snippet: 'Kagi snippet',
+						},
+					],
+				},
 			}),
 		);
 
@@ -83,15 +84,11 @@ describe('search provider operator handling', () => {
 			limit: 4,
 		});
 
-		const request_url = new URL(fetch_mock.mock.calls[0][0]);
+		const request_body = JSON.parse(fetch_mock.mock.calls[0][1].body);
 
-		expect(request_url.searchParams.get('limit')).toBe('4');
-		expect(request_url.searchParams.get('file_type')).toBe('pdf');
-		expect(request_url.searchParams.get('time_range')).toBe(
-			'after:2023,before:2024',
-		);
-		expect(request_url.searchParams.get('q')).toBe(
-			'sveltekit in:title site:kit.svelte.dev intitle:guide "remote functions"',
+		expect(request_body.limit).toBe(4);
+		expect(request_body.query).toBe(
+			'sveltekit in:title site:kit.svelte.dev filetype:pdf intitle:guide before:2024 after:2023 "remote functions"',
 		);
 	});
 

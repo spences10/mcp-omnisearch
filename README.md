@@ -74,7 +74,7 @@ for secure options and plaintext fallback guidance.
 
 ### `web_search`
 
-Search the web with Tavily, Brave, Kagi, Exa, or Kagi Enrichment.
+Search the web with Tavily, Brave, Kagi, or Exa.
 
 ```json
 {
@@ -94,14 +94,14 @@ Search controls apply when supported by the selected provider.
 
 ### `ai_search`
 
-Get sourced AI answers with Kagi FastGPT, Exa Answer, Linkup, or
-Tavily Research. Tavily Research returns a task ID first; pass it back
-as `research_id` to retrieve the report.
+Get sourced AI answers with Exa Answer, Linkup, or Tavily Research.
+Tavily Research returns a task ID first; pass it back as `research_id`
+to retrieve the report.
 
 ```json
 {
 	"query": "Explain the differences between REST and GraphQL",
-	"provider": "kagi_fastgpt"
+	"provider": "exa_answer"
 }
 ```
 
@@ -119,8 +119,8 @@ Search GitHub code, repositories, or users.
 
 ### `web_extract`
 
-Extract, crawl, scrape, summarize, or find similar content with
-Tavily, Kagi, Firecrawl, or Exa.
+Extract, crawl, scrape, or find similar content with Tavily,
+Firecrawl, or Exa.
 
 ```json
 {

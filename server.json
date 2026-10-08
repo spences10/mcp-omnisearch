@@ -27,7 +27,7 @@
 				},
 				{
 					"name": "KAGI_API_KEY",
-					"description": "Kagi API key",
+					"description": "Kagi API v1 key",
 					"format": "string",
 					"isRequired": false,
 					"isSecret": true

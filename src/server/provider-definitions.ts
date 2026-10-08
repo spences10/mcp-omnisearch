@@ -4,10 +4,8 @@ import type {
 } from '../common/types.js';
 import { config } from '../config/env.js';
 import { ExaAnswerProvider } from '../providers/ai-response/exa-answer/index.js';
-import { KagiFastGPTProvider } from '../providers/ai-response/kagi-fastgpt/index.js';
 import { LinkupProvider } from '../providers/ai-response/linkup/index.js';
 import { TavilyResearchProvider } from '../providers/ai-response/tavily-research/index.js';
-import { KagiEnrichmentSearchProvider } from '../providers/enhancement/kagi-enrichment/index.js';
 import { ExaContentsProvider } from '../providers/processing/exa-contents/index.js';
 import { ExaSimilarProvider } from '../providers/processing/exa-similar/index.js';
 import { FirecrawlActionsProvider } from '../providers/processing/firecrawl-actions/index.js';
@@ -15,7 +13,6 @@ import { FirecrawlCrawlProvider } from '../providers/processing/firecrawl-crawl/
 import { FirecrawlExtractProvider } from '../providers/processing/firecrawl-extract/index.js';
 import { FirecrawlMapProvider } from '../providers/processing/firecrawl-map/index.js';
 import { FirecrawlScrapeProvider } from '../providers/processing/firecrawl-scrape/index.js';
-import { KagiSummarizerProvider } from '../providers/processing/kagi-summarizer/index.js';
 import { TavilyCrawlProvider } from '../providers/processing/tavily-crawl/index.js';
 import { TavilyExtractProvider } from '../providers/processing/tavily-extract/index.js';
 import { TavilyMapProvider } from '../providers/processing/tavily-map/index.js';
@@ -30,24 +27,17 @@ export type WebSearchProviderName =
 	| 'tavily'
 	| 'brave'
 	| 'kagi'
-	| 'exa'
-	| 'kagi_enrichment';
+	| 'exa';
 
 export type AISearchProviderName =
-	| 'kagi_fastgpt'
 	| 'exa_answer'
 	| 'linkup'
 	| 'tavily_research';
 
-export type WebExtractProvider =
-	| 'tavily'
-	| 'kagi'
-	| 'firecrawl'
-	| 'exa';
+export type WebExtractProvider = 'tavily' | 'firecrawl' | 'exa';
 
 export type WebExtractMode =
 	| 'extract'
-	| 'summarize'
 	| 'scrape'
 	| 'crawl'
 	| 'map'
@@ -119,29 +109,9 @@ export const web_search_provider_definitions = [
 		api_key: config.search.exa.api_key,
 		create: () => new ExaSearchProvider(),
 	},
-	{
-		id: 'kagi_enrichment',
-		name: 'kagi_enrichment',
-		category: 'search',
-		api_key_name: 'KAGI_API_KEY',
-		tools: ['web_search'],
-		capabilities: ['specialized_indexes', 'web_enrichment'],
-		api_key: config.enhancement.kagi_enrichment.api_key,
-		create: () => new KagiEnrichmentSearchProvider(),
-	},
 ] satisfies readonly ProviderDefinition<SearchProvider>[];
 
 export const ai_search_provider_definitions = [
-	{
-		id: 'kagi_fastgpt',
-		name: 'kagi_fastgpt',
-		category: 'ai_response',
-		api_key_name: 'KAGI_API_KEY',
-		tools: ['ai_search'],
-		capabilities: ['answer_generation', 'citations'],
-		api_key: config.ai_response.kagi_fastgpt.api_key,
-		create: () => new KagiFastGPTProvider(),
-	},
 	{
 		id: 'exa_answer',
 		name: 'exa_answer',
@@ -222,18 +192,6 @@ export const web_extract_provider_definitions = [
 		modes: ['map'],
 		capabilities: ['site_mapping'],
 		create: () => new TavilyMapProvider(),
-	},
-	{
-		id: make_processing_provider_key('kagi', 'summarize'),
-		name: 'kagi',
-		category: 'processing',
-		api_key: config.processing.kagi_summarizer.api_key,
-		api_key_name: 'KAGI_API_KEY',
-		tools: ['web_extract'],
-		modes: ['summarize'],
-		capabilities: ['summarization'],
-		default_mode: true,
-		create: () => new KagiSummarizerProvider(),
 	},
 	{
 		id: make_processing_provider_key('firecrawl', 'scrape'),

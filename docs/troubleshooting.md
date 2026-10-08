@@ -5,7 +5,8 @@
 Each provider requires its own key:
 
 - Tavily: `TAVILY_API_KEY`
-- Kagi: `KAGI_API_KEY`; some features may require a Business/Team plan
+- Kagi: `KAGI_API_KEY`; requires a Kagi API v1 key from
+  <https://kagi.com/api/keys>, legacy v0 keys are not accepted
 - Brave: `BRAVE_API_KEY`
 - GitHub: `GITHUB_API_KEY`; use a public-access token with no scopes
 - Exa: `EXA_API_KEY`
