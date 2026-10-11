@@ -2,4 +2,5 @@
 'mcp-omnisearch': patch
 ---
 
-Accept null metadata fields in Exa contents and similar responses.
+Accept null metadata fields in Exa search, answer, contents, and
+similar responses.

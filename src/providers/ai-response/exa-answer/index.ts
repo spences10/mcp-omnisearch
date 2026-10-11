@@ -22,10 +22,10 @@ const exa_answer_response_schema = v.object({
 				id: v.string(),
 				title: v.string(),
 				url: v.string(),
-				publishedDate: v.optional(v.string()),
-				text: v.optional(v.string()),
-				image: v.optional(v.string()),
-				favicon: v.optional(v.string()),
+				publishedDate: v.nullish(v.string()),
+				text: v.nullish(v.string()),
+				image: v.nullish(v.string()),
+				favicon: v.nullish(v.string()),
 			}),
 		),
 	),
@@ -95,7 +95,7 @@ export class ExaAnswerProvider implements SearchProvider {
 							source_provider: this.name,
 							metadata: {
 								id: citation.id,
-								publishedDate: citation.publishedDate,
+								publishedDate: citation.publishedDate ?? undefined,
 								type: 'citation',
 							},
 						}));

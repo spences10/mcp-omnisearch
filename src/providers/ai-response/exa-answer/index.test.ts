@@ -60,4 +60,39 @@ describe('ExaAnswerProvider', () => {
 			{ title: 'One', url: 'https://one.test', snippet: 'One text' },
 		]);
 	});
+
+	it('accepts null citation fields', async () => {
+		vi.stubGlobal(
+			'fetch',
+			vi.fn(async () =>
+				json_response({
+					answer: 'The answer',
+					requestId: 'req-1',
+					citations: [
+						{
+							id: '1',
+							title: 'One',
+							url: 'https://one.test',
+							publishedDate: null,
+							text: null,
+							image: null,
+							favicon: null,
+						},
+					],
+				}),
+			),
+		);
+		const { ExaAnswerProvider } = await import('./index.js');
+
+		await expect(
+			new ExaAnswerProvider().search({ query: 'answer me' }),
+		).resolves.toMatchObject([
+			{ title: 'AI Answer', snippet: 'The answer' },
+			{
+				title: 'One',
+				url: 'https://one.test',
+				snippet: 'Source reference',
+			},
+		]);
+	});
 });

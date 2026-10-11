@@ -28,20 +28,20 @@ interface ExaSearchRequest {
 
 const exa_search_response_schema = v.object({
 	requestId: v.string(),
-	autopromptString: v.optional(v.string()),
-	resolvedSearchType: v.optional(v.string()),
-	searchType: v.optional(v.string()),
+	autopromptString: v.nullish(v.string()),
+	resolvedSearchType: v.nullish(v.string()),
+	searchType: v.nullish(v.string()),
 	results: v.array(
 		v.object({
 			id: v.string(),
 			title: v.string(),
 			url: v.string(),
-			publishedDate: v.optional(v.string()),
-			author: v.optional(v.string()),
-			text: v.optional(v.string()),
-			score: v.optional(v.number()),
-			highlights: v.optional(v.array(v.string())),
-			summary: v.optional(v.string()),
+			publishedDate: v.nullish(v.string()),
+			author: v.nullish(v.string()),
+			text: v.nullish(v.string()),
+			score: v.nullish(v.number()),
+			highlights: v.nullish(v.array(v.string())),
+			summary: v.nullish(v.string()),
 		}),
 	),
 });
@@ -112,10 +112,10 @@ export class ExaSearchProvider implements SearchProvider {
 					source_provider: this.name,
 					metadata: {
 						id: result.id,
-						author: result.author,
-						publishedDate: result.publishedDate,
-						highlights: result.highlights,
-						autopromptString: data.autopromptString,
+						author: result.author ?? undefined,
+						publishedDate: result.publishedDate ?? undefined,
+						highlights: result.highlights ?? undefined,
+						autopromptString: data.autopromptString ?? undefined,
 						resolvedSearchType:
 							data.resolvedSearchType ?? data.searchType,
 					},
