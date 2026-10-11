@@ -1,5 +1,12 @@
 # mcp-omnisearch
 
+## 0.2.1
+
+### Patch Changes
+
+- 58ac7f8: Accept null metadata fields in Exa search, answer,
+  contents, and similar responses.
+
 ## 0.2.0
 
 ### Minor Changes
