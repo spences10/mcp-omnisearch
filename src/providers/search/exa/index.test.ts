@@ -68,4 +68,35 @@ describe('ExaSearchProvider', () => {
 			excludeDomains: ['bad.example'],
 		});
 	});
+
+	it('accepts null metadata fields', async () => {
+		vi.stubGlobal(
+			'fetch',
+			vi.fn(async () =>
+				json_response({
+					requestId: 'req-1',
+					results: [
+						{
+							id: 'id-1',
+							title: 'Exa result',
+							url: 'https://example.com',
+							text: 'Body text',
+							author: null,
+							publishedDate: null,
+						},
+					],
+				}),
+			),
+		);
+		const { ExaSearchProvider } = await import('./index.js');
+
+		const results = await new ExaSearchProvider().search({
+			query: 'exa search',
+		});
+
+		expect(results).toMatchObject([
+			{ title: 'Exa result', snippet: 'Body text' },
+		]);
+		expect(results[0]?.metadata?.author).toBeUndefined();
+	});
 });
