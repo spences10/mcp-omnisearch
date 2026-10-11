@@ -54,4 +54,34 @@ describe('ExaSimilarProvider', () => {
 			source_provider: 'exa_similar',
 		});
 	});
+
+	it('accepts null metadata fields', async () => {
+		vi.stubGlobal(
+			'fetch',
+			vi.fn(async () =>
+				json_response({
+					requestId: 'req-1',
+					results: [
+						{
+							id: 'id-1',
+							title: 'Similar',
+							url: 'https://similar.test',
+							text: 'Similar page text',
+							author: null,
+							publishedDate: null,
+						},
+					],
+				}),
+			),
+		);
+		const { ExaSimilarProvider } = await import('./index.js');
+
+		const result = await new ExaSimilarProvider().process_content(
+			'https://example.com',
+		);
+
+		expect(result.content).toContain('Similar page text');
+		expect(result.content).not.toContain('**Author:**');
+		expect(result.content).not.toContain('**Published:**');
+	});
 });
