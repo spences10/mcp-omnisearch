@@ -58,10 +58,10 @@
 		"publish-mcp": "pnpm run sync-server-json && mcp-publisher publish"
 	},
 	"dependencies": {
-		"@tmcp/adapter-valibot": "^0.1.6",
-		"@tmcp/transport-stdio": "^0.5.0",
+		"@tmcp/adapter-valibot": "^0.1.7",
+		"@tmcp/transport-stdio": "^0.5.1",
 		"octokit": "^5.0.5",
-		"tmcp": "^1.20.0",
+		"tmcp": "^1.20.1",
 		"valibot": "^1.4.2"
 	},
 	"devDependencies": {
