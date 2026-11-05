@@ -70,6 +70,14 @@ storage are client-specific; see
 [Deployment](docs/deployment.md#keep-provider-keys-out-of-mcp-configuration)
 for secure options and plaintext fallback guidance.
 
+## Code Mode (opt-in)
+
+Set `OMNISEARCH_TOOL_MODE=codemode` to expose `search` and `execute`
+instead of the four consolidated tools. Pi's local QuickJS sandbox
+runs JavaScript against schema-generated native provider functions;
+credentials stay in the server process. Requires Node.js 22.19+. See
+[Code Mode](docs/codemode.md) for local setup and examples.
+
 ## Tools
 
 ### `web_search`
@@ -136,6 +144,8 @@ Firecrawl, or Exa.
 
 ## Documentation
 
+- [Code Mode](docs/codemode.md) — native provider functions, schema
+  generation, and local testing.
 - [Provider selection](docs/provider-selection.md) — choose providers
   by task, key, mode, and capability.
 - [Search operators](docs/search-operators.md) — operator support
@@ -158,6 +168,8 @@ Firecrawl, or Exa.
 - `FIRECRAWL_API_KEY`
 - `FIRECRAWL_BASE_URL` optional, for self-hosted Firecrawl
 - `OMNISEARCH_LARGE_RESULT_MODE` optional, `file` default or `inline`
+- `OMNISEARCH_TOOL_MODE` optional, `codemode` for the native API
+  interface; unset for the consolidated tools
 
 ## Development
 

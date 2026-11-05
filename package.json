@@ -42,6 +42,7 @@
 	"main": "dist/index.js",
 	"scripts": {
 		"build": "vp pack",
+		"generate:schemas": "node tools/generate-provider-schemas.ts",
 		"dev": "vp pack --watch",
 		"start": "node ./dist/index.js",
 		"check": "vp check && pnpm run check:advisories",
@@ -58,8 +59,10 @@
 		"publish-mcp": "pnpm run sync-server-json && mcp-publisher publish"
 	},
 	"dependencies": {
+		"@earendil-works/pi-codemode": "1.4.0",
 		"@tmcp/adapter-valibot": "^0.1.7",
 		"@tmcp/transport-stdio": "^0.5.1",
+		"ajv": "^8.20.0",
 		"octokit": "^5.0.5",
 		"tmcp": "^1.20.1",
 		"valibot": "^1.4.2"
@@ -69,10 +72,11 @@
 		"@types/node": "^26.1.1",
 		"@vitest/coverage-v8": "^5.0.0",
 		"vite-plus": "^1.0.0",
-		"vitest": "^5.0.0"
+		"vitest": "^5.0.0",
+		"yaml": "^2.9.1"
 	},
 	"engines": {
-		"node": ">=22.0.0"
+		"node": ">=22.19.0"
 	},
 	"packageManager": "pnpm@12.16.1",
 	"mcpName": "io.github.spences10/mcp-omnisearch"

@@ -1,6 +1,7 @@
 import { ValibotJsonSchemaAdapter } from '@tmcp/adapter-valibot';
 import { McpServer } from 'tmcp';
 import type { GenericSchema } from 'valibot';
+import { register_codemode } from './codemode/index.js';
 import { setup_handlers } from './server/handlers.js';
 import {
 	initialize_providers,
@@ -25,9 +26,13 @@ export function create_mcp_server(
 		},
 	});
 
-	initialize_providers();
-	register_tools(server);
-	setup_handlers(server);
+	if (process.env.OMNISEARCH_TOOL_MODE === 'codemode') {
+		register_codemode(server);
+	} else {
+		initialize_providers();
+		register_tools(server);
+		setup_handlers(server);
+	}
 
 	return server;
 }
