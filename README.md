@@ -36,8 +36,9 @@ npx mcpick add \
   --scope project
 ```
 
-See [Deployment](docs/deployment.md#install-with-mcpick) for supported
-clients and provider credential storage options.
+See
+[Deployment](https://github.com/spences10/mcp-omnisearch/blob/main/docs/deployment.md#install-with-mcpick)
+for supported clients and provider credential storage options.
 
 To run from source instead:
 
@@ -68,7 +69,7 @@ of storing their values in the MCP configuration:
 
 Add only the provider keys you use. Expansion syntax and secret
 storage are client-specific; see
-[Deployment](docs/deployment.md#keep-provider-keys-out-of-mcp-configuration)
+[Deployment](https://github.com/spences10/mcp-omnisearch/blob/main/docs/deployment.md#keep-provider-keys-out-of-mcp-configuration)
 for secure options and plaintext fallback guidance.
 
 ## Tools
@@ -101,32 +102,35 @@ Compose calls with `await` and `Promise.all`, filter intermediate
 data, and return only what the client needs. Credentials stay on the
 host; the sandbox has no filesystem or arbitrary network access.
 Arguments and responses use native provider formats, not a normalized
-search contract. See [Code Mode](docs/codemode.md) for functions,
-limits and benchmark findings.
+search contract. See
+[Code Mode](https://github.com/spences10/mcp-omnisearch/blob/main/docs/codemode.md)
+for functions, limits and benchmark findings.
 
 ## Upgrading
 
 The consolidated `web_search`, `ai_search`, `web_extract` and
 `github_search` tools have been removed. Provider keys stay the same,
 but existing tool calls and client instructions need migration. See
-the [breaking-change migration guide](docs/migration.md).
+the
+[breaking-change migration guide](https://github.com/spences10/mcp-omnisearch/blob/main/docs/migration.md).
 
 ## Documentation
 
-- [Migration](docs/migration.md) — move from consolidated tools to
-  Code Mode.
-- [Code Mode](docs/codemode.md) — native provider functions, schema
-  generation, local testing, and benchmark findings.
-- [Provider selection](docs/provider-selection.md) — choose providers
-  by task, key, mode, and capability.
-- [Search operators](docs/search-operators.md) — native query syntax
-  and provider-specific filters.
-- [Large results](docs/large-results.md) — inline vs file response
-  behavior and remote deployment caveats.
-- [Deployment](docs/deployment.md) — MCP client, WSL, and Firecrawl
-  setup.
-- [Troubleshooting](docs/troubleshooting.md) — keys, access,
-  validation, rate limits, and common failures.
+- [Migration](https://github.com/spences10/mcp-omnisearch/blob/main/docs/migration.md)
+  — move from consolidated tools to Code Mode.
+- [Code Mode](https://github.com/spences10/mcp-omnisearch/blob/main/docs/codemode.md)
+  — native provider functions, schema generation, local testing, and
+  benchmark findings.
+- [Provider selection](https://github.com/spences10/mcp-omnisearch/blob/main/docs/provider-selection.md)
+  — choose providers by task, key, mode, and capability.
+- [Search operators](https://github.com/spences10/mcp-omnisearch/blob/main/docs/search-operators.md)
+  — native query syntax and provider-specific filters.
+- [Large results](https://github.com/spences10/mcp-omnisearch/blob/main/docs/large-results.md)
+  — inline vs file response behavior and remote deployment caveats.
+- [Deployment](https://github.com/spences10/mcp-omnisearch/blob/main/docs/deployment.md)
+  — MCP client, WSL, and Firecrawl setup.
+- [Troubleshooting](https://github.com/spences10/mcp-omnisearch/blob/main/docs/troubleshooting.md)
+  — keys, access, validation, rate limits, and common failures.
 
 ## Environment variables
 
@@ -148,11 +152,14 @@ pnpm run build
 pnpm test
 ```
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
+Please read
+[CONTRIBUTING.md](https://github.com/spences10/mcp-omnisearch/blob/main/CONTRIBUTING.md)
+before opening a PR.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE).
+MIT License - see
+[LICENSE](https://github.com/spences10/mcp-omnisearch/blob/main/LICENSE).
 
 ## Acknowledgments
 
