@@ -2,7 +2,7 @@
 /// <reference types="node" />
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 type Finding = { file: string; message: string };
 
@@ -15,7 +15,7 @@ function git_files(pattern: string): string[] {
 	})
 		.split('\n')
 		.filter(Boolean)
-		.filter((file) => !file.includes('/dist/'));
+		.filter((file) => !file.includes('/dist/') && existsSync(file));
 }
 
 function should_check_file_size(file: string): boolean {

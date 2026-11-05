@@ -6,7 +6,6 @@ import {
 import type { McpServer } from 'tmcp';
 import * as v from 'valibot';
 import { handle_large_result } from '../common/results.js';
-import { large_result_mode_schema } from '../server/tools/schemas.js';
 import { provider_connections } from './providers.js';
 import {
 	create_provider_tools,
@@ -192,7 +191,14 @@ export function register_codemode(
 						v.maxValue(180_000),
 					),
 				),
-				large_result_mode: large_result_mode_schema,
+				large_result_mode: v.optional(
+					v.pipe(
+						v.picklist(['inline', 'file']),
+						v.description(
+							'How to handle oversized responses for this request. Use inline for remote/container transports; file is local shared-filesystem behavior. Defaults to OMNISEARCH_LARGE_RESULT_MODE or file.',
+						),
+					),
+				),
 			}),
 		},
 		async ({ code, timeout_ms, large_result_mode }) => {

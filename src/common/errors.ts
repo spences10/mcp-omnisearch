@@ -4,25 +4,11 @@ import {
 	type ProviderErrorDetails,
 } from './types.js';
 
-export const handle_rate_limit = (
-	provider: string,
-	reset_time?: Date,
-): never => {
-	throw new ProviderError(
-		ErrorType.RATE_LIMIT,
-		`Rate limit exceeded for ${provider}${
-			reset_time ? `. Reset at ${reset_time.toISOString()}` : ''
-		}`,
-		provider,
-		{ reset_time, retryable: true },
-	);
-};
-
-export const provider_error = (
+const provider_error = (
 	type: ErrorType,
 	message: string,
 	provider: string,
-	details: ProviderErrorDetails = {},
+	details: ProviderErrorDetails,
 ) => new ProviderError(type, message, provider, details);
 
 export const normalize_provider_http_error = (
@@ -79,41 +65,4 @@ export const normalize_provider_http_error = (
 				{ status, retryable: false },
 			);
 	}
-};
-
-export function handle_provider_error(
-	error: unknown,
-	provider_name: string,
-	operation: string = 'operation',
-): never {
-	if (error instanceof ProviderError) {
-		throw error;
-	}
-	throw new ProviderError(
-		ErrorType.API_ERROR,
-		`Failed to ${operation}: ${
-			error instanceof Error ? error.message : 'Unknown error'
-		}`,
-		provider_name,
-	);
-}
-
-export const sanitize_query = (query: string): string => {
-	return query.trim().replace(/[\n\r]+/g, ' ');
-};
-
-export const create_error_response = (error: Error) => {
-	if (error instanceof ProviderError) {
-		return {
-			error: error.message,
-			type: error.type,
-			provider: error.provider,
-			retryable: error.details?.retryable ?? false,
-		};
-	}
-	return {
-		error: `Unexpected error: ${error.message}`,
-		type: ErrorType.API_ERROR,
-		retryable: false,
-	};
 };

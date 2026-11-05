@@ -27,7 +27,6 @@ function server_request(
 }
 
 function server() {
-	vi.stubEnv('OMNISEARCH_TOOL_MODE', 'codemode');
 	vi.spyOn(providers, 'provider_connections').mockReturnValue({
 		tavily: {
 			base_url: 'https://api.tavily.com',
@@ -142,7 +141,8 @@ describe('generated provider declarations', () => {
 });
 
 describe('Pi Code Mode MCP interface', () => {
-	it('advertises only search and execute in Code Mode', async () => {
+	it('advertises only search and execute without a mode setting', async () => {
+		vi.stubEnv('OMNISEARCH_TOOL_MODE', undefined);
 		const response = await server_request(server(), 'tools/list');
 		expect(response).toMatchObject({
 			result: {
@@ -156,6 +156,32 @@ describe('Pi Code Mode MCP interface', () => {
 						},
 					},
 				],
+			},
+		});
+	});
+
+	it('ignores the obsolete mode switch', async () => {
+		vi.stubEnv('OMNISEARCH_TOOL_MODE', 'legacy');
+		const response = await server_request(server(), 'tools/list');
+		expect(response).toMatchObject({
+			result: { tools: [{ name: 'search' }, { name: 'execute' }] },
+		});
+	});
+
+	it.each([
+		'web_search',
+		'ai_search',
+		'web_extract',
+		'github_search',
+	])('does not register the removed %s tool', async (name) => {
+		const response = await server_request(server(), 'tools/call', {
+			name,
+			arguments: {},
+		});
+		expect(response).toMatchObject({
+			result: {
+				isError: true,
+				content: [{ type: 'text', text: `Tool ${name} not found` }],
 			},
 		});
 	});

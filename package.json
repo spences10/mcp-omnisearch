@@ -63,7 +63,6 @@
 		"@tmcp/adapter-valibot": "^0.1.7",
 		"@tmcp/transport-stdio": "^0.5.1",
 		"ajv": "^8.20.0",
-		"octokit": "^5.0.5",
 		"tmcp": "^1.20.1",
 		"valibot": "^1.4.2"
 	},

@@ -45,16 +45,17 @@ describe('http_json', () => {
 		).resolves.toBe('plain text body');
 	});
 
-	it('allows configured non-2xx statuses', async () => {
+	it('rejects non-2xx responses', async () => {
 		fetch_mock.mockResolvedValue(
-			new Response('not found but expected', { status: 404 }),
+			new Response('not found', { status: 404 }),
 		);
-
 		await expect(
-			http_json('exa', 'https://api.example.com', {
-				expectedStatuses: [404],
-			}),
-		).resolves.toBe('not found but expected');
+			http_json('exa', 'https://api.example.com'),
+		).rejects.toMatchObject({
+			type: ErrorType.API_ERROR,
+			message: 'Unexpected error: not found',
+			details: { status: 404, retryable: false },
+		});
 	});
 
 	it('throws a specific error for 401 responses', async () => {

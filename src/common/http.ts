@@ -1,9 +1,5 @@
 import { normalize_provider_http_error } from './errors.js';
 
-export interface HttpJsonOptions extends RequestInit {
-	expectedStatuses?: number[];
-}
-
 const tryParseJson = (text: string): unknown => {
 	if (!text) return undefined;
 	try {
@@ -26,18 +22,13 @@ const get_error_message = (body: unknown) => {
 export const http_json = async <T = unknown>(
 	provider: string,
 	url: string,
-	options: HttpJsonOptions = {},
+	options: RequestInit = {},
 ): Promise<T> => {
 	const res = await fetch(url, options);
 	const raw = await res.text();
 	const body = tryParseJson(raw);
 
-	const okOrExpected =
-		res.ok ||
-		(options.expectedStatuses &&
-			options.expectedStatuses.includes(res.status));
-
-	if (!okOrExpected) {
+	if (!res.ok) {
 		const message = get_error_message(body) || raw || res.statusText;
 		throw normalize_provider_http_error(
 			provider,

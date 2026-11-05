@@ -1,87 +1,71 @@
-# Search operators
+# Search operators and native filters
 
-Operator behavior is provider-specific. Brave and Kagi preserve rich
-query syntax most directly, Tavily translates a supported subset into
-API parameters, Exa focuses on semantic search plus domain filters,
-and GitHub uses GitHub search qualifiers.
+Code Mode does not parse, sanitize or translate search operators.
+Queries are sent to the provider unchanged. Whether an operator is
+supported is up to that provider; Omnisearch no longer merges domain
+arrays into query strings or infers dates and countries from text.
 
-## Operator matrix
+Use native query syntax for Brave, Kagi and GitHub, and explicit
+provider fields for filters where the generated schema supports them.
+The examples below are JavaScript bodies for `execute`; discover the
+functions with `search` first.
 
-| Feature                               | Brave                                   | Kagi                                   | Tavily                                         | Exa                              | GitHub                                  |
-| ------------------------------------- | --------------------------------------- | -------------------------------------- | ---------------------------------------------- | -------------------------------- | --------------------------------------- |
-| `site:example.com`                    | Native query passthrough                | Query passthrough                      | `include_domains`                              | Domain parameter                 | Use `repo:` / `user:` where relevant    |
-| `-site:example.com`                   | Native query passthrough                | Query passthrough                      | `exclude_domains`                              | Domain parameter where supported | Not applicable                          |
-| `include_domains` / `exclude_domains` | Merged into query as `site:` / `-site:` | Merged/preserved as provider filtering | Native request fields                          | Native request fields            | Not applicable                          |
-| `filetype:pdf` / `ext:pdf`            | Native query passthrough                | Query passthrough                      | Left in sanitized query only where unsupported | Not a primary operator           | Not applicable                          |
-| `intitle:`                            | Native query passthrough                | Query passthrough                      | Left in sanitized query                        | Not a primary operator           | Not applicable                          |
-| `inurl:`                              | Native query passthrough                | Query passthrough                      | Left in sanitized query                        | Not a primary operator           | Not applicable                          |
-| `inbody:` / `inpage:`                 | Native query passthrough                | Query passthrough                      | Left in sanitized query                        | Not a primary operator           | Not applicable                          |
-| `lang:en`                             | Native query passthrough                | Query passthrough                      | Left in sanitized query                        | Not a primary operator           | `language:typescript` for GitHub        |
-| `loc:us` / `location:us`              | Native query passthrough                | Query passthrough                      | `country` parameter                            | Not a primary operator           | Not applicable                          |
-| `before:` / `after:`                  | Native query passthrough                | Query passthrough                      | `end_date` / `start_date`                      | Not a primary operator           | GitHub supports its own date qualifiers |
-| `"exact phrase"`                      | Native query passthrough                | Query passthrough                      | Enables `exact_match`                          | Semantic matching                | Quote strings in GitHub query           |
-| `+required` / `-excluded`             | Native query passthrough                | Query passthrough                      | Left in sanitized query where unsupported      | Not a primary operator           | GitHub query syntax                     |
-| `AND` / `OR` / `NOT`                  | Native query passthrough                | Query passthrough                      | Left in sanitized query where unsupported      | Not a primary operator           | GitHub query syntax varies by endpoint  |
-| `filename:` / `path:` / `repo:`       | Not primary                             | Not primary                            | Not primary                                    | Not primary                      | Native GitHub qualifiers                |
+## Brave and Kagi
 
-Unsupported provider-specific operators remain in the sanitized query
-where possible rather than being flattened globally.
-
-## Tested examples
-
-### Brave: native operator passthrough
-
-```json
-{
-	"query": "sveltekit in:title site:kit.svelte.dev -site:spam.dev filetype:pdf intitle:guide inurl:docs inbody:load inpage:actions lang:en loc:us before:2024 after:2023 \"remote functions\" +forms -legacy",
-	"provider": "brave",
-	"limit": 7,
-	"include_domains": ["docs.example.com"],
-	"exclude_domains": ["ads.example.com"]
-}
+```js
+return await tools.brave_search({
+	q: 'site:example.com filetype:pdf guide',
+	count: 5,
+});
 ```
 
-Brave receives a query with explicit domain arrays merged into `site:`
-and `-site:` clauses.
-
-### Kagi: native operators
-
-```json
-{
-	"query": "sveltekit in:title site:kit.svelte.dev filetype:pdf intitle:guide before:2024 after:2023 \"remote functions\"",
-	"provider": "kagi",
-	"limit": 4
-}
+```js
+return await tools.kagi_search({
+	query: 'site:example.com guide',
+	limit: 5,
+});
 ```
 
-Kagi receives the query with its operators intact, including
-`filetype:pdf`, `before:2024`, and `after:2023`.
+These functions expose only their documented request subsets. There
+are no separate `include_domains` or `exclude_domains` arguments for
+Brave or Kagi.
 
-### Tavily: translated operators
+## Tavily: explicit fields
 
-```json
-{
-	"query": "sveltekit in:title site:kit.svelte.dev -site:spam.dev before:2024 after:2023 loc:US \"remote functions\"",
-	"provider": "tavily",
-	"limit": 3,
-	"include_domains": ["docs.example.com"],
-	"exclude_domains": ["ads.example.com"]
-}
+```js
+return await tools.tavily_search({
+	query: 'remote functions',
+	max_results: 3,
+	include_domains: ['svelte.dev'],
+	exclude_domains: ['example.com'],
+	start_date: '2026-01-01',
+	end_date: '2026-12-31',
+	country: 'united states',
+	exact_match: true,
+});
 ```
 
-Tavily receives merged domain arrays, `start_date`, `end_date`,
-`country`, and `exact_match` fields.
+`site:`, `before:`, `after:` and `loc:` text is not converted into
+these parameters. Supply the native fields explicitly.
 
-### GitHub search qualifiers
+## Exa: native domain filters
 
-```json
-{
-	"query": "filename:remote.ts path:src repo:sveltejs/kit language:typescript in:file \"export function\"",
-	"search_type": "code",
-	"limit": 5
-}
+```js
+return await tools.exa_search({
+	query: 'Svelte remote functions',
+	numResults: 3,
+	includeDomains: ['svelte.dev'],
+});
 ```
 
-GitHub supports code, repository, and user search. Common qualifiers
-include `filename:`, `path:`, `repo:`, `user:`, `language:`, and
-`in:file`.
+## GitHub: qualifiers in `q`
+
+```js
+return await tools.github_search_code({
+	q: 'repo:sveltejs/kit path:src language:typescript',
+	per_page: 5,
+});
+```
+
+GitHub code, repository and user search are separate functions. No
+`search_type` argument is needed.

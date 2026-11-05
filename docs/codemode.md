@@ -1,6 +1,6 @@
 # Code Mode
 
-Code Mode is an opt-in native API interface powered by
+Code Mode is the server's native API interface, powered by
 [`@earendil-works/pi-codemode`](https://github.com/earendil-works/pi/tree/main/packages/codemode).
 It uses a local QuickJS WebAssembly sandbox, not a Pi agent session or
 an additional LLM. Node.js 22.19 or newer is required.
@@ -12,17 +12,16 @@ The server exposes two MCP tools:
 - `execute`: run JavaScript that calls those functions, combines their
   results, and returns only the data needed by the client.
 
-The original four consolidated tools remain the default so the two
-interfaces can be compared locally. The native path does not call the
-legacy provider adapters. Removing those adapters is deferred until
-native API behavior has been evaluated.
+The server is Code Mode only. The consolidated tools and legacy
+provider adapters have been removed. Existing clients should follow
+the [migration guide](migration.md).
 
 ## Run locally
 
 ```bash
 pnpm install
 pnpm build
-OMNISEARCH_TOOL_MODE=codemode node ./dist/index.js
+node ./dist/index.js
 ```
 
 Provider credentials must already be available to the server process.
@@ -30,25 +29,21 @@ The server does not automatically load `.env`. Use your existing
 credential loader or MCP client's environment configuration.
 
 For a development MCP entry, retain your existing provider credential
-configuration and add the mode setting:
+configuration:
 
 ```json
 {
 	"mcpServers": {
 		"mcp-omnisearch-dev": {
 			"command": "node",
-			"args": ["/absolute/path/to/mcp-omnisearch/dist/index.js"],
-			"env": {
-				"OMNISEARCH_TOOL_MODE": "codemode"
-			}
+			"args": ["/absolute/path/to/mcp-omnisearch/dist/index.js"]
 		}
 	}
 }
 ```
 
 Restart or reload that MCP connection after building. Only `search`
-and `execute` should appear. Remove `OMNISEARCH_TOOL_MODE` to return
-to the consolidated interface. Provider keys and `FIRECRAWL_BASE_URL`
+and `execute` should appear. Provider keys and `FIRECRAWL_BASE_URL`
 work as before.
 
 ## Discover and execute
@@ -125,8 +120,8 @@ timers; it does not automatically poll or retry requests. Streaming
 responses are not supported; omit `stream` or set it to `false`.
 
 `omnisearch://providers/status` lists native provider availability and
-the configured function names in Code Mode. The legacy provider info
-resource templates are only available in consolidated mode.
+the configured function names. The old provider-info resource
+templates have been removed.
 
 ## Schema generation
 
@@ -159,8 +154,9 @@ all other providers.
 
 ## Benchmark findings
 
-Local comparison on 2026-11-05 used the configured published server
-and the development Code Mode server. The main benefit was smaller
+The prototype comparison on 2026-11-05 used the configured published
+consolidated server and the development Code Mode server, before the
+legacy implementation was removed. The main benefit was smaller
 workflow responses, not faster provider requests.
 
 ### Method
@@ -234,13 +230,30 @@ Pi can also filter published tool responses client-side, so smaller
 MCP payloads do not automatically imply equivalent LLM-context or
 token savings. Only Tavily and Exa searches and Tavily extraction were
 tested; these results do not establish parity for every provider or
-operation. The legacy path remains available for further comparison.
+operation. The legacy implementation was subsequently removed; these
+are historical prototype measurements, not new Code Mode-only
+benchmarks.
 
 The four-call first-task strategy is not mandatory. A provider-scoped
 lookup such as `search({"query":"tavily"})` already returns matching
 function names and declarations together. Followed by `execute`, that
 can reduce the workflow to two MCP calls, but returns schemas for all
 Tavily functions. That alternative was not benchmarked in this run.
+
+### Code Mode-only cleanup
+
+Removing the legacy implementation reduced production TypeScript in
+`src` from 43 files / 6,149 lines to 10 files / 733 lines, an 88.1%
+line reduction. These counts exclude tests, generated JSON schemas and
+the generation scripts in `tools`. All 22 native functions remain.
+Removing Octokit eliminated 34 packages from the dependency tree. The
+built entry bundle fell from 330.97 kB to 230.56 kB at this
+checkpoint.
+
+The cleanup passed check, all 108 remaining tests, coverage thresholds
+and build. Built-server smoke tests covered both modern stateless and
+legacy initialize protocols. Those smoke tests used a local mock API,
+not new live provider requests.
 
 ## Execution boundary and limits
 

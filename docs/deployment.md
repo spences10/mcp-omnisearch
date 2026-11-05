@@ -2,6 +2,11 @@
 
 ## MCP client configuration
 
+Requires Node.js 22.19 or newer. The server always exposes `search`
+and `execute`. Existing consolidated-tool users should read the
+[migration guide](migration.md). The server reads its process
+environment and does not load `.env` automatically.
+
 ### Install with MCPick
 
 [MCPick](https://github.com/spences10/mcpick) can add the published
@@ -140,7 +145,7 @@ in a committed startup script.
 
 ## Self-hosted Firecrawl
 
-Set `FIRECRAWL_BASE_URL` to route Firecrawl modes to a self-hosted
+Set `FIRECRAWL_BASE_URL` to route Firecrawl functions to a self-hosted
 instance:
 
 ```bash
@@ -153,5 +158,6 @@ Notes:
 
 - If `FIRECRAWL_BASE_URL` is unset, Firecrawl cloud is used.
 - Self-hosted instances should expose the same API endpoints, such as
-  `/v1/scrape` and `/v1/crawl`.
+  `/v2/scrape` and `/v2/crawl`. Set the base URL without `/v2`; the
+  server appends it.
 - `FIRECRAWL_API_KEY` is still required.

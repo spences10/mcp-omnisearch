@@ -1,63 +1,48 @@
 # Large results
 
-Large search and extraction responses can exceed MCP client or
-transport limits. MCP Omnisearch supports per-request and global
-controls for oversized responses.
+Filter intermediate provider data inside `execute` before returning.
+Only the final execution envelope is sent back to the MCP client or
+offloaded; provider responses are not automatically normalized or
+copied into combined extraction fields.
+
+```js
+const response = await tools.tavily_extract({
+	urls: ['https://example.com/article'],
+});
+return response.results.map(({ url, raw_content }) => ({
+	url,
+	preview: raw_content.slice(0, 500),
+}));
+```
 
 ## Controls
 
-Each eligible tool accepts:
+`execute` accepts `large_result_mode: "file"` or `"inline"` alongside
+`code`. The request setting overrides `OMNISEARCH_LARGE_RESULT_MODE`.
+The default is `file`.
 
-```json
-{
-	"large_result_mode": "file"
-}
-```
+| Mode     | Behavior                                                                                                                                                                     | Use when                                                                            |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `file`   | Writes final envelopes larger than approximately 80,000 serialized characters to a server-side temp file and returns a path, line count, estimated token count and read hint | The MCP client and server share a filesystem, such as local stdio usage             |
+| `inline` | Returns the full execution envelope through MCP                                                                                                                              | The client has its own indexing/offload layer, or cannot read the server filesystem |
 
-or:
-
-```json
-{
-	"large_result_mode": "inline"
-}
-```
-
-The environment variable `OMNISEARCH_LARGE_RESULT_MODE` sets the
-default. Request-level `large_result_mode` overrides it.
-
-## Modes
-
-| Mode     | Behavior                                                                                                                                | Use when                                                                                                                 |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `file`   | Writes oversized responses to a server-side temp file and returns a path, section list, line count, and read hint. This is the default. | The MCP client and server share a filesystem, such as local stdio usage.                                                 |
-| `inline` | Returns the full response through MCP.                                                                                                  | The client has its own indexing/offload layer, or the server runs remotely, in HTTP, in a container, or on another host. |
+Offloaded files contain JSON, including `ok`, `value`, `output` and
+`calls`, plus success store writes or the failure error. Read them as
+JSON or in line ranges using the returned hint. They do not contain
+legacy extraction section lists or combined-content metadata.
 
 ## Remote and container caveat
 
 Server-side temp-file paths are only useful when the MCP client can
-read the server filesystem. Prefer `inline` for HTTP, hosted,
-containerized, or otherwise remote MCP deployments.
+read the server filesystem. Prefer `inline` for hosted, containerized
+or otherwise remote MCP deployments.
 
 When `OMNISEARCH_LARGE_RESULT_MODE=file` is used in common remote or
-container environments, the server logs a startup warning. A future
-breaking release may rename this mode to `local_file`; keep using
-`inline` anywhere the MCP client and server do not share a filesystem.
+container environments, the server logs a startup warning. This
+repository's transport remains stdio; using `inline` does not add an
+HTTP transport.
 
-## Avoid duplicate extraction payloads
-
-For `web_extract`, set `include_raw_contents: false` when you only
-need the combined `content` field:
-
-```json
-{
-	"url": [
-		"https://example.com/article1",
-		"https://example.com/article2"
-	],
-	"provider": "tavily",
-	"include_raw_contents": false
-}
-```
-
-This avoids duplicating huge per-URL text in both `content` and
-`raw_contents`.
+The sandbox still has its own output and memory limits. Large-result
+offload does not avoid those limits or reduce provider work already
+performed. Return selected fields rather than entire API responses
+when possible.

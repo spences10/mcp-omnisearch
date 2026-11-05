@@ -3,9 +3,10 @@
 [![built with vite+](https://img.shields.io/badge/built%20with-Vite+-646CFF?logo=vite&logoColor=white)](https://viteplus.dev)
 [![tested with vitest](https://img.shields.io/badge/tested%20with-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev)
 
-A Model Context Protocol (MCP) server that provides unified access to
-Tavily, Brave, Kagi, Exa AI, GitHub, Linkup, and Firecrawl through
-four consolidated tools.
+A Model Context Protocol (MCP) server for Tavily, Brave, Kagi, Exa,
+GitHub, Linkup, and Firecrawl. Two tools, `search` and `execute`,
+expose schema-generated native provider functions through Pi's local
+QuickJS sandbox. Requires Node.js 22.19+.
 
 <a href="https://glama.ai/mcp/servers/gz5wgmptd8">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/gz5wgmptd8/badge" alt="Glama badge" />
@@ -70,86 +71,56 @@ storage are client-specific; see
 [Deployment](docs/deployment.md#keep-provider-keys-out-of-mcp-configuration)
 for secure options and plaintext fallback guidance.
 
-## Code Mode (opt-in)
-
-Set `OMNISEARCH_TOOL_MODE=codemode` to expose `search` and `execute`
-instead of the four consolidated tools. Pi's local QuickJS sandbox
-runs JavaScript against schema-generated native provider functions;
-credentials stay in the server process. Requires Node.js 22.19+. See
-[Code Mode](docs/codemode.md) for local setup and examples.
-
 ## Tools
 
-### `web_search`
+### `search`
 
-Search the web with Tavily, Brave, Kagi, or Exa.
+Discover available functions and their compact TypeScript
+declarations. A provider-scoped lookup returns names and schemas
+together:
+
+```json
+{ "query": "tavily" }
+```
+
+Use an exact name such as `tavily_search` for a smaller lookup, or
+`{}` for a catalog without declarations. Only configured providers
+appear.
+
+### `execute`
+
+Run JavaScript against the discovered native provider functions:
 
 ```json
 {
-	"query": "latest SvelteKit releases",
-	"provider": "tavily",
-	"limit": 10,
-	"search_depth": "advanced",
-	"topic": "news",
-	"time_range": "month",
-	"safe_search": true,
-	"include_raw_content": false,
-	"auto_parameters": false
+	"code": "const r = await tools.tavily_search({ query: 'MCP code mode', max_results: 3 }); return r.results.map(({ title, url }) => ({ title, url }));"
 }
 ```
 
-Search controls apply when supported by the selected provider.
+Compose calls with `await` and `Promise.all`, filter intermediate
+data, and return only what the client needs. Credentials stay on the
+host; the sandbox has no filesystem or arbitrary network access.
+Arguments and responses use native provider formats, not a normalized
+search contract. See [Code Mode](docs/codemode.md) for functions,
+limits and benchmark findings.
 
-### `ai_search`
+## Upgrading
 
-Get sourced AI answers with Exa Answer, Linkup, or Tavily Research.
-Tavily Research returns a task ID first; pass it back as `research_id`
-to retrieve the report.
-
-```json
-{
-	"query": "Explain the differences between REST and GraphQL",
-	"provider": "exa_answer"
-}
-```
-
-### `github_search`
-
-Search GitHub code, repositories, or users.
-
-```json
-{
-	"query": "filename:remote.ts @sveltejs/kit",
-	"search_type": "code",
-	"limit": 5
-}
-```
-
-### `web_extract`
-
-Extract, crawl, scrape, or find similar content with Tavily,
-Firecrawl, or Exa.
-
-```json
-{
-	"url": "https://example.com/long-article",
-	"provider": "tavily",
-	"mode": "extract",
-	"extract_depth": "advanced",
-	"query": "installation requirements",
-	"chunks_per_source": 3,
-	"format": "markdown"
-}
-```
+The consolidated `web_search`, `ai_search`, `web_extract` and
+`github_search` tools have been removed. Provider keys stay the same,
+but existing tool calls and client instructions need migration. See
+the [breaking-change migration guide](docs/migration.md).
 
 ## Documentation
 
+- [Migration](docs/migration.md) — move from consolidated tools to
+  Code Mode.
 - [Code Mode](docs/codemode.md) — native provider functions, schema
-  generation, and local testing.
+  generation, local testing, and benchmark findings.
 - [Provider selection](docs/provider-selection.md) — choose providers
   by task, key, mode, and capability.
-- [Search operators](docs/search-operators.md) — operator support
-  matrix and tested examples.
+- [Search operators](docs/search-operators.md) — native query syntax
+  and provider-specific filters.
 - [Large results](docs/large-results.md) — inline vs file response
   behavior and remote deployment caveats.
 - [Deployment](docs/deployment.md) — MCP client, WSL, and Firecrawl
@@ -168,8 +139,6 @@ Firecrawl, or Exa.
 - `FIRECRAWL_API_KEY`
 - `FIRECRAWL_BASE_URL` optional, for self-hosted Firecrawl
 - `OMNISEARCH_LARGE_RESULT_MODE` optional, `file` default or `inline`
-- `OMNISEARCH_TOOL_MODE` optional, `codemode` for the native API
-  interface; unset for the consolidated tools
 
 ## Development
 
