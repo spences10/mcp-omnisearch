@@ -18,13 +18,14 @@ and configured providers remain available.
 
 ## Common failure modes
 
-| Symptom                                   | Likely cause                                              | Fix                                                                                                                              |
-| ----------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Provider is unavailable                   | Missing API key                                           | Set the provider key and restart the MCP server. Check `omnisearch://providers/status`.                                          |
-| Request fails with unauthorized/forbidden | Invalid key or plan mismatch                              | Verify the key belongs to the provider and has access to the endpoint or plan tier.                                              |
-| Query rejected before provider call       | Invalid input                                             | Check for empty queries, unsupported modes, malformed domains, or unsupported URL protocols.                                     |
-| Repeated transient errors                 | Rate limits, timeout, network failure, or provider 5xx    | Retry later or lower request volume. Retryable failures are handled separately from invalid credentials and validation failures. |
-| Returned file path cannot be read         | Server wrote a temp file on a remote/container filesystem | Retry with `large_result_mode: "inline"` or set `OMNISEARCH_LARGE_RESULT_MODE=inline`.                                           |
+| Symptom                               | Likely cause                                | Fix                                                                                              |
+| ------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Old tools are missing                 | Code Mode-only upgrade                      | Use `search` and `execute`; update client instructions using the [migration guide](migration.md) |
+| Provider function is unavailable      | Missing API key                             | Set the provider key and restart. Check `omnisearch://providers/status`                          |
+| Unauthorized or forbidden request     | Invalid key or plan mismatch                | Verify the key and endpoint access                                                               |
+| Arguments rejected before an API call | Native schema validation failed             | Discover the function and check required fields, names, types and enums                          |
+| Transient or rate-limit failure       | Network error, timeout, provider 5xx or 429 | Reduce volume or retry an appropriate operation later; there are no automatic retries            |
+| Returned file cannot be read          | Client and server do not share a filesystem | Use `large_result_mode: "inline"` on `execute` or `OMNISEARCH_LARGE_RESULT_MODE=inline`          |
 
 ## GitHub token setup
 
@@ -51,10 +52,12 @@ Security notes:
 
 ## Rate limits
 
-Each provider has its own limits. MCP Omnisearch formats provider
-rate-limit errors and retries only retryable classes such as 429,
-timeouts, network failures, and 5xx responses. Invalid credentials and
-validation failures are not retried.
+Each provider has its own limits. MCP Omnisearch reports provider HTTP
+failures but does not automatically retry any request. Scripts can
+catch failures for partial results. Retry only when appropriate: paid
+requests and browser actions may have already taken effect. Scripts
+also have a maximum of 20 provider calls and a bounded execution
+deadline; see [Code Mode](codemode.md#execution-boundary-and-limits).
 
 ## Large result paths
 

@@ -1,58 +1,49 @@
 # Provider selection
 
-MCP Omnisearch registers only providers with configured API keys. Use
-the smallest provider that matches the job, then switch providers when
-you need a different ranking style, operator model, or processing
-mode.
+Only providers with configured API keys appear in `search` results.
+Use a provider-scoped lookup such as `{"query":"tavily"}` to retrieve
+function names and compact declarations together, then call those
+functions inside `execute`.
 
-## Search providers
+| Provider  | API key             | Native functions and uses                                                                                                                                           |
+| --------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tavily    | `TAVILY_API_KEY`    | `tavily_search` for web search; `tavily_extract`, `tavily_crawl`, `tavily_map` for content; `tavily_research` and `tavily_research_status` for asynchronous reports |
+| Exa       | `EXA_API_KEY`       | `exa_search` for semantic discovery, `exa_answer` for answers, `exa_contents` for content, `exa_similar` for similar pages                                          |
+| Brave     | `BRAVE_API_KEY`     | `brave_search` with native query syntax; request subset is `q` and `count`                                                                                          |
+| Kagi      | `KAGI_API_KEY`      | `kagi_search` with native query syntax; request subset is `query` and `limit`; requires an API v1 key                                                               |
+| GitHub    | `GITHUB_API_KEY`    | `github_search_code`, `github_search_repositories`, `github_search_users`, using GitHub qualifiers in `q`                                                           |
+| Linkup    | `LINKUP_API_KEY`    | `linkup_search` with native `depth` and `outputType`, including sourced answers                                                                                     |
+| Firecrawl | `FIRECRAWL_API_KEY` | `firecrawl_scrape`, `firecrawl_crawl`, `firecrawl_map`, `firecrawl_extract`, plus crawl/extract status functions                                                    |
 
-| Provider | API key          | Best for                                                              | Operators and filters                                                                                                               |
-| -------- | ---------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `brave`  | `BRAVE_API_KEY`  | Privacy-oriented web search, native search operators, exact discovery | Passes rich operators through in the query string and merges `include_domains` / `exclude_domains` into `site:` / `-site:` clauses. |
-| `kagi`   | `KAGI_API_KEY`   | High-quality web results and focused research                         | Passes operators through in the query string, including `filetype:` and `before:` / `after:` dates. Requires a Kagi API v1 key.     |
-| `tavily` | `TAVILY_API_KEY` | Factual/cited search and API-native filtering                         | Translates supported operators into Tavily fields: domains, dates, exact phrases, and country.                                      |
-| `exa`    | `EXA_API_KEY`    | Semantic/neural search and discovery                                  | Supports domain filters through request parameters; optimized for meaning rather than exact operator syntax.                        |
+Firecrawl browser actions are an argument to `firecrawl_scrape`, not a
+separate function. `FIRECRAWL_BASE_URL` continues to support
+self-hosted v2 instances; see
+[deployment](deployment.md#self-hosted-firecrawl).
 
-## AI answer providers
+There is no cross-provider input or output normalization. Tavily uses
+`max_results` and `include_domains`; Exa uses `numResults` and
+`includeDomains`. Inspect the declarations for supported parameters
+and limits rather than reusing one provider's arguments for another.
 
-| Provider          | API key          | Best for                                       |
-| ----------------- | ---------------- | ---------------------------------------------- |
-| `exa_answer`      | `EXA_API_KEY`    | Semantic AI answers grounded in Exa retrieval. |
-| `linkup`          | `LINKUP_API_KEY` | Deep agentic search with sources.              |
-| `tavily_research` | `TAVILY_API_KEY` | Asynchronous multi-search research reports.    |
+Asynchronous jobs return their native identifiers. Use the respective
+status function later; the server does not automatically poll or
+retry.
 
-## GitHub provider
+## Example: GitHub code search
 
-| Provider        | API key          | Search types                    | Syntax                                                                                        |
-| --------------- | ---------------- | ------------------------------- | --------------------------------------------------------------------------------------------- |
-| `github_search` | `GITHUB_API_KEY` | `code`, `repositories`, `users` | GitHub qualifiers such as `filename:`, `path:`, `repo:`, `user:`, `language:`, and `in:file`. |
+Discover `github_search_code`, then execute:
 
-Use a GitHub personal access token with no scopes selected for public
-search only. See
-[troubleshooting](troubleshooting.md#github-token-setup).
+```js
+const response = await tools.github_search_code({
+	q: 'repo:sveltejs/kit filename:remote.ts',
+	per_page: 5,
+});
+return response.items.map(({ html_url, path }) => ({
+	html_url,
+	path,
+}));
+```
 
-## Processing providers
-
-| Provider    | API key             | Modes                                          | Best for                                                                   |
-| ----------- | ------------------- | ---------------------------------------------- | -------------------------------------------------------------------------- |
-| `tavily`    | `TAVILY_API_KEY`    | `extract`, `crawl`, `map`                      | Query-focused extraction, site crawling, and fast URL discovery.           |
-| `firecrawl` | `FIRECRAWL_API_KEY` | `scrape`, `crawl`, `map`, `extract`, `actions` | Scraping, crawling, site maps, structured extraction, and browser actions. |
-| `exa`       | `EXA_API_KEY`       | `contents`, `similar`                          | Page content retrieval and semantically similar URLs.                      |
-
-## Provider choice cheatsheet
-
-- Need native operators like `filetype:pdf`, `intitle:`, or `before:`?
-  Start with `brave` or `kagi`.
-- Need API-level domain/date/country filtering, depth, topic, recency,
-  safe search, raw page content, or request and credit metadata? Use
-  `tavily`.
-- Need semantic discovery, similar pages, or meaning-based results?
-  Use `exa`.
-- Need source-grounded narrative answers? Use `ai_search` with
-  `exa_answer` or `linkup`.
-- Need a comprehensive multi-search report? Use `ai_search` with
-  `tavily_research`, then retrieve it with the returned `research_id`.
-- Need to crawl/scrape/map a site? Use `web_extract` with `tavily` or
-  `firecrawl`.
-- Need public code/repository/user discovery? Use `github_search`.
+See [GitHub token setup](troubleshooting.md#github-token-setup) for
+public search credentials and [search operators](search-operators.md)
+for native syntax and explicit filters.
