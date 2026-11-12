@@ -59,7 +59,7 @@
 		"publish-mcp": "pnpm run sync-server-json && mcp-publisher publish"
 	},
 	"dependencies": {
-		"@earendil-works/pi-codemode": "1.5.0",
+		"@earendil-works/pi-codemode": "1.5.2",
 		"@tmcp/adapter-valibot": "^0.1.7",
 		"@tmcp/transport-stdio": "^0.5.1",
 		"ajv": "^8.20.0",
