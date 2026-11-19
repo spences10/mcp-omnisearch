@@ -45,6 +45,11 @@ const connections: Record<string, ProviderConnection> = {
 		api_key: 'test-linkup',
 		timeout: 1000,
 	},
+	helve: {
+		base_url: 'https://helve.dev',
+		api_key: 'test-helve',
+		timeout: 1000,
+	},
 };
 const tools = create_provider_tools(connections);
 const context = () => ({ signal: new AbortController().signal });
@@ -71,6 +76,13 @@ const samples: Record<string, Record<string, unknown>> = {
 	github_search_code: { q: 'test', per_page: 2 },
 	github_search_repositories: { q: 'test' },
 	github_search_users: { q: 'test' },
+	helve_extract: { urls: ['https://example.com'] },
+	helve_search: { query: 'test', provider: 'fusion', max_results: 2 },
+	helve_tools_call: {
+		tool_id: 'helve.web_search',
+		arguments: { query: 'test' },
+	},
+	helve_tools_search: { query: 'web search', limit: 5 },
 	kagi_search: { query: 'test', limit: 2 },
 	linkup_search: {
 		q: 'test',

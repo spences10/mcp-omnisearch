@@ -22,6 +22,7 @@ describe('provider availability logging', () => {
 				'FIRECRAWL_API_KEY',
 				'EXA_API_KEY',
 				'LINKUP_API_KEY',
+				'HELVE_API_KEY',
 				'OMNISEARCH_LARGE_RESULT_MODE',
 			])
 				vi.stubEnv(name, undefined);

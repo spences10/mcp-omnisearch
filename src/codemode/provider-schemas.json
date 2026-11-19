@@ -5897,6 +5897,183 @@
 			}
 		},
 		{
+			"provider": "helve",
+			"name": "helve_extract",
+			"description": "Extract markdown or text excerpts from 1-20 URLs via Helve.",
+			"method": "POST",
+			"path": "/v1/extract",
+			"source": "https://helve.dev/openapi.json",
+			"query": [],
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"urls": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"minItems": 1,
+						"maxItems": 20
+					},
+					"provider": {
+						"type": "string",
+						"enum": [
+							"auto",
+							"exa",
+							"tavily",
+							"parallel",
+							"serper",
+							"firecrawl",
+							"linkup",
+							"valyu",
+							"jina",
+							"octen"
+						]
+					},
+					"query": {
+						"type": "string",
+						"minLength": 1
+					},
+					"content": {
+						"type": "object",
+						"properties": {
+							"full_text": {
+								"type": "boolean"
+							},
+							"max_chars": {
+								"type": "integer",
+								"minimum": 100,
+								"maximum": 100000
+							},
+							"summary": {
+								"type": "boolean"
+							},
+							"format": {
+								"type": "string",
+								"enum": ["markdown", "text"]
+							}
+						},
+						"additionalProperties": false
+					}
+				},
+				"required": ["urls"],
+				"additionalProperties": false
+			}
+		},
+		{
+			"provider": "helve",
+			"name": "helve_search",
+			"description": "Search the web via Helve (supports auto, fusion, or a specific upstream provider).",
+			"method": "POST",
+			"path": "/v1/search",
+			"source": "https://helve.dev/openapi.json",
+			"query": [],
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"query": {
+						"type": "string",
+						"minLength": 1
+					},
+					"provider": {
+						"type": "string",
+						"enum": [
+							"auto",
+							"fusion",
+							"exa",
+							"parallel",
+							"tavily",
+							"brave",
+							"serper",
+							"firecrawl",
+							"linkup",
+							"valyu",
+							"jina",
+							"octen",
+							"perplexity"
+						]
+					},
+					"max_results": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 100
+					},
+					"mode": {
+						"type": "string",
+						"enum": ["instant", "fast", "balanced", "deep"]
+					},
+					"include_domains": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1
+						}
+					},
+					"exclude_domains": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1
+						}
+					}
+				},
+				"required": ["query"],
+				"additionalProperties": false
+			}
+		},
+		{
+			"provider": "helve",
+			"name": "helve_tools_call",
+			"description": "Invoke a Helve tool by tool_id.",
+			"method": "POST",
+			"path": "/v1/tools/call",
+			"source": "https://helve.dev/openapi.json",
+			"query": [],
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"tool_id": {
+						"type": "string",
+						"minLength": 1
+					},
+					"arguments": {
+						"type": "object"
+					}
+				},
+				"required": ["tool_id"],
+				"additionalProperties": false
+			}
+		},
+		{
+			"provider": "helve",
+			"name": "helve_tools_search",
+			"description": "Search available tools in the Helve catalog.",
+			"method": "POST",
+			"path": "/v1/tools/search",
+			"source": "https://helve.dev/openapi.json",
+			"query": [],
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"query": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 500
+					},
+					"category": {
+						"type": "string"
+					},
+					"limit": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 30
+					}
+				},
+				"required": ["query"],
+				"additionalProperties": false
+			}
+		},
+		{
 			"provider": "kagi",
 			"source": "https://help.kagi.com/kagi/api/search.html",
 			"name": "kagi_search",
