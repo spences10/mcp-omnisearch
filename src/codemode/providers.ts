@@ -50,4 +50,9 @@ export const provider_connections = (): Record<
 		api_key: process.env.FIRECRAWL_API_KEY,
 		timeout: 120_000,
 	},
+	helve: {
+		base_url: 'https://helve.dev',
+		api_key: process.env.HELVE_API_KEY,
+		timeout: 60_000,
+	},
 });

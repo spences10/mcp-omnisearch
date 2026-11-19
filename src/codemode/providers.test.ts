@@ -16,6 +16,7 @@ const keys = {
 	exa: 'EXA_API_KEY',
 	linkup: 'LINKUP_API_KEY',
 	firecrawl: 'FIRECRAWL_API_KEY',
+	helve: 'HELVE_API_KEY',
 };
 
 beforeEach(() => {
@@ -63,6 +64,10 @@ describe('native provider connections', () => {
 		expect(connections.firecrawl).toMatchObject({
 			base_url: 'https://api.firecrawl.dev/v2',
 			timeout: 120_000,
+		});
+		expect(connections.helve).toMatchObject({
+			base_url: 'https://helve.dev',
+			timeout: 60_000,
 		});
 	});
 

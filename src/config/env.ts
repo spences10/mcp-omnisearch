@@ -7,6 +7,7 @@ const api_key_names = [
 	'FIRECRAWL_API_KEY',
 	'EXA_API_KEY',
 	'LINKUP_API_KEY',
+	'HELVE_API_KEY',
 ];
 
 const remote_deployment_markers = [
